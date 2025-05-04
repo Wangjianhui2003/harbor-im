@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jianhui.project.harbor.platform.mapper.GroupMapper">
+
+    <resultMap id="BaseResultMap" type="com.jianhui.project.harbor.platform.entity.Group">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="ownerId" column="owner_id" jdbcType="BIGINT"/>
+            <result property="headImage" column="head_image" jdbcType="VARCHAR"/>
+            <result property="headImageThumb" column="head_image_thumb" jdbcType="VARCHAR"/>
+            <result property="notice" column="notice" jdbcType="VARCHAR"/>
+            <result property="isBanned" column="is_banned" jdbcType="TINYINT"/>
+            <result property="reason" column="reason" jdbcType="VARCHAR"/>
+            <result property="dissolve" column="dissolve" jdbcType="TINYINT"/>
+            <result property="joinType" column="join_type" jdbcType="TINYINT"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,name,owner_id,
+        head_image,head_image_thumb,notice,
+        is_banned,reason,dissolve,
+        join_type,update_time,created_time
+    </sql>
+</mapper>

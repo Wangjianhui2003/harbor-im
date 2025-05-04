@@ -1,11 +1,13 @@
 package com.jianhui.project;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Main {
+@MapperScan("com.jianhui.project.harbor.platform.mapper")
+public class HarborPlatformApp {
     public static void main(String[] args) {
-        SpringApplication.run(Main.class);
+        SpringApplication.run(HarborPlatformApp.class);
     }
 }
