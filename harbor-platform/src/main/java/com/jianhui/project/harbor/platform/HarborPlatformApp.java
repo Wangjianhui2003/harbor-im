@@ -1,4 +1,4 @@
-package com.jianhui.project;
+package com.jianhui.project.harbor.platform;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
