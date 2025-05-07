@@ -1,0 +1,17 @@
+spring:
+  profiles:
+    active: dev
+  application:
+    name: harbor-server
+
+websocket:
+  enable: true
+  port: 8101
+
+tcpsocket:
+  enable: false # 暂时不开启
+  port: 8102
+
+jwt:
+  accessToken:
+    secret: MIIBIjANBgkq  # 跟im-platfrom的secret必须一致

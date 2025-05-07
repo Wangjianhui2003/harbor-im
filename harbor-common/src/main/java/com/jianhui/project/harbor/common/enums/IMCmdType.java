@@ -13,18 +13,22 @@ public enum IMCmdType {
      * 心跳
      */
     HEART_BEAT(1, "心跳"),
+
     /**
      * 强制下线
      */
     FORCE_LOGUT(2, "强制下线"),
+
     /**
      * 私聊消息
      */
     PRIVATE_MESSAGE(3, "私聊消息"),
+
     /**
      * 群发消息
      */
     GROUP_MESSAGE(4, "群发消息"),
+
     /**
      * 系统消息
      */
@@ -34,7 +38,6 @@ public enum IMCmdType {
     private final Integer code;
 
     private final String desc;
-
 
     public static IMCmdType fromCode(Integer code) {
         for (IMCmdType typeEnum : values()) {

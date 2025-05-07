@@ -11,10 +11,10 @@ public class UserSession extends IMSessionInfo {
     /**
      * 用户名称
      */
-    private String userName;
+    private String username;
 
     /**
      * 用户昵称
      */
-    private String nickName;
+    private String nickname;
 }
