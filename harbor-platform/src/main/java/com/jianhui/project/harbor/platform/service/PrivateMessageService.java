@@ -2,6 +2,12 @@ package com.jianhui.project.harbor.platform.service;
 
 import com.jianhui.project.harbor.platform.entity.PrivateMessage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.jianhui.project.harbor.platform.pojo.dto.PrivateMessageDTO;
+import com.jianhui.project.harbor.platform.pojo.vo.PrivateMessageVO;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+
+import java.util.List;
 
 /**
 * @author wjh2
@@ -10,4 +16,15 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface PrivateMessageService extends IService<PrivateMessage> {
 
+    PrivateMessageVO sendMessage(@Valid PrivateMessageDTO vo);
+
+    PrivateMessageVO recallMessage(@NotNull(message = "消息id不能为空") Long id);
+
+    void pullOfflineMessage(Long minId);
+
+    void readedMessage(Long friendId);
+
+    String getMaxReadedId(Long friendId);
+
+    List<PrivateMessageVO> findHistoryMessage(@NotNull(message = "好友id不能为空") Long friendId, @NotNull(message = "页码不能为空") Long page, @NotNull(message = "size不能为空") Long size);
 }

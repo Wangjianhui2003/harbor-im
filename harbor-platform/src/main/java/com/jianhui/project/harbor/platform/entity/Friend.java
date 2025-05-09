@@ -3,8 +3,9 @@ package com.jianhui.project.harbor.platform.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
 import lombok.Data;
+
+import java.util.Date;
 
 /**
  * 好友
@@ -47,7 +48,7 @@ public class Friend {
     /**
      * 删除标识  0：正常   1：已删除
      */
-    private Integer deleted;
+    private Boolean deleted;
 
     /**
      * 更新时间

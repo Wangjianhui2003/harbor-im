@@ -5,9 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
- * @author: Blue
- * @date: 2024-09-28
- * @version: 1.0
+ * minio配置
  */
 @Data
 @Component

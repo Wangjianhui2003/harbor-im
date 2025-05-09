@@ -8,21 +8,21 @@ import java.util.Date;
 
 /**
  * 日期处理工具类
- *
- * @version 1.0
  */
 public final class DateTimeUtils extends DateUtils {
 
+    /**
+     * 默认日期格式
+     */
     public static final String FULL_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
-    public static final String PARTDATEFORMAT = "yyyyMMdd";
 
+    /**
+     * 将文件以日期来划分的文件夹日期格式
+     */
+    public static final String PARTDATEFORMAT = "yyyyMMdd";
 
     /**
      * 将日期类型转换为字符串
-     *
-     * @param date    日期
-     * @param xFormat 格式
-     * @return 日期
      */
     public static String getFormatDate(Date date, String xFormat) {
         date = date == null ? new Date() : date;
