@@ -33,7 +33,7 @@ public class IMPrivateMessage<T> {
     /**
      * 是否需要回推发送结果,默认true
      */
-    private Boolean sendResult = true;
+    private Boolean isSendBack = true;
 
     /**
      * 消息内容

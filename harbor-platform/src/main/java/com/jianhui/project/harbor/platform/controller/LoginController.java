@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Duration;
 import java.util.UUID;
 
-import static com.jianhui.project.harbor.platform.constant.RedisConstant.CHECK_CODE_EXPIRE_TIME;
-import static com.jianhui.project.harbor.platform.constant.RedisConstant.CHECK_CODE_PREFIX;
+import static com.jianhui.project.harbor.platform.constant.RedisKey.CHECK_CODE_EXPIRE_TIME;
+import static com.jianhui.project.harbor.platform.constant.RedisKey.CHECK_CODE_PREFIX;
 
 @RestController
 @RequiredArgsConstructor

@@ -17,7 +17,7 @@ public class MessageMulticaster {
     @Autowired(required = false)
     private List<MessageListener> listeners = Collections.emptyList();
 
-    public void Multicast(IMListenerType listenerType, List<IMSendResult> results) {
+    public void multicast(IMListenerType listenerType, List<IMSendResult> results) {
         if(results == null || results.isEmpty()) {
             return;
         }

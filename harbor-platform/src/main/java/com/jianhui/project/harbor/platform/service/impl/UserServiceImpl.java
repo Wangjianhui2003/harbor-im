@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.jianhui.project.harbor.client.IMClient;
 import com.jianhui.project.harbor.common.util.JwtUtil;
 import com.jianhui.project.harbor.platform.config.props.JwtProperties;
 import com.jianhui.project.harbor.platform.entity.User;
@@ -17,7 +18,7 @@ import com.jianhui.project.harbor.platform.pojo.req.RegisterReq;
 import com.jianhui.project.harbor.platform.pojo.req.UserUpdateReq;
 import com.jianhui.project.harbor.platform.pojo.resp.LoginResp;
 import com.jianhui.project.harbor.platform.pojo.resp.OnlineTerminalResp;
-import com.jianhui.project.harbor.platform.pojo.resp.UserInfoResp;
+import com.jianhui.project.harbor.platform.pojo.resp.UserVO;
 import com.jianhui.project.harbor.platform.service.GroupService;
 import com.jianhui.project.harbor.platform.service.UserService;
 import com.jianhui.project.harbor.platform.session.SessionContext;
@@ -34,7 +35,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.jianhui.project.harbor.platform.constant.RedisConstant.CHECK_CODE_PREFIX;
+import static com.jianhui.project.harbor.platform.constant.RedisKey.CHECK_CODE_PREFIX;
 
 
 @RequiredArgsConstructor
@@ -49,6 +50,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final FriendMapper friendMapper;
     private final GroupService groupService;
     private final GroupMapper groupMapper;
+    private final IMClient imClient;
 
     @Override
     public void register(RegisterReq registerReq) {
@@ -152,14 +154,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public UserInfoResp findUserById(Long id) {
+    public UserVO findUserById(Long id) {
         User user = this.getById(id);
         if (Objects.isNull(user)) {
             throw new GlobalException("用户不存在");
         }
-        UserInfoResp userInfoResp = BeanUtils.copyProperties(user, UserInfoResp.class);
+        UserVO userVO = BeanUtils.copyProperties(user, UserVO.class);
+        userVO.setOnline(imClient.isOnline(id));
         //TODO:判断是否在线
-        return userInfoResp;
+        return userVO;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -185,15 +188,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public List<UserInfoResp> findUserByName(String name) {
+    public List<UserVO> findUserByName(String name) {
         LambdaQueryWrapper<User> queryWrapper = Wrappers.lambdaQuery();
         queryWrapper.like(User::getUsername, name).or().like(User::getUsername, name).last("limit 20");
         List<User> users = this.list(queryWrapper);
         List<Long> userIds = users.stream().map(User::getId).collect(Collectors.toList());
         //TODO:获取在线用户
         return users.stream().map(u -> {
-            UserInfoResp userInfoResp = BeanUtils.copyProperties(u, UserInfoResp.class);
-            return userInfoResp;
+            UserVO userVO = BeanUtils.copyProperties(u, UserVO.class);
+            return userVO;
         }).collect(Collectors.toList());
     }
 }

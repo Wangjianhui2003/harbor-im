@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Schema(description = "好友信息")
-public class FriendResp {
+public class FriendVO {
 
     @NotNull(message = "好友id不可为空")
     @Schema(description = "好友id")

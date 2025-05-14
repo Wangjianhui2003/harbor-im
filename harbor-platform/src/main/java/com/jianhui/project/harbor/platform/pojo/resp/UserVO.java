@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class UserInfoResp {
+public class UserVO {
 
     private Long id;
 
@@ -83,5 +83,10 @@ public class UserInfoResp {
      * 地区
      */
     private String region;
+
+    /**
+     * 是否在线
+     */
+    private Boolean online;
 
 }

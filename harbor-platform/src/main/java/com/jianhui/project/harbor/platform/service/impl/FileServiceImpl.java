@@ -1,4 +1,4 @@
-package com.jianhui.project.harbor.platform.service.thridparty;
+package com.jianhui.project.harbor.platform.service.impl;
 
 
 import com.jianhui.project.harbor.platform.config.props.MinioProperties;

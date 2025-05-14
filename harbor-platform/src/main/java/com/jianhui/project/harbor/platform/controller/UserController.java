@@ -3,7 +3,7 @@ package com.jianhui.project.harbor.platform.controller;
 import com.jianhui.project.harbor.platform.entity.User;
 import com.jianhui.project.harbor.platform.pojo.req.UserUpdateReq;
 import com.jianhui.project.harbor.platform.pojo.resp.OnlineTerminalResp;
-import com.jianhui.project.harbor.platform.pojo.resp.UserInfoResp;
+import com.jianhui.project.harbor.platform.pojo.resp.UserVO;
 import com.jianhui.project.harbor.platform.result.Result;
 import com.jianhui.project.harbor.platform.result.Results;
 import com.jianhui.project.harbor.platform.service.UserService;
@@ -36,16 +36,16 @@ public class UserController {
 
     @GetMapping("/self")
     @Operation(summary = "获取当前用户信息", description = "获取当前用户信息")
-    public Result<UserInfoResp> findSelfInfo() {
+    public Result<UserVO> findSelfInfo() {
         UserSession session = SessionContext.getSession();
         User user = userService.getById(session.getUserId());
-        UserInfoResp userInfoResp= BeanUtils.copyProperties(user, UserInfoResp.class);
-        return Results.success(userInfoResp);
+        UserVO userVO = BeanUtils.copyProperties(user, UserVO.class);
+        return Results.success(userVO);
     }
 
     @GetMapping("/find/{id}")
     @Operation(summary = "查找用户", description = "根据id查找用户")
-    public Result<UserInfoResp> findById(@NotNull @PathVariable("id") Long id) {
+    public Result<UserVO> findById(@NotNull @PathVariable("id") Long id) {
         return Results.success(userService.findUserById(id));
     }
 
@@ -58,7 +58,7 @@ public class UserController {
 
     @GetMapping("/findByName")
     @Operation(summary = "查找用户", description = "根据用户名或昵称查找用户")
-    public Result<List<UserInfoResp>> findByName(@RequestParam String name) {
+    public Result<List<UserVO>> findByName(@RequestParam String name) {
         return Results.success(userService.findUserByName(name));
     }
 }

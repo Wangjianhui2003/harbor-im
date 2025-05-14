@@ -9,7 +9,6 @@ import java.util.List;
 @Data
 public class IMSystemMessage<T> {
 
-
     /**
      * 接收者id列表，为空表示向所有在线用户广播
      */
@@ -23,12 +22,11 @@ public class IMSystemMessage<T> {
     /**
      * 是否需要回推发送结果,默认true
      */
-    private Boolean sendResult = true;
+    private Boolean isSendBack = true;
 
     /**
      * 消息内容
      */
     private T data;
-
 
 }
