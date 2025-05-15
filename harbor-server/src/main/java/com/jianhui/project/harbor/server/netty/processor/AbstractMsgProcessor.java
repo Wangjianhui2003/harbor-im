@@ -5,7 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 public abstract class AbstractMsgProcessor<T>{
 
     /**
-     * 处理登录、心跳需要实现
+     * 处理登录、心跳等和客户端沟通的信息需要实现
      */
     public void process(ChannelHandlerContext ctx, T data){}
 

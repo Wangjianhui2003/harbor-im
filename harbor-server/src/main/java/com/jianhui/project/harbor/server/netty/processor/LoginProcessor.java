@@ -50,7 +50,7 @@ public class LoginProcessor extends AbstractMsgProcessor<IMLoginInfo>{
         Integer terminal = sessionInfo.getTerminal();
         log.info("用户登录，userId:{}",userId);
 
-        ChannelHandlerContext context = UserChannelCxtMap.getChannelCxt(userId, terminal);
+        ChannelHandlerContext context = UserChannelCxtMap.getChannelCtx(userId, terminal);
         //已经有相同userid + terminal的channel存在，强制下线之前登录的用户
         if(context != null && ctx.channel().id().equals(context.channel().id())){
             IMSendInfo<Object> sendInfo = new IMSendInfo<>();

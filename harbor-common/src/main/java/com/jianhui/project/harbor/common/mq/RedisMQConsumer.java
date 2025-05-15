@@ -18,7 +18,7 @@ public abstract class RedisMQConsumer<T> {
     public void onMessage(List<T> datas){}
 
     /**
-     * 生成redis队列完整key
+     * 生成redis队列key
      */
     public String generateKey(){
         // 默认队列名就是redis的key

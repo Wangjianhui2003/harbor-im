@@ -2,6 +2,9 @@ package com.jianhui.project.harbor.common.enums;
 
 import lombok.AllArgsConstructor;
 
+/**
+ * 发送结果枚举
+ */
 @AllArgsConstructor
 public enum IMSendCode {
 

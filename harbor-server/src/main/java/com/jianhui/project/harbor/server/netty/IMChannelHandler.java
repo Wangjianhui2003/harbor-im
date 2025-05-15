@@ -54,7 +54,7 @@ public class IMChannelHandler extends SimpleChannelInboundHandler<IMSendInfo> {
         Long userId = ctx.channel().attr(userIdAttr).get();
         AttributeKey<Integer> terminalAttr = AttributeKey.valueOf(ChannelAttrKey.TERMINAL_TYPE);
         Integer terminal = ctx.channel().attr(terminalAttr).get();
-        ChannelHandlerContext context = UserChannelCxtMap.getChannelCxt(userId, terminal);
+        ChannelHandlerContext context = UserChannelCxtMap.getChannelCtx(userId, terminal);
         // 如果当前上下文和之前的上下文相同，则移除，避免异地登录误删
         if (context != null && ctx.channel().id().equals(context.channel().id())) {
             // 移除上下文

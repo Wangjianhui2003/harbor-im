@@ -27,7 +27,7 @@ public class UserChannelCxtMap {
         }
     }
 
-    public static ChannelHandlerContext getChannelCxt(Long userId,Integer terminal){
+    public static ChannelHandlerContext getChannelCtx(Long userId, Integer terminal){
         if(userId != null && terminal != null && channelMap.containsKey(userId)){
             Map<Integer, ChannelHandlerContext> map = channelMap.get(userId);
             if (map.containsKey(terminal)){
