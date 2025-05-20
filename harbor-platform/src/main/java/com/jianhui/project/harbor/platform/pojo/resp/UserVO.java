@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.util.Date;
 
+/**
+ * 比较重要的属性：是否在线
+ */
 @Data
 public class UserVO {
 

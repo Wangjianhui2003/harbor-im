@@ -19,5 +19,4 @@ public class IMUserInfo {
      */
     private Integer terminal;
 
-
 }

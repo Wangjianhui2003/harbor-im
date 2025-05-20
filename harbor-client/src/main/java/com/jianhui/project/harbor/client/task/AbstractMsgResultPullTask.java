@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Value;
 
 /**
  * 抽象类
- * 用于拉取消息队列中
+ * 监听获取消息发送结果队列，然后广播给platform的listener
  */
 @Slf4j
-public abstract class AbstractMessageResultTask<T> extends RedisMQConsumer<T> {
+public abstract class AbstractMsgResultPullTask<T> extends RedisMQConsumer<T> {
 
     @Value("${spring.application.name}")
     private String appName;

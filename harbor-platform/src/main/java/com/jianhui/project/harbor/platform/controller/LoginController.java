@@ -1,5 +1,6 @@
 package com.jianhui.project.harbor.platform.controller;
 
+import com.jianhui.project.harbor.platform.pojo.dto.ModifyPwdDTO;
 import com.jianhui.project.harbor.platform.pojo.req.LoginReq;
 import com.jianhui.project.harbor.platform.pojo.req.RegisterReq;
 import com.jianhui.project.harbor.platform.pojo.resp.CaptchaResp;
@@ -61,6 +62,13 @@ public class LoginController {
     @Operation(summary = "用户注册", description = "用户注册")
     public Result register(@Valid @RequestBody RegisterReq dto) {
         userService.register(dto);
+        return Results.success();
+    }
+
+    @PutMapping("/modifyPwd")
+    @Operation(summary = "修改密码", description = "修改用户密码")
+    public Result modifyPassword(@Valid @RequestBody ModifyPwdDTO dto) {
+        userService.modifyPassword(dto);
         return Results.success();
     }
 }

@@ -1,4 +1,4 @@
-package com.jianhui.project.harbor.platform.pojo.resp;
+package com.jianhui.project.harbor.platform.pojo.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class OnlineTerminalResp {
+public class OnlineTerminalVO {
 
     @Schema(description = "用户id")
     private Long userId;

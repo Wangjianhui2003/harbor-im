@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @RedisMQListener(queue = IMRedisKey.IM_MESSAGE_GROUP_QUEUE,batchSize = 10)
-public class PullGroupMsgTask extends AbstractPullMessageTask<IMRecvInfo> {
+public class GroupMsgPullTask extends AbstractMsgPullTask<IMRecvInfo> {
 
     @Override
     public void onMessage(IMRecvInfo data) {

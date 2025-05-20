@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
  * 抽象类
  * 实现类分别实现拉取群聊，私聊，系统消息
  */
-public abstract class AbstractPullMessageTask<T> extends RedisMQConsumer<T> {
+public abstract class AbstractMsgPullTask<T> extends RedisMQConsumer<T> {
 
     @Value("${spring.application.name}")
     String appName;

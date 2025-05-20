@@ -39,7 +39,7 @@ public class FriendController {
     @GetMapping("/find/{friendId}")
     @Operation(summary = "查找好友信息", description = "查找好友信息")
     public Result<FriendVO> findFriend(@NotNull(message = "好友id不可为空") @PathVariable Long friendId) {
-        return Results.success(friendService.findFriend(friendId));
+        return Results.success(friendService.findFriendInfo(friendId));
     }
 
 

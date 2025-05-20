@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jianhui.project.harbor.client.IMClient;
+import com.jianhui.project.harbor.common.enums.IMTerminalType;
 import com.jianhui.project.harbor.common.util.JwtUtil;
 import com.jianhui.project.harbor.platform.config.props.JwtProperties;
 import com.jianhui.project.harbor.platform.entity.User;
@@ -13,12 +14,13 @@ import com.jianhui.project.harbor.platform.exception.GlobalException;
 import com.jianhui.project.harbor.platform.mapper.FriendMapper;
 import com.jianhui.project.harbor.platform.mapper.GroupMapper;
 import com.jianhui.project.harbor.platform.mapper.UserMapper;
+import com.jianhui.project.harbor.platform.pojo.dto.ModifyPwdDTO;
 import com.jianhui.project.harbor.platform.pojo.req.LoginReq;
 import com.jianhui.project.harbor.platform.pojo.req.RegisterReq;
 import com.jianhui.project.harbor.platform.pojo.req.UserUpdateReq;
 import com.jianhui.project.harbor.platform.pojo.resp.LoginResp;
-import com.jianhui.project.harbor.platform.pojo.resp.OnlineTerminalResp;
 import com.jianhui.project.harbor.platform.pojo.resp.UserVO;
+import com.jianhui.project.harbor.platform.pojo.vo.OnlineTerminalVO;
 import com.jianhui.project.harbor.platform.service.GroupService;
 import com.jianhui.project.harbor.platform.service.UserService;
 import com.jianhui.project.harbor.platform.session.SessionContext;
@@ -31,8 +33,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.jianhui.project.harbor.platform.constant.RedisKey.CHECK_CODE_PREFIX;
@@ -55,11 +56,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public void register(RegisterReq registerReq) {
         try {
+            //验证码
             String captcha = redisTemplate.opsForValue().
                     get(CHECK_CODE_PREFIX + registerReq.getCaptchaKey());
             if (!registerReq.getCaptcha().equalsIgnoreCase(captcha)) {
                 throw new GlobalException("注册验证码错误");
             }
+            //username是否已经被注册
             User user = userMapper.getByUsername(registerReq.getUsername());
             if (user != null) {
                 throw new GlobalException(ResultCode.USERNAME_ALREADY_REGISTER);
@@ -131,6 +134,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (Objects.isNull(user)) {
             throw new GlobalException("用户不存在");
         }
+        //被ban
         if (user.getIsBanned().equals(1)) {
             String tip = String.format("您的账号因'%s'被管理员封禁,请联系客服!", user.getReason());
             throw new GlobalException(tip);
@@ -148,9 +152,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public List<OnlineTerminalResp> getOnlineTerminals(String userIds) {
-        //TODO:在线终端
-        return null;
+    public List<OnlineTerminalVO> getOnlineTerminals(String userIds) {
+        List<Long> ids = Arrays.stream(userIds.split(",")).map(Long::parseLong).collect(Collectors.toList());
+        Map<Long, List<IMTerminalType>> terminalMap = imClient.getOnlineTerminal(ids);
+        // 组装vo
+        List<OnlineTerminalVO> vos = new LinkedList<>();
+        terminalMap.forEach((userId, types) -> {
+            List<Integer> terminals = types.stream().map(IMTerminalType::code).collect(Collectors.toList());
+            vos.add(new OnlineTerminalVO(userId, terminals));
+        });
+        return vos;
     }
 
     @Override
@@ -161,7 +172,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         UserVO userVO = BeanUtils.copyProperties(user, UserVO.class);
         userVO.setOnline(imClient.isOnline(id));
-        //TODO:判断是否在线
         return userVO;
     }
 
@@ -193,11 +203,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         queryWrapper.like(User::getUsername, name).or().like(User::getUsername, name).last("limit 20");
         List<User> users = this.list(queryWrapper);
         List<Long> userIds = users.stream().map(User::getId).collect(Collectors.toList());
+        List<Long> onlineUserIds = imClient.getOnlineUser(userIds);
         //TODO:获取在线用户
         return users.stream().map(u -> {
             UserVO userVO = BeanUtils.copyProperties(u, UserVO.class);
+            userVO.setOnline(onlineUserIds.contains(u.getId()));
             return userVO;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public void modifyPassword(ModifyPwdDTO dto) {
+
     }
 }
 

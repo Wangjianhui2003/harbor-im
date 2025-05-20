@@ -2,8 +2,8 @@ package com.jianhui.project.harbor.platform.controller;
 
 import com.jianhui.project.harbor.platform.entity.User;
 import com.jianhui.project.harbor.platform.pojo.req.UserUpdateReq;
-import com.jianhui.project.harbor.platform.pojo.resp.OnlineTerminalResp;
 import com.jianhui.project.harbor.platform.pojo.resp.UserVO;
+import com.jianhui.project.harbor.platform.pojo.vo.OnlineTerminalVO;
 import com.jianhui.project.harbor.platform.result.Result;
 import com.jianhui.project.harbor.platform.result.Results;
 import com.jianhui.project.harbor.platform.service.UserService;
@@ -29,7 +29,7 @@ public class UserController {
 
     @GetMapping("/terminal/online")
     @Operation(summary = "判断用户哪个终端在线", description = "返回在线的用户id的终端集合")
-    public Result<List<OnlineTerminalResp>> getOnlineTerminal(@NotNull @RequestParam("userIds") String userIds) {
+    public Result<List<OnlineTerminalVO>> getOnlineTerminal(@NotNull @RequestParam("userIds") String userIds) {
         return Results.success(userService.getOnlineTerminals(userIds));
     }
 
