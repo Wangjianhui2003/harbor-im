@@ -3,9 +3,7 @@
 </script>
 
 <template>
-  <div>
-    <router-view></router-view>
-  </div>
+  <div>group</div>
 </template>
 
 <style scoped>
