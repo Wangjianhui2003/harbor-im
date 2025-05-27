@@ -17,9 +17,8 @@ import com.jianhui.project.harbor.platform.mapper.UserMapper;
 import com.jianhui.project.harbor.platform.pojo.dto.ModifyPwdDTO;
 import com.jianhui.project.harbor.platform.pojo.req.LoginReq;
 import com.jianhui.project.harbor.platform.pojo.req.RegisterReq;
-import com.jianhui.project.harbor.platform.pojo.req.UserUpdateReq;
 import com.jianhui.project.harbor.platform.pojo.resp.LoginResp;
-import com.jianhui.project.harbor.platform.pojo.resp.UserVO;
+import com.jianhui.project.harbor.platform.pojo.vo.UserVO;
 import com.jianhui.project.harbor.platform.pojo.vo.OnlineTerminalVO;
 import com.jianhui.project.harbor.platform.service.GroupService;
 import com.jianhui.project.harbor.platform.service.UserService;
@@ -177,22 +176,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void updateUserInfo(UserUpdateReq userUpdateReq) {
+    public void updateUserInfo(UserVO userVO) {
         UserSession session = SessionContext.getSession();
-        if (!session.getUserId().equals(userUpdateReq.getId())) {
+        if (!session.getUserId().equals(userVO.getId())) {
             throw new GlobalException("不能修改其他用户信息");
         }
-        User user = this.getById(userUpdateReq.getId());
+        User user = this.getById(userVO.getId());
         if (Objects.isNull(user)) {
             throw new GlobalException("用户不存在");
         }
         //修改群聊和好友的昵称和头像
-        if (!user.getNickname().equals(userUpdateReq.getNickname())
-                || !user.getHeadImageThumb().equals(userUpdateReq.getHeadImageThumb())) {
-            friendMapper.updateFriendNicknameAndThumb(userUpdateReq.getId(), userUpdateReq.getNickname(), userUpdateReq.getHeadImageThumb());
-            groupMapper.updateMemberNicknameAndThumb(userUpdateReq.getId(), userUpdateReq.getNickname(), userUpdateReq.getHeadImageThumb());
+        if (!user.getNickname().equals(userVO.getNickname())
+                || !user.getHeadImageThumb().equals(userVO.getHeadImageThumb())) {
+            friendMapper.updateFriendNicknameAndThumb(userVO.getId(), userVO.getNickname(),userVO.getHeadImageThumb());
+            groupMapper.updateMemberNicknameAndThumb(userVO.getId(), userVO.getNickname(), userVO.getHeadImageThumb());
         }
-        BeanUtils.copyProperties(userUpdateReq, user);
+        BeanUtils.copyProperties(userVO, user);
         this.updateById(user);
         log.info("用户信息更新，用户:{}}", user);
     }

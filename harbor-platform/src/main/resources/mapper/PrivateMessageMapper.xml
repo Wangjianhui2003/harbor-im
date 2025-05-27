@@ -19,4 +19,29 @@
         content,type,status,
         send_time
     </sql>
+
+    <select id="pageHistoryMsg" resultType="com.jianhui.project.harbor.platform.entity.PrivateMessage">
+        select * from t_private_message
+        where (send_id = #{userId} and recv_id = #{friendId}) or (send_id = #{friendId} and recv_id = #{userId})
+        and status != #{recallStateCode}
+        order by id desc
+        limit #{offset},#{size}
+    </select>
+
+    <select id="getOfflineMsg" resultType="com.jianhui.project.harbor.platform.entity.PrivateMessage">
+        select * from t_private_message
+        where id &gt; #{minId}
+        and (send_id = #{uesrId} or recv_id = #{userId})
+        and (send_time &gt;= #{minDate})
+        and status != #{recallStateCode}
+    </select>
+
+    <select id="getMaxReadedMsgId" resultType="java.lang.Long">
+        select id
+        from t_private_message
+        where send_id = #{userId} and recv_id = #{friendId} and status = #{readedCode}
+        order by id desc
+        limit 1
+    </select>
+
 </mapper>

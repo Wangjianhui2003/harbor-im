@@ -16,15 +16,33 @@ import java.util.List;
 */
 public interface PrivateMessageService extends IService<PrivateMessage> {
 
-    PrivateMessageVO sendMessage(@Valid PrivateMessageDTO vo);
+    /**
+     * 发送私聊消息
+     */
+    PrivateMessageVO sendMessage(@Valid PrivateMessageDTO dto);
 
+    /**
+     * 撤销消息
+     */
     PrivateMessageVO recallMessage(@NotNull(message = "消息id不能为空") Long id);
 
+    /**
+     * 拉取离线消息
+     */
     void pullOfflineMessage(Long minId);
 
+    /**
+     * 已读消息
+     */
     void readedMessage(Long friendId);
 
-    String getMaxReadedId(Long friendId);
+    /**
+     * 获取会话已读信息的最大id
+     */
+    Long getMaxReadedId(Long friendId);
 
+    /**
+     * 查询历史消息
+     */
     List<PrivateMessageVO> findHistoryMessage(@NotNull(message = "好友id不能为空") Long friendId, @NotNull(message = "页码不能为空") Long page, @NotNull(message = "size不能为空") Long size);
 }

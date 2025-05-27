@@ -11,6 +11,10 @@ import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * 消息广播类,主要是将SendResult中的data转为对应的消息类型（反射获取注解信息）
+ * 发送给对应的listener,复用了消息转换的逻辑
+ */
 @Component
 public class MessageMulticaster {
 

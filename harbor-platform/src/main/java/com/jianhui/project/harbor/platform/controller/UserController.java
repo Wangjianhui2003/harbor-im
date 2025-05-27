@@ -1,8 +1,7 @@
 package com.jianhui.project.harbor.platform.controller;
 
 import com.jianhui.project.harbor.platform.entity.User;
-import com.jianhui.project.harbor.platform.pojo.req.UserUpdateReq;
-import com.jianhui.project.harbor.platform.pojo.resp.UserVO;
+import com.jianhui.project.harbor.platform.pojo.vo.UserVO;
 import com.jianhui.project.harbor.platform.pojo.vo.OnlineTerminalVO;
 import com.jianhui.project.harbor.platform.result.Result;
 import com.jianhui.project.harbor.platform.result.Results;
@@ -51,8 +50,8 @@ public class UserController {
 
     @PutMapping("/update")
     @Operation(summary = "修改用户信息", description = "修改用户信息，仅允许修改登录用户信息")
-    public Result update(@Valid @RequestBody UserUpdateReq userUpdateReq) {
-        userService.updateUserInfo(userUpdateReq);
+    public Result update(@Valid @RequestBody UserVO userVO) {
+        userService.updateUserInfo(userVO);
         return Results.success();
     }
 

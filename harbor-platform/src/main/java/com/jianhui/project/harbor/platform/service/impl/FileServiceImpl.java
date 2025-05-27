@@ -83,7 +83,7 @@ public class FileServiceImpl implements FileService {
                 throw new GlobalException(ResultCode.PROGRAM_ERROR, "图片不能超过" + Constant.MAX_IMAGE_SIZE / 1024 / 1024 + "MB");
             }
             // 图片格式校验
-            if(FileUtil.isImage(file.getOriginalFilename())){
+            if(!FileUtil.isImage(file.getOriginalFilename())){
                 throw new GlobalException(ResultCode.PROGRAM_ERROR, "图片格式不正确");
             }
             // 上传原图

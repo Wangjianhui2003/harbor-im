@@ -5,9 +5,8 @@ import com.jianhui.project.harbor.platform.entity.User;
 import com.jianhui.project.harbor.platform.pojo.dto.ModifyPwdDTO;
 import com.jianhui.project.harbor.platform.pojo.req.LoginReq;
 import com.jianhui.project.harbor.platform.pojo.req.RegisterReq;
-import com.jianhui.project.harbor.platform.pojo.req.UserUpdateReq;
 import com.jianhui.project.harbor.platform.pojo.resp.LoginResp;
-import com.jianhui.project.harbor.platform.pojo.resp.UserVO;
+import com.jianhui.project.harbor.platform.pojo.vo.UserVO;
 import com.jianhui.project.harbor.platform.pojo.vo.OnlineTerminalVO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -38,7 +37,7 @@ public interface UserService extends IService<User> {
     /**
      * 更新用户信息，好友昵称和群聊昵称等冗余信息也会更新
      */
-    void updateUserInfo(@Valid UserUpdateReq userUpdateReq);
+    void updateUserInfo(@Valid UserVO userVO);
 
     /**
      * 根据用户昵称查询用户，最多返回20条数据

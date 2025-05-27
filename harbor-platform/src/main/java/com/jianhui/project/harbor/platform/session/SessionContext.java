@@ -11,6 +11,6 @@ public class SessionContext {
      */
     public static UserSession getSession(){
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        return (UserSession) requestAttributes.getRequest().getAttribute("UserSession");
+        return (UserSession) requestAttributes.getRequest().getAttribute("userSession");
     }
 }

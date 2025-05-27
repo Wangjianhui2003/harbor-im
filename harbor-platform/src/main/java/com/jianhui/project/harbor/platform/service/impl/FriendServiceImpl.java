@@ -8,6 +8,7 @@ import com.jianhui.project.harbor.client.IMClient;
 import com.jianhui.project.harbor.common.enums.IMTerminalType;
 import com.jianhui.project.harbor.common.model.IMPrivateMessage;
 import com.jianhui.project.harbor.common.model.IMUserInfo;
+import com.jianhui.project.harbor.platform.constant.RedisKey;
 import com.jianhui.project.harbor.platform.entity.Friend;
 import com.jianhui.project.harbor.platform.entity.PrivateMessage;
 import com.jianhui.project.harbor.platform.entity.User;
@@ -26,9 +27,11 @@ import com.jianhui.project.harbor.platform.util.BeanUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.framework.AopContext;
+import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -39,6 +42,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@CacheConfig(cacheNames = RedisKey.IM_CACHE_FRIEND)
 public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> implements FriendService {
 
     private final FriendMapper friendMapper;
@@ -93,13 +97,15 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
      */
     private FriendVO convertToFriendVO(Friend friend) {
         FriendVO friendVO = new FriendVO();
-        friendVO.setId(friend.getId());
-        friendVO.setNickname(friend.getFriendNickname());
+        //将friendId作为FriendVO的id
+        friendVO.setId(friend.getFriendId());
+        friendVO.setFriendNickname(friend.getFriendNickname());
         friendVO.setDeleted(friend.getDeleted());
         friendVO.setHeadImage(friend.getFriendHeadImage());
         return friendVO;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void addFriend(Long friendId) {
         long userId = SessionContext.getSession().getUserId();
@@ -114,9 +120,17 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         log.info("添加好友，用户id:{},好友id:{}", userId, friendId);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void delFriend(Long friendId) {
-        long userId = SessionContext.getSession().getUserId();
+        Long userId = SessionContext.getSession().getUserId();
+        // 互相解除好友关系，走代理清理缓存
+        FriendServiceImpl proxy = (FriendServiceImpl)AopContext.currentProxy();
+        proxy.unbindFriend(userId, friendId);
+        proxy.unbindFriend(friendId, userId);
+        // 推送解除好友提示
+        sendDelTipMessage(friendId);
+        log.info("删除好友，用户id:{},好友id:{}", userId, friendId);
     }
 
     @Override
@@ -162,6 +176,11 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         imClient.sendPrivateMessage(sendMessage);
     }
 
+    /**
+     * 发送好友删除消息
+     * @param userId
+     * @param friendId
+     */
     private void sendDelFriendMessage(Long userId, Long friendId) {
         // 推送好友状态信息
         PrivateMessageVO msgInfo = new PrivateMessageVO();
@@ -178,6 +197,10 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         imClient.sendPrivateMessage(sendMessage);
     }
 
+    /**
+     * 添加好友提示
+     * @param friendId
+     */
     private void sendAddTipMessage(Long friendId) {
         UserSession session = SessionContext.getSession();
         PrivateMessage msg = new PrivateMessage();
@@ -199,6 +222,30 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         // 推给自己,这里不用SendToSelf是因为用户没有主动发这条信息，当前客户端是没有显示的，用imClient再发一次可以确保发到所有客户端
         imMsg.setRecvId(session.getUserId());
         imClient.sendPrivateMessage(imMsg);
+    }
+
+    /**
+     * 发送删除好友提示信息
+     * @param friendId
+     */
+    private void sendDelTipMessage(Long friendId){
+        UserSession session = SessionContext.getSession();
+        // 推送好友状态信息
+        PrivateMessage msg = new PrivateMessage();
+        msg.setSendId(session.getUserId());
+        msg.setRecvId(friendId);
+        msg.setSendTime(new Date());
+        msg.setType(MessageType.TIP_TEXT.code());
+        msg.setStatus(MessageStatus.UNSEND.code());
+        msg.setContent("你们的好友关系已被解除");
+        privateMessageMapper.insert(msg);
+        // 推送
+        PrivateMessageVO messageInfo = BeanUtils.copyProperties(msg, PrivateMessageVO.class);
+        IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
+        sendMessage.setSender(new IMUserInfo(friendId, IMTerminalType.UNKNOW.code()));
+        sendMessage.setRecvId(friendId);
+        sendMessage.setData(messageInfo);
+        imClient.sendPrivateMessage(sendMessage);
     }
 }
 

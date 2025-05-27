@@ -1,11 +1,14 @@
-package com.jianhui.project.harbor.platform.pojo.req;
+package com.jianhui.project.harbor.platform.pojo.vo;
 
 import lombok.Data;
 
 import java.util.Date;
 
+/**
+ * 比较重要的属性：是否在线
+ */
 @Data
-public class UserUpdateReq {
+public class UserVO {
 
     private Long id;
 
@@ -83,5 +86,10 @@ public class UserUpdateReq {
      * 地区
      */
     private String region;
+
+    /**
+     * 是否在线
+     */
+    private Boolean online;
 
 }

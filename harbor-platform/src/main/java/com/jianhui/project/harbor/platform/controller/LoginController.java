@@ -12,7 +12,8 @@ import com.pig4cloud.captcha.ArithmeticCaptcha;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -23,10 +24,11 @@ import static com.jianhui.project.harbor.platform.constant.RedisKey.CHECK_CODE_P
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class LoginController {
 
     private final UserService userService;
-    private final RedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
     @GetMapping("/captcha")
     public Result<CaptchaResp> checkCode() {
@@ -38,6 +40,7 @@ public class LoginController {
         String checkCodeKey = UUID.randomUUID().toString();
         // 将验证码存入redis
         redisTemplate.opsForValue().set(CHECK_CODE_PREFIX + checkCodeKey, code, Duration.ofSeconds(CHECK_CODE_EXPIRE_TIME));
+        log.info("验证码key: {}, 验证码: {}", checkCodeKey, code);
         return Results.success(CaptchaResp.builder()
                 .captchaPic(base64)
                 .captchaKey(checkCodeKey)

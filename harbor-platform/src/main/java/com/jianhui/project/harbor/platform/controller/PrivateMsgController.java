@@ -24,8 +24,8 @@ public class PrivateMsgController {
 
     @PostMapping("/send")
     @Operation(summary = "发送消息", description = "发送私聊消息")
-    public Result<PrivateMessageVO> sendMessage(@Valid @RequestBody PrivateMessageDTO vo) {
-        return Results.success(privateMessageService.sendMessage(vo));
+    public Result<PrivateMessageVO> sendMessage(@Valid @RequestBody PrivateMessageDTO dto) {
+        return Results.success(privateMessageService.sendMessage(dto));
     }
 
     @DeleteMapping("/recall/{id}")

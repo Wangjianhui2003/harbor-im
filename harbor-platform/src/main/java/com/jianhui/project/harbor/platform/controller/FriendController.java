@@ -19,14 +19,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FriendController {
 
-    private FriendService friendService;
+    private final FriendService friendService;
 
     @GetMapping("/list")
     @Operation(summary = "好友列表", description = "获取好友列表")
     public Result<List<FriendVO>> findFriends() {
         return Results.success(friendService.findFriends());
     }
-
 
     @RepeatSubmit
     @PostMapping("/add")

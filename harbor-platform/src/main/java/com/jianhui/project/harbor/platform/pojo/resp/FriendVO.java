@@ -14,7 +14,7 @@ public class FriendVO {
 
     @NotNull(message = "好友昵称不可为空")
     @Schema(description = "好友昵称")
-    private String nickname;
+    private String friendNickname;
 
 
     @Schema(description = "好友头像")
