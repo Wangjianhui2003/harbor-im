@@ -7,15 +7,17 @@ import {pinyin} from "pinyin-pro";
 import FriendItem from "../components/friend/FriendItem.vue";
 import {getUserInfo} from "../api/user.js";
 import useChatStore from "../store/chatStore.js";
+import HeadImage from "../components/common/HeadImage.vue";
 import {useRouter} from "vue-router";
 
-const addFriendPanelVisible = ref(false)
 const router = useRouter()
 
+const addFriendPanelVisible = ref(false)
 //搜索栏文本
-const searchText = ref("")
 
+const searchText = ref("")
 //要展示的好友用户信息
+
 const activeFriend = ref({})
 const friendUserInfo = ref({})
 
@@ -132,17 +134,17 @@ const onSendMsg = (user) => {
   }
   console.log("chat:", chat)
   chatStore.openChat(chat)
-  chatStore.activeChat(0)
-  router.push("/home/chat")
+  chatStore.activateChat(0)
+  router.push({name : 'Chat'})
 }
 </script>
 
 <template>
   <el-container>
     <el-aside class="friend-list">
-      <div>
+      <div class="friend-list-header">
         <el-input type="text" v-model="searchText" class="friend-search"></el-input>
-        <el-button @click="showAddFriend()">
+        <el-button class="add-button" @click="showAddFriend()">
           <el-icon> <Plus/> </el-icon>
         </el-button>
         <AddFriend :dialog-visible="addFriendPanelVisible" @close="closeAddFriend"/>
@@ -159,7 +161,13 @@ const onSendMsg = (user) => {
     <el-main>
       <div class="friend-info" v-show="friendUserInfo.id">
         <div class="info-header">
-          <img :src="friendUserInfo.headImage" alt="头像" class="avatar"/>
+<!--          <img :src="friendUserInfo.headImage" alt="头像" class="avatar"/>-->
+          <head-image
+              class="avatar"
+              :src="friendUserInfo.headImage"
+              :name="friendUserInfo.nickname"
+              size="70">
+          </head-image>
           <div class="info-text">
             <div class="username">用户名: {{friendUserInfo.username}}</div>
             <div class="nickname">昵称: {{friendUserInfo.nickname}}</div>
@@ -181,11 +189,21 @@ const onSendMsg = (user) => {
   flex-direction: column;
   width: 270px;
   height: 100vh;
+  background-color: #f5f7fa;
 
-  .friend-search {
-    width: 200px;
-    height: 30px;
+  .friend-list-header{
+    display: flex;
+
+    .friend-search {
+      width: 200px;
+      height: 30px;
+    }
+
+    .add-button{
+      flex: 1;
+    }
   }
+
 
   .friend-item-list {
     flex: 1;
@@ -193,15 +211,6 @@ const onSendMsg = (user) => {
 }
 
 .friend-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin: 20px;
 
   .info-header {
     display: flex;
@@ -211,22 +220,8 @@ const onSendMsg = (user) => {
     .avatar {
       width: 80px;
       height: 80px;
-      border-radius: 50%;
-      margin-right: 15px;
-      object-fit: cover;
-      border: 2px solid #fff;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .info-text {
-      display: flex;
-      flex-direction: column;
-
-      .username, .nickname, .remark {
-        font-size: 16px;
-        margin: 2px 0;
-        color: #333;
-      }
+      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+      font-size: 30px;
     }
   }
 

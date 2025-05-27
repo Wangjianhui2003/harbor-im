@@ -91,10 +91,15 @@ const useFriendStore = defineStore('friendStore', {
         },
         async loadFriend(){
             // 加载好友列表
-            await getFriendList().then((friends) => {
-                this.setFriends(friends);
-                // 拉取在线状态并设置定时任务
-                this.refreshOnlineStatus();
+            return new Promise((resolve,reject) => {
+                getFriendList().then((friends) => {
+                    this.setFriends(friends);
+                    // 拉取在线状态并设置定时任务
+                    this.refreshOnlineStatus();
+                    resolve()
+                }).catch(()=>{
+                    reject()
+                })
             })
         }
     },

@@ -1,5 +1,7 @@
 <script setup>
 
+import {computed} from "vue";
+
 const props = defineProps({
   size: {
     type: Number,
@@ -11,7 +13,7 @@ const props = defineProps({
   },
   name: {
     type: String,
-    default: ''
+    default: 'N'
   },
   online: {
     type: Boolean,
@@ -23,15 +25,23 @@ const props = defineProps({
   }
 })
 
+const errorAvatar = computed(() => {
+  return props.name[0].toUpperCase()
+})
+
 </script>
 
 <template>
 <!--  用户头像-->
-  <el-avatar :src="props.url" :size="props.size" fit="cover">
-    <slot></slot>
+  <el-avatar
+      :src="props.url"
+      :size="props.size"
+      fit="cover"
+      class="avatar"
+  >
+    {{errorAvatar}}
   </el-avatar>
 </template>
 
 <style scoped>
-
 </style>

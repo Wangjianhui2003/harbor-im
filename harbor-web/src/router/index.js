@@ -25,18 +25,23 @@ const routes = [
         children: [
             {
                 name: "Chat",
-                path: "/home/chat",
+                path: "chat",
                 component: () => import("../view/Chat.vue"),
             },
             {
                 name: "Friend",
-                path: "/home/friend",
+                path: "friend",
                 component: () => import("../view/Friend.vue"),
             },
             {
-                name: "GROUP",
-                path: "/home/group",
+                name: "Group",
+                path: "group",
                 component: () => import("../view/Group.vue"),
+            },
+            {
+                name: "Setting",
+                path: "setting",
+                component: () => import("../view/Setting.vue"),
             }
         ]
     }

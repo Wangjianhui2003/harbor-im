@@ -28,13 +28,14 @@ const useUserStore = defineStore('userStore', {
         },
         //加载自己信息
         async loadUser() {
-            try {
+            return new Promise((resolve, reject) => {
                 getSelfInfo().then((userInfo) => {
                     this.setUserInfo(userInfo)
+                    resolve();
+                }).catch((err) => {
+                    reject(err);
                 })
-            } catch (err) {
-                throw err
-            }
+            })
         }
     }
 })

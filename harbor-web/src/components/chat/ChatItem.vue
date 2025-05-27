@@ -1,44 +1,38 @@
 <script setup>
+//聊天会话标签
+
 import HeadImage from "../common/HeadImage.vue";
-import {computed} from "vue";
 
 const props = defineProps({
+  chat: {
+    type: Object
+  },
   active: {
-    type: Boolean,
+    type: Boolean
   },
-  friend: {
-    type: Object,
-  },
-  menu: {
-    type: Boolean,
-    default: true
-  },
-});
-
-const errorHeadImage = computed(() => {
-  return props.friend.friendNickname[0].toUpperCase();
+  index: {
+    type: Number
+  }
 })
-
 </script>
 
 <template>
-  <div class="friend-item">
-    <head-image
-        class="avatar"
+  <div class="chat-item">
+    <head-image class="avatar"
         :size="50"
-        :url="friend.headImage"
-        :name="props.friend.friendNickname"
+        :url="props.chat.headImage"
+        :name="props.chat.showName"
     >
     </head-image>
-    <div class="friend-info">
-      {{ props.friend.friendNickname }}
+    <div class="chat-mini-info">
+      <div>{{props.chat.showName}}</div>
     </div>
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped lang="scss">
 
-.friend-item {
+.chat-item {
   display: flex;
   align-items: center;
   cursor: pointer;
@@ -56,10 +50,9 @@ const errorHeadImage = computed(() => {
     font-size: 20px;
   }
 
-  .friend-info {
+  .chat-mini-info{
     flex: 1;
     text-align: center;
   }
 }
-
 </style>

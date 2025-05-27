@@ -32,6 +32,7 @@ const findUserByName = ( name ) => {
     })
 }
 
+//获取自己的userInfo
 const getSelfInfo = () => {
     return http({
         url: '/user/self',
@@ -47,6 +48,7 @@ const getUserOnlineStatus = (userIds) => {
     })
 }
 
+//查看某人的userInfo
 const getUserInfo = (id) => {
     return http({
         url: `/user/find/${id}`,
@@ -54,4 +56,12 @@ const getUserInfo = (id) => {
     })
 }
 
-export {login, register,getCaptcha,findUserByName,getSelfInfo,getUserOnlineStatus,getUserInfo}
+const updateUserInfo = (userInfo) => {
+    return http({
+        url: '/user/update',
+        method: 'put',
+        data: userInfo
+    })
+}
+
+export {login, register,getCaptcha,findUserByName,getSelfInfo,getUserOnlineStatus,getUserInfo,updateUserInfo}

@@ -1,6 +1,8 @@
 import {defineStore} from "pinia";
 import useUserStore from "./userStore.js";
 import useFriendStore from "./friendStore.js";
+import useChatStore from "./chatStore.js";
+import chatStore from "./chatStore.js";
 
 // Main store to load all data
 const useMainStore = defineStore('mainStore', {
@@ -8,15 +10,19 @@ const useMainStore = defineStore('mainStore', {
         async loadAll(){
             const userStore = useUserStore()
             const friendStore = useFriendStore()
+            const chatStore = useChatStore()
 
-            await userStore.loadUser()
-            await Promise.all([
-                friendStore.loadFriend()
-            ])
+            return userStore.loadUser().then(() => {
+                const promises = [];
+                promises.push(friendStore.loadFriend())
+                promises.push(chatStore.loadChats())
+                return Promise.all(promises)
+            })
         },
         clearAll(){
             useUserStore().clear()
             useFriendStore().clear()
+            chatStore().clear()
         }
     }
 })
