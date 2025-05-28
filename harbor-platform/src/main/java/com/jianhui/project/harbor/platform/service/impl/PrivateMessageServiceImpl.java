@@ -85,7 +85,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         int months = session.getTerminal().equals(IMTerminalType.APP.code()) ? 1 : 3;
         Date minDate = DateUtils.addMonths(new Date(), -months);
         // 查询
-        List<PrivateMessage> msgList = privateMessageMapper.getOfflineMsg(session.getUserId(),minId,minDate);
+        List<PrivateMessage> msgList = privateMessageMapper.getOfflineMsg(session.getUserId(),minId,minDate,MessageStatus.RECALL.code());
         // 推送
         for(PrivateMessage msg : msgList) {
             PrivateMessageVO msgVO = BeanUtils.copyProperties(msg, PrivateMessageVO.class);
@@ -156,11 +156,13 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
 
     /**
      * 发送加载标记true/false
+     * 告诉前端现在正在推送离线消息，不要将cacheChats加载到chats里
      */
     private void sendLoadingMessage(Boolean isLoading) {
         UserSession session = SessionContext.getSession();
         PrivateMessageVO msgInfo = new PrivateMessageVO();
         msgInfo.setType(MessageType.LOADING.code());
+        //加载标识
         msgInfo.setContent(isLoading.toString());
         IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
         sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));

@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
  * WebSocket 长连接下 文本帧的处理器
  * 实现浏览器发送文本回写
  * 浏览器连接状态监控
+ * 或接收浏览器信息做对应处理
  */
 @Slf4j
 public class IMChannelHandler extends SimpleChannelInboundHandler<IMSendInfo> {
@@ -26,7 +27,7 @@ public class IMChannelHandler extends SimpleChannelInboundHandler<IMSendInfo> {
     protected void channelRead0(ChannelHandlerContext ctx, IMSendInfo sendInfo) throws Exception {
         // 使用对应处理器进行处理
         AbstractMsgProcessor processor = ProcessorFactory.getProcessor(IMCmdType.fromCode(sendInfo.getCmd()));
-        processor.process(ctx, processor.transForm(sendInfo));
+        processor.process(ctx, processor.transForm(sendInfo.getData()));
     }
 
     /**

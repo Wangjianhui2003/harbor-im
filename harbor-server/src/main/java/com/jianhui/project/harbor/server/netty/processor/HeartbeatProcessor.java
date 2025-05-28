@@ -28,7 +28,7 @@ public class HeartbeatProcessor extends AbstractMsgProcessor<IMHeartbeatInfo> {
     public void process(ChannelHandlerContext ctx, IMHeartbeatInfo data) {
         //发送心跳
         IMSendInfo<Object> sendInfo = new IMSendInfo<>();
-        sendInfo.setCmd(IMCmdType.HEART_BEAT.code());
+        sendInfo.setCmd(IMCmdType.HEARTBEAT.code());
         ctx.channel().writeAndFlush(sendInfo);
         //心跳次数+1
         AttributeKey<Long> heartBeatTimes = AttributeKey.valueOf(ChannelAttrKey.HEARTBEAT_TIMES);

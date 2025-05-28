@@ -31,7 +31,7 @@
     <select id="getOfflineMsg" resultType="com.jianhui.project.harbor.platform.entity.PrivateMessage">
         select * from t_private_message
         where id &gt; #{minId}
-        and (send_id = #{uesrId} or recv_id = #{userId})
+        and (send_id = #{userId} or recv_id = #{userId})
         and (send_time &gt;= #{minDate})
         and status != #{recallStateCode}
     </select>

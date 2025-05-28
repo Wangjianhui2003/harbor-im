@@ -24,7 +24,8 @@ import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 登录信息处理器
+ * websocket登录信息处理器
+ * 建立ws连接后要校验用户信息
  */
 @RequiredArgsConstructor
 @Slf4j
@@ -48,16 +49,17 @@ public class LoginProcessor extends AbstractMsgProcessor<IMLoginInfo>{
         IMSessionInfo sessionInfo = JSON.parseObject(info, IMSessionInfo.class);
         Long userId = sessionInfo.getUserId();
         Integer terminal = sessionInfo.getTerminal();
-        log.info("用户登录，userId:{}",userId);
+        log.info("用户websocket登录成功，userId:{}",userId);
 
         ChannelHandlerContext context = UserChannelCxtMap.getChannelCtx(userId, terminal);
         //已经有相同userid + terminal的channel存在，强制下线之前登录的用户
         if(context != null && ctx.channel().id().equals(context.channel().id())){
             IMSendInfo<Object> sendInfo = new IMSendInfo<>();
             sendInfo.setCmd(IMCmdType.FORCE_LOGUT.code());
-            sendInfo.setData("您已在其他地方登录，将被强制下线"); //TODO:处理下线的逻辑?
+            //发送信息到前端,前端强制下线
+            sendInfo.setData("您已在其他地方登录，将被强制下线");
             context.channel().writeAndFlush(sendInfo);
-            log.info("异地登录，强制下线,userId:{}",userId);
+            log.info("异地登录，强制下线,userId:{},terminal:{}",userId,terminal);
         }
 
         //保存当前登录的channel context

@@ -9,10 +9,11 @@ public enum IMCmdType {
      * 登录
      */
     LOGIN(0, "登录"),
+
     /**
      * 心跳
      */
-    HEART_BEAT(1, "心跳"),
+    HEARTBEAT(1, "心跳"),
 
     /**
      * 强制下线

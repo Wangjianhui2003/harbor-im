@@ -26,7 +26,7 @@ public interface PrivateMessageMapper extends BaseMapper<PrivateMessage> {
      * @param minId 已读消息id
      * @param minDate 从minDate开始查
      */
-    List<PrivateMessage> getOfflineMsg(Long userId, Long minId, Date minDate);
+    List<PrivateMessage> getOfflineMsg(Long userId, Long minId, Date minDate,Integer recallStateCode);
 
     /**
      * 将已收到私聊信息设置为已读

@@ -37,14 +37,14 @@ public class FriendController {
 
     @GetMapping("/find/{friendId}")
     @Operation(summary = "查找好友信息", description = "查找好友信息")
-    public Result<FriendVO> findFriend(@NotNull(message = "好友id不可为空") @PathVariable Long friendId) {
+    public Result<FriendVO> findFriend(@NotNull(message = "好友id不可为空") @PathVariable("friendId") Long friendId) {
         return Results.success(friendService.findFriendInfo(friendId));
     }
 
 
     @DeleteMapping("/delete/{friendId}")
     @Operation(summary = "删除好友", description = "解除好友关系")
-    public Result delFriend(@NotNull(message = "好友id不可为空") @PathVariable Long friendId) {
+    public Result delFriend(@NotNull(message = "好友id不可为空") @PathVariable("friendId") Long friendId) {
         friendService.delFriend(friendId);
         return Results.success();
     }

@@ -21,5 +21,4 @@ public class PrivateMsgPullTask extends AbstractMsgPullTask<IMRecvInfo> {
         AbstractMsgProcessor processor = ProcessorFactory.getProcessor(IMCmdType.PRIVATE_MESSAGE);
         processor.process(data);
     }
-
 }
