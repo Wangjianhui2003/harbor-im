@@ -9,6 +9,9 @@ import {getUserInfo} from "../api/user.js";
 import useChatStore from "../store/chatStore.js";
 import HeadImage from "../components/common/HeadImage.vue";
 import {useRouter} from "vue-router";
+import {CHATINFO_TYPE} from "../common/enums.js";
+import {removeFriend} from "../api/friend.js";
+import {ElMessage, ElMessageBox} from "element-plus";
 
 const router = useRouter()
 
@@ -18,11 +21,14 @@ const addFriendPanelVisible = ref(false)
 const searchText = ref("")
 //要展示的好友用户信息
 
+//正在查看的好友
 const activeFriend = ref({})
+//该好友的全量信息
 const friendUserInfo = ref({})
 
 const friendStore = useFriendStore()
 const chatStore = useChatStore()
+
 
 //将用户按照首字母分组
 const friendMap = computed(() => {
@@ -60,7 +66,16 @@ const friendMap = computed(() => {
   return map;
 })
 
-// Show the add friend panel
+//返回key(分组)
+const friendKeys = computed(() => {
+  return Array.from(friendMap.value.keys());
+})
+
+//返回value
+const friendValues = computed(() => {
+  return Array.from(friendMap.value.values());
+})
+
 const showAddFriend = () => {
   addFriendPanelVisible.value = true;
 
@@ -68,7 +83,6 @@ const showAddFriend = () => {
 // Close the add friend panel
 const closeAddFriend = () => {
   addFriendPanelVisible.value = false;
-
 };
 
 //返回名字第一个字母
@@ -87,15 +101,7 @@ const isEnglish = (character) => {
   return /^[A-Za-z]+$/.test(character);
 }
 
-//返回key(分组)
-const friendKeys = computed(() => {
-  return Array.from(friendMap.value.keys());
-})
 
-//返回value
-const friendValues = computed(() => {
-  return Array.from(friendMap.value.values());
-})
 
 //点击好友标签触发
 const onActiveItem = (friend) => {
@@ -127,15 +133,32 @@ const updateFriendStore = () => {
  */
 const onSendMsg = (user) => {
   let chat = {
-    type: 'PRIVATE',
+    type: CHATINFO_TYPE.PRIVATE,
     targetId: user.id,
     showName: user.nickname,
     headImage: user.headImageThumb,
   }
-  console.log("chat:", chat)
+  console.log("open chat:", chat)
   chatStore.openChat(chat)
   chatStore.activateChat(0)
   router.push({name : 'Chat'})
+}
+
+//删除好友(+缓存+聊天记录)
+const onDelFriend = (userInfo) => {
+  ElMessageBox.confirm(`确认删除'${userInfo.nickname}',并清空聊天记录吗?`, "删除好友",{
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    removeFriend(userInfo.id).then(() => {
+      friendStore.removeFriend(userInfo.id)
+      chatStore.removePrivateChat(userInfo.id)
+      ElMessage.success('已删除好友');
+      friendUserInfo.value = {}
+      activeFriend.value = {}
+    })
+  })
 }
 </script>
 
@@ -161,12 +184,10 @@ const onSendMsg = (user) => {
     <el-main>
       <div class="friend-info" v-show="friendUserInfo.id">
         <div class="info-header">
-<!--          <img :src="friendUserInfo.headImage" alt="头像" class="avatar"/>-->
           <head-image
               class="avatar"
               :src="friendUserInfo.headImage"
-              :name="friendUserInfo.nickname"
-              size="70">
+              :name="friendUserInfo.nickname">
           </head-image>
           <div class="info-text">
             <div class="username">用户名: {{friendUserInfo.username}}</div>
@@ -176,7 +197,7 @@ const onSendMsg = (user) => {
         </div>
         <div class="action-buttons">
           <el-button type="primary" class="send-message-btn" @click="onSendMsg(friendUserInfo)">发送消息</el-button>
-          <el-button type="danger" class="delete-friend-btn">删除好友</el-button>
+          <el-button type="danger" class="delete-friend-btn" @click="onDelFriend(friendUserInfo)">删除好友</el-button>
         </div>
       </div>
     </el-main>

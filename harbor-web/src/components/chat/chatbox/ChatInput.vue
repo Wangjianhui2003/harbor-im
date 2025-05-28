@@ -23,7 +23,7 @@ const currentId = ref(0)
 const atSearchText = ref(null)
 const compositionFlag = ref(false)
 const atIng = ref(false)
-const isEmpty = ref(true)
+const isInputEmpty = ref(true)
 const changeStored = ref(true)
 const blurRange = ref(null)
 
@@ -40,6 +40,7 @@ const onKeydown = (e) => {
       line.appendChild(after)
       selectElement(line.childNodes[0], 0)
     }else{
+      //正在输入不要提交(适配中文输入法)
       if (compositionFlag.value) {
         return
       }
@@ -58,10 +59,10 @@ const onKeydown = (e) => {
       if (s === '' || s === '<br>' || s === '<div>&nbsp;</div>') {
         // 拼接随机长度的空格，以刷新dom
         empty();
-        isEmpty.value = true;
+        isInputEmpty.value = true;
         selectElement(content.value);
       } else {
-        isEmpty.value = false;
+        isInputEmpty.value = false;
       }
     })
   }
@@ -162,6 +163,17 @@ const html2Escape = (strHtml) => {
   });
 }
 
+//输入结束时触发
+const onCompositionend = (e) => {
+  compositionFlag.value = false
+  onEditorInput(e)
+}
+
+//编辑器输入时
+const onEditorInput = (e) => {
+  isInputEmpty.value = false
+}
+
 //清空
 const clear = () =>{
   empty();
@@ -198,6 +210,7 @@ defineExpose({
          ref="content"
          @keydown="onKeydown"
          @compositionstart="compositionFlag=true"
+         @compositionend="onCompositionend"
     >
     </div>
   </div>

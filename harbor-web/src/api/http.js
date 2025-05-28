@@ -57,6 +57,14 @@ http.interceptors.response.use(async response => {
         return Promise.reject(response.data)
     }
     }, error => {
+    if (!error.response) {
+        ElMessage({
+            message: '网络异常，请检查连接',
+            type: 'error',
+            duration: 1500,
+        });
+        return Promise.reject(error);
+    }
     switch (error.response.status) {
         case 400:
             ElMessage({

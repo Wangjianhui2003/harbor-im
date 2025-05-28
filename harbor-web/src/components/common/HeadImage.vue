@@ -3,10 +3,6 @@
 import {computed} from "vue";
 
 const props = defineProps({
-  size: {
-    type: Number,
-    default: 50
-  },
   url: {
     type: String,
     default: ''
@@ -21,7 +17,7 @@ const props = defineProps({
   },
   id: {
     type: Number,
-    default: ''
+    default: -1
   }
 })
 
@@ -35,7 +31,7 @@ const errorAvatar = computed(() => {
 <!--  用户头像-->
   <el-avatar
       :src="props.url"
-      :size="props.size"
+      size="large"
       fit="cover"
       class="avatar"
   >
@@ -44,4 +40,7 @@ const errorAvatar = computed(() => {
 </template>
 
 <style scoped>
+.avatar{
+
+}
 </style>

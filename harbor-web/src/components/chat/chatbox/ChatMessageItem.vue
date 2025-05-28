@@ -6,12 +6,16 @@ const props = defineProps({
   },
   mine:{
     type: Boolean
-  }
+  },
+  headImage: {
+    type: String,
+    required: true
+  },
 })
 </script>
 
 <template>
-  <div>
+  <div class="">
     {{props.msgInfo.content}}
   </div>
 </template>

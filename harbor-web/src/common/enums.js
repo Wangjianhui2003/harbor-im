@@ -59,10 +59,36 @@ const MESSAGE_STATUS = {
 	READED: 3
 }
 
+/**
+ * 登录
+ * 心跳
+ * 强制登出
+ * 私信
+ * 群消息
+ * 系统消息
+ */
+const CMD_TYPE = {
+	LOGIN: 0,
+	HEARTBEAT: 1,
+	FORCE_LOGOUT: 2,
+	PRIVATE_MESSAGE: 3,
+	GROUP_MESSAGE: 4,
+	SYSTEM_MESSAGE: 5,
+}
+
+/**
+ * 会话类型
+ */
+const CHATINFO_TYPE = {
+	PRIVATE: "PRIVATE",
+	GROUP: "GROUP"
+}
 
 export {
 	MESSAGE_TYPE,
 	RTC_STATE,
 	TERMINAL_TYPE,
-	MESSAGE_STATUS
+	MESSAGE_STATUS,
+	CMD_TYPE,
+	CHATINFO_TYPE
 }

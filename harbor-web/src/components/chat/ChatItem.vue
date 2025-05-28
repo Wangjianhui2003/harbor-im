@@ -14,18 +14,18 @@ const props = defineProps({
     type: Number
   }
 })
+
 </script>
 
 <template>
   <div class="chat-item">
     <head-image class="avatar"
-        :size="50"
-        :url="props.chat.headImage"
-        :name="props.chat.showName"
-    >
+                :url="props.chat.headImage"
+                :name="props.chat.showName"
+                :id="props.chat.targetId">
     </head-image>
     <div class="chat-mini-info">
-      <div>{{props.chat.showName}}</div>
+      <div>{{ props.chat.showName }}</div>
     </div>
   </div>
 </template>
@@ -50,7 +50,7 @@ const props = defineProps({
     font-size: 20px;
   }
 
-  .chat-mini-info{
+  .chat-mini-info {
     flex: 1;
     text-align: center;
   }

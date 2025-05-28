@@ -104,8 +104,13 @@ const useFriendStore = defineStore('friendStore', {
         }
     },
     getters: {
-        isFriend: {
-
+        //判断和该id是否是好友
+        isFriend(state){
+            return (userId) => state.friends.filter(f => !f.deleted).some(f => f.id == userId)
+        },
+        //根据id查找friend信息
+        findFriend(state){
+            return (userId) => state.friends.find(f => f.id == userId)
         }
     }
 })

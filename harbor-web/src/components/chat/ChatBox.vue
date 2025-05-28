@@ -40,7 +40,7 @@ const sendMsgUrl = computed(() => {
   return `/message/${props.chat.type.toLowerCase()}/send`
 })
 
-//接收到发送事件，处理
+//接收到发送事件处理
 const sendMessage = async (fullList) => {
   resetEditor()
   readedMessage()
@@ -49,12 +49,14 @@ const sendMessage = async (fullList) => {
     let msg = fullList[i]
     switch (msg.type) {
       case "text":
+        //文本
         await sendTextMessage(msg.content, msg.atUserIds)
         break
     }
   }
 }
 
+//处理文本信息
 const sendTextMessage = (sendText, atUserIds) => {
   return new Promise((resolve, reject) => {
     if (!sendText.trim()) {
@@ -64,7 +66,7 @@ const sendTextMessage = (sendText, atUserIds) => {
       content: sendText,
       type: 0
     }
-    //填充
+    //填充id
     fillTargetId(msgInfo, props.chat.targetId)
     //群聊
     if (props.chat.type == "GROUP") {
@@ -73,26 +75,25 @@ const sendTextMessage = (sendText, atUserIds) => {
       msgInfo.receipt = isReceipt.value;
     }
     lockMessage.value = true;
-    msgInfo.selfSend = true;
-    chatStore.insertMessage([msgInfo,props.chat])
+    //发送
+    sendMessageRequest(msgInfo).then((m) => {
+      //是自己发送
+      m.selfSend = true;
+      chatStore.insertMessage([m,props.chat])
+    }).finally(() => {
+      scrollToBottom()
+      isReceipt.value = false;
+      resolve()
+    })
     // 会话置顶
     moveChatToTop();
-    // sendMessageRequest(msgInfo).then((m) => {
-    //   //自己发送
-    //   m.selfSend = true;
-    //   chatStore.insertMessage([m,props.chat])
-    //   // 会话置顶
-    //   moveChatToTop();
-    // }).finally(() => {
-    //   scrollToBottom()
-    //   isReceipt.value = false;
-    // })
   })
 }
 
 //移动chat到顶部
 const moveChatToTop = () => {
-
+  let chatIdx = chatStore.findChatIdx(props.chat)
+  chatStore.moveTop(chatIdx)
 }
 
 //移动到对话框底部
@@ -114,7 +115,6 @@ const fillTargetId = (msgInfo, targetId) => {
 //发送请求到后端
 const sendMessageRequest = (msgInfo) => {
   return new Promise((resolve, reject) => {
-    return reject() //TODO:等后端写完
     // 请求入队列，防止请求"后发先至"，导致消息错序
     reqQueue.value.push({msgInfo, resolve, reject});
     processReqQueue();
@@ -125,8 +125,9 @@ const sendMessageRequest = (msgInfo) => {
 const processReqQueue = () => {
   if (reqQueue.value.length && !isSending.value){
     isSending.value = true;
-    const reqData = reqQueue.value.unshift();
-    sendMessageReq().then(data => {
+    const reqData = reqQueue.value.shift();
+    sendMessageReq(sendMsgUrl.value,reqData.msgInfo)
+    .then(data => {
       reqData.resolve(data)
     }).catch(error => {
       reqData.reject(error)

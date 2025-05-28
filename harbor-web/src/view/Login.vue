@@ -73,7 +73,9 @@ const submitForm = () => {
             formLoading.value = false;
             ElMessage.success("登录成功")
             router.push('/home/chat')
-          })
+          }).finally(() => {
+        formLoading.value = false
+      })
     } else {
       ElMessage.error("请检查输入")
     }

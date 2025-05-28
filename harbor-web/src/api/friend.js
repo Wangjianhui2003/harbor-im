@@ -2,7 +2,7 @@
 import http from "./http.js";
 
 //添加好友
-const addFriend = async (friendId) => {
+export const addFriend = async (friendId) => {
     return http({
         url: '/friend/add',
         method: 'post',
@@ -10,11 +10,16 @@ const addFriend = async (friendId) => {
     })
 }
 
-const getFriendList = async () => {
+export const getFriendList = async () => {
     return http({
         url: '/friend/list',
         method: 'get'
     })
 }
 
-export { addFriend, getFriendList }
+export const removeFriend = async (friendId) => {
+    return http({
+        url: `/friend/delete/${friendId}`,
+        method: 'DELETE',
+    })
+}

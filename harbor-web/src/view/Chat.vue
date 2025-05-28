@@ -6,7 +6,9 @@ import {ref} from "vue";
 //聊天界面
 
 const chatStore = useChatStore();
+const loading = chatStore.isLoading
 
+//搜索文本
 const searchText = ref('')
 
 //选择一个聊天
@@ -23,6 +25,7 @@ const onDeleteItem = (idx) => {
 const onTop = (idx) => {
   chatStore.moveTop(idx)
 }
+
 </script>
 
 <template>
@@ -46,7 +49,8 @@ const onTop = (idx) => {
     </el-aside>
     <el-main class="chat-box">
       <chat-box v-if="chatStore.activeChat"
-                :chat="chatStore.activeChat"></chat-box>
+                :chat="chatStore.activeChat">
+      </chat-box>
     </el-main>
   </el-container>
 </template>
@@ -81,7 +85,7 @@ const onTop = (idx) => {
   }
 }
 
-.chat-box{
+.chat-box {
   padding: 0px;
 }
 

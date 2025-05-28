@@ -25,7 +25,6 @@ const errorHeadImage = computed(() => {
   <div class="friend-item">
     <head-image
         class="avatar"
-        :size="50"
         :url="friend.headImage"
         :name="props.friend.friendNickname"
     >
