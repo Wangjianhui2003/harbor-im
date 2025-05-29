@@ -25,4 +25,70 @@
         head_image,remark_group_name,quit,
         quit_time,update_time,created_time
     </sql>
+
+    <select id="getOneByGroupIdAndUserId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_group_member
+        where
+        group_id = #{groupId,jdbcType=NUMERIC}
+        AND user_id = #{userId,jdbcType=NUMERIC}
+    </select>
+
+    <select id="getByGroupId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_group_member
+        where
+        group_id = #{groupId,jdbcType=NUMERIC}
+    </select>
+
+    <delete id="deleteByGroupId">
+        delete
+        from t_group_member
+        where group_id = #{groupId,jdbcType=NUMERIC}
+    </delete>
+
+    <update id="updateQuitAndQuitTimeByGroupId">
+        update t_group_member
+        set quit      = #{quit,jdbcType=NUMERIC},
+            quit_time = #{quitTime}
+        where group_id = #{groupId,jdbcType=NUMERIC}
+    </update>
+
+    <update id="updateQuitAndQuitTimeByGroupIdAndUserId">
+        update t_group_member
+        set quit      = #{quit,jdbcType=BOOLEAN},
+            quit_time = #{quitTime,jdbcType=TIMESTAMP}
+        where group_id = #{groupId,jdbcType=NUMERIC}
+          AND user_id = #{userId,jdbcType=NUMERIC}
+    </update>
+
+    <select id="findByUserIdAndQuitAndQuitTimeAfter" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_group_member
+        where
+        user_id = #{userId,jdbcType=NUMERIC}
+        AND quit = #{quit,jdbcType=BOOLEAN}
+        AND quit_time > #{quitTime,jdbcType=TIMESTAMP}
+    </select>
+
+    <select id="getByUserIdAndQuit" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_group_member
+        where
+        user_id = #{userId,jdbcType=NUMERIC}
+        AND quit = #{quit,jdbcType=BOOLEAN}
+    </select>
+
+    <select id="findUserIdByGroupIdAndQuit" resultType="Long">
+        select user_id
+        from t_group_member
+        where group_id = #{groupId,jdbcType=NUMERIC}
+          AND quit = #{quit,jdbcType=BOOLEAN}
+    </select>
+
+
 </mapper>

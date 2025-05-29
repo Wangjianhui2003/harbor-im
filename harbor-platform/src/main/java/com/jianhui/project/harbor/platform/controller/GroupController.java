@@ -87,7 +87,7 @@ public class GroupController {
     @DeleteMapping("/kick/{groupId}")
     public Result kickGroup(@NotNull(message = "群聊id不能为空") @PathVariable Long groupId,
         @NotNull(message = "用户id不能为空") @RequestParam Long userId) {
-        groupService.kickGroup(groupId, userId);
+        groupService.kickFromGroup(groupId, userId);
         return Results.success();
     }
 

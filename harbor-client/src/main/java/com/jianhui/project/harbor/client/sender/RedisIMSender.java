@@ -190,7 +190,7 @@ public class RedisIMSender implements IMSender {
             }
         }
         // 对离线用户回复消息状态
-        if(message.getSendResult() && !offLineUsers.isEmpty()){
+        if(message.getIsSendBack() && !offLineUsers.isEmpty()){
 //            List<IMSendResult> results = new LinkedList<>();
 //            for (IMUserInfo offLineUser : offLineUsers) {
 //                IMSendResult result = new IMSendResult();

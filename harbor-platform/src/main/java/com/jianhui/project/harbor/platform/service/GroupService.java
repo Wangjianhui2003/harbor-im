@@ -5,28 +5,85 @@ import com.jianhui.project.harbor.platform.entity.Group;
 import com.jianhui.project.harbor.platform.pojo.vo.GroupInviteVO;
 import com.jianhui.project.harbor.platform.pojo.vo.GroupMemberVO;
 import com.jianhui.project.harbor.platform.pojo.vo.GroupVO;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
 public interface GroupService extends IService<Group> {
 
-    GroupVO createGroup(@Valid GroupVO vo);
+    /**
+     * 创建新群聊
+     *
+     * @param vo 群聊信息
+     * @return 群聊信息
+     **/
+    GroupVO createGroup(GroupVO vo);
 
-    GroupVO modifyGroup(@Valid GroupVO vo);
+    /**
+     * 修改群聊信息
+     *
+     * @param vo 群聊信息
+     * @return 群聊信息
+     **/
+    GroupVO modifyGroup(GroupVO vo);
 
-    void deleteGroup(@NotNull(message = "群聊id不能为空") Long groupId);
+    /**
+     * 删除群聊
+     *
+     * @param groupId 群聊id
+     **/
+    void deleteGroup(Long groupId);
 
-    GroupVO findById(@NotNull(message = "群聊id不能为空") Long groupId);
+    /**
+     * 退出群聊
+     *
+     * @param groupId 群聊id
+     */
+    void quitGroup(Long groupId);
 
+    /**
+     * 将用户踢出群聊
+     *
+     * @param groupId 群聊id
+     * @param userId  用户id
+     */
+    void kickFromGroup(Long groupId, Long userId);
+
+    /**
+     * 查询当前用户的所有群聊
+     *
+     * @return 群聊信息列表
+     **/
     List<GroupVO> findGroups();
 
-    void invite(@Valid GroupInviteVO vo);
+    /**
+     * 邀请好友进群
+     *
+     * @param vo 群id、好友id列表
+     **/
+    void invite(GroupInviteVO vo);
 
-    List<GroupMemberVO> findGroupMembers(@NotNull(message = "群聊id不能为空") Long groupId);
+    /**
+     * 根据id查找群聊，并进行缓存
+     * 过滤解散和被封禁的群聊
+     *
+     * @param groupId 群聊id
+     * @return 群聊实体
+     */
+    Group getAndCheckById(Long groupId);
 
-    void quitGroup(@NotNull(message = "群聊id不能为空") Long groupId);
+    /**
+     * 根据id查找群聊
+     *
+     * @param groupId 群聊id
+     * @return 群聊vo
+     */
+    GroupVO findById(Long groupId);
 
-    void kickGroup(@NotNull(message = "群聊id不能为空") Long groupId, @NotNull(message = "用户id不能为空") Long userId);
+    /**
+     * 查询群成员
+     *
+     * @param groupId 群聊id
+     * @return List<GroupMemberVO>
+     **/
+    List<GroupMemberVO> findGroupMembers(Long groupId);
 }

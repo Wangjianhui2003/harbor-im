@@ -1,10 +1,12 @@
 package com.jianhui.project.harbor.platform.entity;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
 import lombok.Data;
+
+import java.util.Date;
 
 /**
  * 群成员
@@ -35,7 +37,7 @@ public class GroupMember {
     private String userNickname;
 
     /**
-     * 显示昵称备注
+     * 群昵称
      */
     private String remarkNickname;
 
@@ -57,7 +59,7 @@ public class GroupMember {
     /**
      * 是否已退出
      */
-    private Integer quit;
+    private Boolean quit;
 
     /**
      * 退出时间
@@ -73,4 +75,11 @@ public class GroupMember {
      * 创建时间
      */
     private Date createdTime;
+
+    /**
+     * 有群昵称显示群昵称，没有显示原名称
+     */
+    public String getShowNickname() {
+        return StrUtil.blankToDefault(remarkNickname, userNickname);
+    }
 }

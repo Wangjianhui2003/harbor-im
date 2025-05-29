@@ -24,21 +24,29 @@ public enum MessageType {
     FILE(2, "文件消息"),
     AUDIO(3, "语音消息"),
     VIDEO(4, "视频消息"),
+
     RECALL(10, "撤回"),
     READED(11, "已读"),
     RECEIPT(12, "消息已读回执"),
+
     TIP_TIME(20,"时间提示"),
     TIP_TEXT(21,"文字提示"),
+
     LOADING(30,"加载中标记"),
+
     ACT_RT_VOICE(40,"语音通话"),
     ACT_RT_VIDEO(41,"视频通话"),
+
     USER_BANNED(50,"用户封禁"),
     GROUP_BANNED(51,"群聊封禁"),
     GROUP_UNBAN(52,"群聊解封"),
+
     FRIEND_NEW(80, "新增好友"),
     FRIEND_DEL(81, "删除好友"),
+
     GROUP_NEW(90, "新增群聊"),
     GROUP_DEL(91, "删除群聊"),
+
     RTC_CALL_VOICE(100, "语音呼叫"),
     RTC_CALL_VIDEO(101, "视频呼叫"),
     RTC_ACCEPT(102, "接受"),
@@ -47,6 +55,7 @@ public enum MessageType {
     RTC_FAILED(105, "呼叫失败"),
     RTC_HANDUP(106, "挂断"),
     RTC_CANDIDATE(107, "同步candidate"),
+
     RTC_GROUP_SETUP(200,"发起群视频通话"),
     RTC_GROUP_ACCEPT(201,"接受通话呼叫"),
     RTC_GROUP_REJECT(202,"拒绝通话呼叫"),

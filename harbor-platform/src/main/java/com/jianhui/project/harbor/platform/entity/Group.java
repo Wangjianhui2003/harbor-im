@@ -48,7 +48,7 @@ public class Group {
     /**
      * 是否被封禁 0:否 1:是
      */
-    private Integer isBanned;
+    private Boolean isBanned;
 
     /**
      * 被封禁原因
@@ -58,7 +58,7 @@ public class Group {
     /**
      * 是否已解散
      */
-    private Integer dissolve;
+    private Boolean dissolve;
 
     /**
      * 加入类型 0:直接加入 1:需要管理员同意

@@ -18,9 +18,8 @@ import com.jianhui.project.harbor.platform.pojo.dto.ModifyPwdDTO;
 import com.jianhui.project.harbor.platform.pojo.req.LoginReq;
 import com.jianhui.project.harbor.platform.pojo.req.RegisterReq;
 import com.jianhui.project.harbor.platform.pojo.resp.LoginResp;
-import com.jianhui.project.harbor.platform.pojo.vo.UserVO;
 import com.jianhui.project.harbor.platform.pojo.vo.OnlineTerminalVO;
-import com.jianhui.project.harbor.platform.service.GroupService;
+import com.jianhui.project.harbor.platform.pojo.vo.UserVO;
 import com.jianhui.project.harbor.platform.service.UserService;
 import com.jianhui.project.harbor.platform.session.SessionContext;
 import com.jianhui.project.harbor.platform.session.UserSession;
@@ -48,7 +47,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final PasswordEncoder passwordEncoder;
     private final JwtProperties jwtProperties;
     private final FriendMapper friendMapper;
-    private final GroupService groupService;
     private final GroupMapper groupMapper;
     private final IMClient imClient;
 
