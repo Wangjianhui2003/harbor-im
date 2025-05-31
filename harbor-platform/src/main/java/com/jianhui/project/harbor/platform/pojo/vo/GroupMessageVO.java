@@ -21,7 +21,7 @@ public class GroupMessageVO {
     private Long sendId;
 
     @Schema(description = " 发送者昵称")
-    private String sendNickName;
+    private String sendNickname;
 
     @Schema(description = "消息内容")
     private String content;

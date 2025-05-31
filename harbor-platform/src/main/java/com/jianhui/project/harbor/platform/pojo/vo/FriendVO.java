@@ -1,4 +1,4 @@
-package com.jianhui.project.harbor.platform.pojo.resp;
+package com.jianhui.project.harbor.platform.pojo.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;

@@ -18,7 +18,7 @@ import com.jianhui.project.harbor.platform.exception.GlobalException;
 import com.jianhui.project.harbor.platform.mapper.FriendMapper;
 import com.jianhui.project.harbor.platform.mapper.PrivateMessageMapper;
 import com.jianhui.project.harbor.platform.mapper.UserMapper;
-import com.jianhui.project.harbor.platform.pojo.resp.FriendVO;
+import com.jianhui.project.harbor.platform.pojo.vo.FriendVO;
 import com.jianhui.project.harbor.platform.pojo.vo.PrivateMessageVO;
 import com.jianhui.project.harbor.platform.service.FriendService;
 import com.jianhui.project.harbor.platform.session.SessionContext;

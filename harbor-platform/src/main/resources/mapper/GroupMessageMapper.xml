@@ -25,4 +25,31 @@
         at_user_ids,receipt,receipt_ok,
         type,status,send_time
     </sql>
+
+    <select id="findLastByGroupId" resultType="java.lang.Long">
+        select id
+        from t_group_message
+        where group_id = #{groupId}
+        order by id desc
+        limit 1
+    </select>
+
+    <select id="findUnreadReceiptMsg" resultType="com.jianhui.project.harbor.platform.entity.GroupMessage">
+        SELECT *
+        FROM t_group_message
+        WHERE group_id = #{groupId}
+        AND id &gt; #{oldMaxReadedId}
+        AND id &lt;= #{maxMsgId}
+        AND status != #{recallCode}
+        AND receipt = #{isReceipt};
+    </select>
+
+    <select id="findHistoryMsg" resultType="com.jianhui.project.harbor.platform.entity.GroupMessage">
+        select *
+        from t_group_message
+        where group_id = #{groupId}
+        and send_time &gt; #{createdTime}
+        and status != #{recallCode}
+        limit #{offset},#{size}
+    </select>
 </mapper>

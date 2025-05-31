@@ -1,7 +1,7 @@
 package com.jianhui.project.harbor.platform.controller;
 
 import com.jianhui.project.harbor.platform.annotation.RepeatSubmit;
-import com.jianhui.project.harbor.platform.pojo.resp.FriendVO;
+import com.jianhui.project.harbor.platform.pojo.vo.FriendVO;
 import com.jianhui.project.harbor.platform.result.Result;
 import com.jianhui.project.harbor.platform.result.Results;
 import com.jianhui.project.harbor.platform.service.FriendService;

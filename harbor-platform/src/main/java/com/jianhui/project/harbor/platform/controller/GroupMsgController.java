@@ -24,8 +24,8 @@ public class GroupMsgController {
 
     @PostMapping("/send")
     @Operation(summary = "发送群聊消息", description = "发送群聊消息")
-    public Result<GroupMessageVO> sendMessage(@Valid @RequestBody GroupMessageDTO vo) {
-        return Results.success(groupMessageService.sendMessage(vo));
+    public Result<GroupMessageVO> sendMessage(@Valid @RequestBody GroupMessageDTO dto) {
+        return Results.success(groupMessageService.sendMessage(dto));
     }
 
     @DeleteMapping("/recall/{id}")

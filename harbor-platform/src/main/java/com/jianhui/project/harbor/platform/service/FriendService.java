@@ -2,7 +2,7 @@ package com.jianhui.project.harbor.platform.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jianhui.project.harbor.platform.entity.Friend;
-import com.jianhui.project.harbor.platform.pojo.resp.FriendVO;
+import com.jianhui.project.harbor.platform.pojo.vo.FriendVO;
 
 import java.util.List;
 

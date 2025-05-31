@@ -75,7 +75,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         member.setUserNickname(user.getNickname());
         member.setRemarkNickname(vo.getRemarkNickname());
         member.setRemarkGroupName(vo.getRemarkGroupName());
-        member.setRole(GroupRole.ADMIN.code());
+        member.setRole(GroupRole.OWNER.code());
         groupMemberService.save(member);
         GroupVO groupVo = findById(group.getId());
         // 推送同步消息给自己的其他终端

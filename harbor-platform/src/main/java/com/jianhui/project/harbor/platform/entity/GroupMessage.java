@@ -3,8 +3,9 @@ package com.jianhui.project.harbor.platform.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
 import lombok.Data;
+
+import java.util.Date;
 
 /**
  * 群消息
@@ -52,12 +53,12 @@ public class GroupMessage {
     /**
      * 是否回执消息
      */
-    private Integer receipt;
+    private Boolean receipt;
 
     /**
      * 回执消息是否完成
      */
-    private Integer receiptOk;
+    private Boolean receiptOk;
 
     /**
      * 消息类型 0:文字 1:图片 2:文件 3:语音 4:视频 21:提示

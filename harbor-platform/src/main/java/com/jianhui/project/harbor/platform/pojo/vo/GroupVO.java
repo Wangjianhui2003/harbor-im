@@ -55,4 +55,10 @@ public class GroupVO {
 
     @Schema(description = "被封禁原因")
     private String reason;
+
+    /**
+     * 加入类型 0:直接加入 1:需要管理员同意
+     */
+    @Schema(description = "加入类型")
+    private Integer joinType;
 }

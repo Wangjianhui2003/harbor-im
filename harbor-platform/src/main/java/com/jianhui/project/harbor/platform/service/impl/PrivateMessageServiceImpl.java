@@ -2,6 +2,7 @@ package com.jianhui.project.harbor.platform.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jianhui.project.harbor.client.IMClient;
+import com.jianhui.project.harbor.common.constant.IMConstant;
 import com.jianhui.project.harbor.common.enums.IMTerminalType;
 import com.jianhui.project.harbor.common.model.IMPrivateMessage;
 import com.jianhui.project.harbor.common.model.IMUserInfo;
@@ -29,13 +30,11 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper, PrivateMessage>
-        implements PrivateMessageService {
+public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper, PrivateMessage> implements PrivateMessageService {
 
     private final FriendService friendService;
     private final IMClient imClient;
     private final PrivateMessageMapper privateMessageMapper;
-
 
     @Override
     public PrivateMessageVO sendMessage(PrivateMessageDTO dto) {
@@ -102,10 +101,41 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         log.info("拉取私聊消息，用户id:{},数量:{}", session.getUserId(),msgList.size());
     }
 
+    @Transactional
     @Override
     public PrivateMessageVO recallMessage(Long id) {
-        //TODO:撤销消息
-        return null;
+        UserSession session = SessionContext.getSession();
+        PrivateMessage msg = getById(id);
+        if (msg == null) {
+            throw new GlobalException("消息不存在");
+        }
+        if (!msg.getSendId().equals(session.getUserId())) {
+            throw new GlobalException("这条消息不是由您发送,无法撤回");
+        }
+        if(System.currentTimeMillis() - msg.getSendTime().getTime() > IMConstant.ALLOW_RECALL_SECOND * 1000){
+            throw new GlobalException("消息已发送超过5分钟，无法撤回");
+        }
+        // 修改消息状态
+        msg.setStatus(MessageStatus.RECALL.code());
+        updateById(msg);
+        // 生成一条撤回消息
+        PrivateMessage recallMsg = new PrivateMessage();
+        recallMsg.setSendId(session.getUserId());
+        recallMsg.setStatus(MessageStatus.UNSEND.code());
+        recallMsg.setSendTime(new Date());
+        recallMsg.setRecvId(msg.getRecvId());
+        recallMsg.setType(MessageType.RECALL.code());
+        recallMsg.setContent(id.toString());
+        save(recallMsg);
+        // 推送消息
+        PrivateMessageVO msgInfo = BeanUtils.copyProperties(recallMsg, PrivateMessageVO.class);
+        IMPrivateMessage<PrivateMessageVO> imMsg = new IMPrivateMessage<>();
+        imMsg.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
+        imMsg.setRecvId(msgInfo.getRecvId());
+        imMsg.setData(msgInfo);
+        imClient.sendPrivateMessage(imMsg);
+        log.info("撤回私聊消息，发送id:{},接收id:{}，内容:{}", msg.getSendId(), msg.getRecvId(), msg.getContent());
+        return msgInfo;
     }
 
     @Transactional(rollbackFor = Exception.class)

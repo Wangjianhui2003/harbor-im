@@ -3,14 +3,19 @@ package com.jianhui.project.harbor.platform.mapper;
 import com.jianhui.project.harbor.platform.entity.GroupMessage;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
-/**
-* @author wjh2
-* @description 针对表【t_group_message(群消息)】的数据库操作Mapper
-* @createDate 2025-05-04 18:25:01
-* @Entity generator.domain.GroupMessage
-*/
+import java.util.Date;
+import java.util.List;
+
 public interface GroupMessageMapper extends BaseMapper<GroupMessage> {
 
+    /**
+     * 查找group下消息最大Id
+     */
+    Long findLastByGroupId(Long groupId);
+
+    List<GroupMessage> findUnreadReceiptMsg(Object oldMaxReadedId, Long maxMsgId, Integer recallCode, boolean isReceipt);
+
+    List<GroupMessage> findHistoryMsg(Long groupId, Date createdTime, Integer recallCode, long offset, Long size);
 }
 
 
