@@ -15,8 +15,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -28,10 +26,10 @@ public class PrivateMessageProcessor extends AbstractMsgProcessor<IMRecvInfo> {
     public void process(IMRecvInfo recvInfo) {
         IMUserInfo sender = recvInfo.getSender();
         IMUserInfo receiver = recvInfo.getReceivers().get(0);
-        log.info("接收到私聊消息，发送者:{},接收者:{}，内容:{}", sender.getId(), receiver.getId(), recvInfo.getData());
+        log.info("接收到私聊消息，发送者:{},客户端:{},接收者:{}，客户端:{},内容:{}", sender.getId(),sender.getTerminal(), receiver.getId(),receiver.getTerminal(), recvInfo.getData());
         try {
             ChannelHandlerContext channelCtx = UserChannelCxtMap.getChannelCtx(receiver.getId(), receiver.getTerminal());
-            if (!Objects.isNull(channelCtx)) {
+            if (channelCtx != null) {
                 // 推送消息到用户
                 IMSendInfo<Object> sendInfo = new IMSendInfo<>();
                 sendInfo.setCmd(IMCmdType.PRIVATE_MESSAGE.code());
@@ -39,6 +37,7 @@ public class PrivateMessageProcessor extends AbstractMsgProcessor<IMRecvInfo> {
                 channelCtx.channel().writeAndFlush(sendInfo);
                 // 消息发送成功确认
                 sendResult(recvInfo, IMSendCode.SUCCESS);
+                log.info("ws发送成功，发送者:{},接收者:{}，内容:{}", sender.getId(), receiver.getId(), recvInfo.getData());
             } else {
                 // 消息推送失败确认
                 sendResult(recvInfo, IMSendCode.NOT_FIND_CHANNEL);

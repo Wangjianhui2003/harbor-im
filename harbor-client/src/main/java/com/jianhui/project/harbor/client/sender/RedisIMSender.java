@@ -9,6 +9,7 @@ import com.jianhui.project.harbor.common.enums.IMTerminalType;
 import com.jianhui.project.harbor.common.model.*;
 import com.jianhui.project.harbor.common.mq.RedisMQTemplate;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import java.util.*;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RedisIMSender implements IMSender {
 
     private final RedisMQTemplate redisMQTemplate;
@@ -133,6 +135,7 @@ public class RedisIMSender implements IMSender {
 
     @Override
     public <T> void sendGroupMessage(IMGroupMessage<T> message) {
+        log.info("发送群消息:{}", message);
         Map<String,IMUserInfo> sendMap = new HashMap<>();
         for (Integer terminal : message.getRecvTerminals()) {
             for (Long recvId : message.getRecvIds()) {
@@ -147,7 +150,7 @@ public class RedisIMSender implements IMSender {
         //按serverId分组
         int idx = 0;
         for (Map.Entry<String, IMUserInfo> entry : sendMap.entrySet()) {
-            Integer serverId = (Integer)serverIds.get(idx);
+            Integer serverId = (Integer)serverIds.get(idx++);
             if (serverId != null){
                 List<IMUserInfo> list = serverMap.computeIfAbsent(serverId, o -> new LinkedList<>());
                 list.add(entry.getValue());
@@ -156,13 +159,16 @@ public class RedisIMSender implements IMSender {
                 offLineUsers.add(entry.getValue());
             }
         }
-        //按serverId投送
+        //按serverId分别投送给该server上的用户
         for (Map.Entry<Integer, List<IMUserInfo>> entry : serverMap.entrySet()) {
             IMRecvInfo recvInfo = new IMRecvInfo();
             recvInfo.setCmd(IMCmdType.GROUP_MESSAGE.code());
             recvInfo.setSender(message.getSender());
+            recvInfo.setReceivers(new LinkedList<>(entry.getValue()));
+            recvInfo.setIsSendBack(message.getIsSendBack());
             recvInfo.setServiceName(appName);
-
+            recvInfo.setData(message.getData());
+            // 推送至队列
             String queueKey = String.join(":", IMRedisKey.IM_MESSAGE_GROUP_QUEUE, entry.getKey().toString());
             redisMQTemplate.opsForList().rightPush(queueKey,recvInfo);
         }

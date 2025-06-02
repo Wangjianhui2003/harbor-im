@@ -86,4 +86,9 @@ public interface GroupService extends IService<Group> {
      * @return List<GroupMemberVO>
      **/
     List<GroupMemberVO> findGroupMembers(Long groupId);
+
+    /**
+     * 用id查询群组(专用于查询加入)
+     */
+    GroupVO searchById(Long groupId);
 }

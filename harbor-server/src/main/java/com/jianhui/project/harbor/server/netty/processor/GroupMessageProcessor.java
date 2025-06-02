@@ -36,7 +36,7 @@ public class GroupMessageProcessor extends AbstractMsgProcessor<IMRecvInfo> {
                 ChannelHandlerContext ChannelCtx = UserChannelCxtMap.getChannelCtx(receiver.getId(), receiver.getTerminal());
                 if (ChannelCtx != null) {
                     IMSendInfo<Object> sendInfo = new IMSendInfo<>();
-                    sendInfo.setCmd(IMCmdType.PRIVATE_MESSAGE.code());
+                    sendInfo.setCmd(IMCmdType.GROUP_MESSAGE.code());
                     sendInfo.setData(recvInfo.getData());
                     ChannelCtx.writeAndFlush(sendInfo);
                     sendResult(recvInfo, IMSendCode.SUCCESS);

@@ -70,7 +70,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         // 把群主加入群
         GroupMember member = new GroupMember();
         member.setGroupId(group.getId());
-        member.setUserId(user.getId());
+        member.setUserId(session.getUserId());
         member.setHeadImage(user.getHeadImageThumb());
         member.setUserNickname(user.getNickname());
         member.setRemarkNickname(vo.getRemarkNickname());
@@ -109,11 +109,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         //将friend信息处理成member
         List<GroupMember> memberList = friends.stream().map(f -> {
             Optional<GroupMember> optional =
-                    members.stream().filter(member -> member.getUserId().equals(f.getUserId())).findFirst();
+                    members.stream().filter(member -> member.getUserId().equals(f.getFriendId())).findFirst();
             //之前没加入过的new一个
             GroupMember member = optional.orElseGet(GroupMember::new);
             member.setGroupId(group.getId());
-            member.setUserId(f.getUserId());
+            member.setUserId(f.getFriendId());
             member.setQuit(false);
             member.setCreatedTime(new Date());
             member.setHeadImage(f.getFriendHeadImage());
@@ -273,7 +273,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         return groups.stream().map(group -> {
             GroupMember groupMember = groupMemberList
                     .stream()
-                    .filter(m -> m.getId().equals(group.getId()))
+                    .filter(m -> m.getGroupId().equals(group.getId()))
                     .findFirst()
                     .get();
             return convertToVO(group, groupMember);
@@ -310,6 +310,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             vo.setOnline(onlineUserIds.contains(m.getUserId()));
             return vo;
         }).sorted((m1,m2) -> m2.getOnline().compareTo(m1.getOnline())).toList();
+    }
+
+    @Override
+    public GroupVO searchById(Long groupId) {
+        Group group = getById(groupId);
+        return BeanUtils.copyProperties(group, GroupVO.class);
     }
 
     @Override

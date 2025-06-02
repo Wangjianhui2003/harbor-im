@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @AllArgsConstructor
 public enum IMTerminalType {
@@ -41,7 +40,7 @@ public enum IMTerminalType {
     }
 
     public static List<Integer> codes() {
-        return Arrays.stream(values()).map(IMTerminalType::code).collect(Collectors.toList());
+        return Arrays.stream(values()).map(IMTerminalType::code).toList();
     }
 
     public Integer code() {

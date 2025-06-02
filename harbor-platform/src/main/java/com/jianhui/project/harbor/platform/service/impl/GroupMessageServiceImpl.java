@@ -69,10 +69,9 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
             throw new GlobalException(String.format("当前群聊大于%s人,不支持发送回执消息", Constant.MAX_LARGE_GROUP_MEMBER));
         }
         // 不用发给自己
-        userIds = userIds.stream().filter(id -> !session.getUserId().equals(id)).collect(Collectors.toList());
+        userIds = userIds.stream().filter(id -> !session.getUserId().equals(id)).toList();
         // 保存消息
-        GroupMessage groupMessage = new GroupMessage();
-        GroupMessage msg = BeanUtils.copyProperties(dto, GroupMessage.class);
+        GroupMessage groupMessage = BeanUtils.copyProperties(dto, GroupMessage.class);
         groupMessage.setSendId(session.getUserId());
         groupMessage.setSendTime(new Date());
         groupMessage.setSendNickname(groupMember.getShowNickname());
