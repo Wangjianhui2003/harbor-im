@@ -2,11 +2,12 @@
 //聊天对话框
 
 import ChatInput from "./chatbox/ChatInput.vue";
-import {computed, nextTick, reactive, ref} from "vue";
+import {computed, nextTick, onMounted, reactive, ref, watch} from "vue";
 import useChatStore from "../../store/chatStore.js";
 import {sendMessageReq} from "../../api/message.js";
 import ChatMessageItem from "./chatbox/ChatMessageItem.vue";
 import useUserStore from "../../store/userStore.js";
+import {CHATINFO_TYPE, MESSAGE_TYPE, MSG_CONTENT_TYPE} from "../../common/enums.js";
 
 const props = defineProps({
   chat: {
@@ -17,43 +18,91 @@ const props = defineProps({
 const chatStore = useChatStore();
 const userStore = useUserStore()
 
-const chatEditor = ref(null)
+const chatEditor = ref(null) //输入框
 
 const sendImageUrl = ref('')
-const sendImageFile = ref('')
-const placeholder = ref('')
-const isReceipt = ref(true)
-const showRecord = ref(false)
-const showSide = ref(false)
-const showHistory = ref(false)
-//发送按钮锁定
-const lockMessage = ref(false)
-const showMinIdx = ref(0)
-const isSending = ref(false)
-const userInfo = reactive({})
-const group = reactive({})
-const groupMembers = ref([])
-const reqQueue = ref([])
+const sendImageFile = ref('') //
+const showHistory = ref(false)  //历史消息
+const placeholder = ref('') //
+const isReceipt = ref(true) //是否是回执消息
+const showVoiceRecorder = ref(false) //语音录制弹窗
+const lockMessage = ref(false) //发送按钮锁定
+const showMinIdx = ref(0) //下标低于showMinIdx的不显示
+const reqQueue = ref([]) //等待发送队列
+const isInBottom = ref(false) // 滚动条是否在底部
+const newMsgBottom = ref(0) // 滚动条不在底部时新的消息数量
+const isSending = ref(false) //是否正在发送
+
+const userInfo = ref({}) //私聊时用户信息
+const group = ref({}) //群聊时群信息
+const groupMembers = ref([]) //
 
 //发送信息的url
 const sendMsgUrl = computed(() => {
   return `/message/${props.chat.type.toLowerCase()}/send`
 })
 
+const sendImageMessage = (file) => {
+
+}
+
+async function sendFileMessage(file) {
+
+}
+
 //接收到发送事件处理
 const sendMessage = async (fullList) => {
   resetEditor()
   readedMessage()
   //TODO:判断禁言、封禁、回执消息
-  for (let i = 0; i < fullList.length; i++) {
-    let msg = fullList[i]
+  if(isBanned()){
+    showBannedTip()
+    return
+  }
+  for (const msg of fullList) {
     switch (msg.type) {
-      case "text":
+      case MSG_CONTENT_TYPE.TEXT:
         //文本
         await sendTextMessage(msg.content, msg.atUserIds)
         break
+        //TODO:其他类型消息
+      case MSG_CONTENT_TYPE.IMAGE:
+        await sendImageMessage(msg.content.file);
+        break;
+      case MSG_CONTENT_TYPE.FILE:
+        await sendFileMessage(msg.content.file);
+        break;
     }
   }
+}
+
+//判断是否被封禁
+const isBanned = () => {
+  return (props.chat.type == CHATINFO_TYPE.GROUP && group.isBanned == true)
+    || (props.chat.type == CHATINFO_TYPE.PRIVATE && userInfo.isBanned == true)
+}
+
+//
+const showBannedTip =() => {
+  let msgInfo = {
+    tmpId: generateId(),
+    sendId: userStore.userInfo.id,
+    sendTime: new Date().getTime(),
+    type: MESSAGE_TYPE.TIP_TEXT
+  }
+  if (chat.type == CHATINFO_TYPE.PRIVATE) {
+    msgInfo.recvId = userStore.userInfo.id
+    msgInfo.content = "该用户已被管理员封禁,原因:" + userInfo.value.reason
+  } else {
+    msgInfo.groupId = group.value.id
+    msgInfo.content = "本群聊已被管理员封禁,原因:" + group.value.reason
+  }
+  chatStore.insertMessage(msgInfo,props.chat)
+}
+
+// 生成临时id
+const generateId = () => {
+  return String(new Date().getTime()) + String(Math.floor(Math.random() * 1000));
 }
 
 //处理文本信息
@@ -76,12 +125,14 @@ const sendTextMessage = (sendText, atUserIds) => {
     }
     lockMessage.value = true;
     //发送
+    console.log('msg',msgInfo)
     sendMessageRequest(msgInfo).then((m) => {
-      //是自己发送
+      //是自己发送 TODO:优化发送延迟问题
       m.selfSend = true;
-      chatStore.insertMessage([m,props.chat])
+      chatStore.insertMessage(m,props.chat)
     }).finally(() => {
       scrollToBottom()
+      //
       isReceipt.value = false;
       resolve()
     })
@@ -98,13 +149,16 @@ const moveChatToTop = () => {
 
 //移动到对话框底部
 const scrollToBottom = () => {
-
+  nextTick(() => {
+    let msgWindow = document.getElementById('msgWindow');
+    msgWindow.scrollTop = msgWindow.scrollHeight
+  })
 }
 
 //填充id
 const fillTargetId = (msgInfo, targetId) => {
   //群聊
-  if (props.chat.type == "GROUP") {
+  if (props.chat.type == CHATINFO_TYPE.GROUP) {
     msgInfo.groupId = targetId;
   } else {
     //私聊
@@ -151,11 +205,43 @@ const resetEditor = () => {
 const readedMessage = () => {
 }
 
+//监听到滚动事件时触发(onMounted时添加监听器到msgWindow)
+const onScroll = () => {
 
-const mine = computed(() => {
-  return userStore.userInfo.id
+}
+
+const loadGroup = (groupId) => {
+
+}
+
+const loadFriend = (friendId) => {
+
+}
+
+const loadReaded = (friendId) => {
+
+}
+
+watch(props.chat, async (newChat,oldChat) => {
+  if (newChat.targetId > 0 && (!oldChat || newChat.type != oldChat.type || newChat.targetId != oldChat.targetId)) {
+    console.log("变换",newChat,oldChat)
+    userInfo.value = {}
+    groupMembers.value = []
+    group.value = {}
+    if(newChat.type == CHATINFO_TYPE.GROUP) {
+      loadGroup(props.chat.targetId)
+    }else{
+      loadFriend(props.chat.targetId)
+      loadReaded(props.chat.targetId)
+    }
+  }
+  }, {immediate: true}
+)
+
+onMounted(() => {
+  let msgWindow = document.getElementById('msgWindow');
+  msgWindow.addEventListener('scroll',onScroll)
 })
-
 </script>
 
 <template>
@@ -163,11 +249,12 @@ const mine = computed(() => {
     <div class="chatbox-header">
       {{ chat.showName }}
     </div>
-    <div class="content">
+    <div class="content" id="msgWindow">
       <ul>
         <li v-for="(msgInfo,idx) in chat.messages" :key="idx">
           <chat-message-item
-              :mine="msgInfo.sendId == mine.id"
+              v-if="idx >= showMinIdx"
+              :mine="msgInfo.sendId == userStore.userInfo.id"
               :msgInfo="msgInfo" >
           </chat-message-item>
         </li>
@@ -190,6 +277,7 @@ const mine = computed(() => {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  background-color: var(--theme-light-gray);
 
   .chatbox-header {
     height: 50px;

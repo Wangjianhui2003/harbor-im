@@ -9,7 +9,6 @@ const props = defineProps({
   },
   headImage: {
     type: String,
-    required: true
   },
 })
 </script>

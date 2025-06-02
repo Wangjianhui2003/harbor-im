@@ -1,7 +1,6 @@
 <script setup>
 import AddFriend from "../components/friend/AddFriend.vue"
 import {computed, ref} from "vue"
-import {Plus} from "@element-plus/icons-vue"
 import useFriendStore from "../store/friendStore.js";
 import {pinyin} from "pinyin-pro";
 import FriendItem from "../components/friend/FriendItem.vue";
@@ -35,7 +34,7 @@ const friendMap = computed(() => {
   let map = new Map()
   friendStore.friends.forEach((f) => {
     //已删除好友和不在搜索结果的不展示
-    if(f.deleted || (searchText.value && !f.friendNickname.toUpperCase().includes(searchText.value.toString().toUpperCase()))){
+    if (f.deleted || (searchText.value && !f.friendNickname.toUpperCase().includes(searchText.value.toString().toUpperCase()))) {
       return;
     }
     let firstLetter = getFirstLetter(f.friendNickname).toUpperCase();
@@ -76,6 +75,11 @@ const friendValues = computed(() => {
   return Array.from(friendMap.value.values());
 })
 
+//是否是friend
+const isFriend = computed(() => {
+  return friendStore.isFriend(friendUserInfo.value.id)
+})
+
 const showAddFriend = () => {
   addFriendPanelVisible.value = true;
 
@@ -101,12 +105,10 @@ const isEnglish = (character) => {
   return /^[A-Za-z]+$/.test(character);
 }
 
-
-
 //点击好友标签触发
 const onActiveItem = (friend) => {
-  loadUserInfo(friend.id)
   activeFriend.value = friend;
+  loadUserInfo(friend.id)
 }
 
 //加载用户信息
@@ -114,17 +116,20 @@ const loadUserInfo = (userId) => {
   //api请求
   getUserInfo(userId).then((user) => {
     friendUserInfo.value = user;
-    updateFriendStore()
+    updateFriendInfo()
   })
 }
 
 //更新store好友信息
-const updateFriendStore = () => {
-  const friend = {}
-  friend.id = friendUserInfo.value.id
-  friend.headImage = friendUserInfo.value.headImageThumb
-  friend.friendNickname = friendUserInfo.value.nickname
-  friendStore.updateFriend(friend)
+const updateFriendInfo = () => {
+  if (isFriend) {
+    const friend = {}
+    friend.id = friendUserInfo.value.id
+    friend.headImage = friendUserInfo.value.headImageThumb
+    friend.friendNickname = friendUserInfo.value.nickname
+    friendStore.updateFriend(friend)
+    chatStore.updateChatFromFriend(friend)
+  }
 }
 
 /**
@@ -141,12 +146,12 @@ const onSendMsg = (user) => {
   console.log("open chat:", chat)
   chatStore.openChat(chat)
   chatStore.activateChat(0)
-  router.push({name : 'Chat'})
+  router.push({name: 'Chat'})
 }
 
 //删除好友(+缓存+聊天记录)
 const onDelFriend = (userInfo) => {
-  ElMessageBox.confirm(`确认删除'${userInfo.nickname}',并清空聊天记录吗?`, "删除好友",{
+  ElMessageBox.confirm(`确认删除'${userInfo.nickname}',并清空聊天记录吗?`, "删除好友", {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
@@ -166,17 +171,17 @@ const onDelFriend = (userInfo) => {
   <el-container>
     <el-aside class="friend-list">
       <div class="friend-list-header">
-        <el-input type="text" v-model="searchText" class="friend-search"></el-input>
-        <el-button class="add-button" @click="showAddFriend()">
-          <el-icon> <Plus/> </el-icon>
-        </el-button>
+        <input class="search-bar" v-model="searchText" placeholder="搜索好友..." type="search">
+        <el-button class="add-button" @click="showAddFriend()">+</el-button>
         <AddFriend :dialog-visible="addFriendPanelVisible" @close="closeAddFriend"/>
       </div>
       <el-scrollbar class="friend-item-list">
-        <div v-for="(friends, i) in friendValues" :key="i">
-          <div>{{ friendKeys[i]}}</div>
-          <div v-for="friend in friends" :key="friend.id">
-            <FriendItem :friend="friend" @click="onActiveItem(friend)"></FriendItem>
+        <div class="list-container">
+          <div v-for="(friends, i) in friendValues" :key="i">
+            <div>{{ friendKeys[i] }}</div>
+            <div v-for="friend in friends" :key="friend.id">
+              <FriendItem :friend="friend" @click="onActiveItem(friend)"></FriendItem>
+            </div>
           </div>
         </div>
       </el-scrollbar>
@@ -186,13 +191,13 @@ const onDelFriend = (userInfo) => {
         <div class="info-header">
           <head-image
               class="avatar"
-              :src="friendUserInfo.headImage"
+              :url="friendUserInfo.headImage"
               :name="friendUserInfo.nickname">
           </head-image>
           <div class="info-text">
-            <div class="username">用户名: {{friendUserInfo.username}}</div>
-            <div class="nickname">昵称: {{friendUserInfo.nickname}}</div>
-            <div class="remark">备注: {{activeFriend.friendNickname}}</div>
+            <div class="username">用户名: {{ friendUserInfo.username }}</div>
+            <div class="nickname">昵称: {{ friendUserInfo.nickname }}</div>
+            <div class="remark">备注: {{ activeFriend.friendNickname }}</div>
           </div>
         </div>
         <div class="action-buttons">
@@ -205,28 +210,53 @@ const onDelFriend = (userInfo) => {
 </template>
 
 <style scoped lang="scss">
+
+.list-container {
+  overflow: auto;
+  width: 97%;
+}
+
 .friend-list {
   display: flex;
   flex-direction: column;
   width: 270px;
   height: 100vh;
-  background-color: #f5f7fa;
+  background-color: var(--theme-black);
+  color: var(--theme-white);
 
-  .friend-list-header{
+  .friend-list-header {
     display: flex;
 
-    .friend-search {
-      width: 200px;
-      height: 30px;
+    .search-bar {
+      background-color: #f5f5f5;
+      width: 99%;
+      color: #242424;
+      padding: .15rem .5rem;
+      min-height: 40px;
+      border-radius: 4px;
+      outline: none;
+      border: none;
+      line-height: 1.15;
+      box-shadow: 0px 10px 20px -18px;
+
+      &:focus {
+        border-bottom: 2px solid #5b5fc7;
+        border-radius: 4px 4px 2px 2px;
+      }
+
+      &:hover {
+        outline: 1px solid lightgrey;
+      }
     }
 
-    .add-button{
-      flex: 1;
+    .add-button {
+      height: 40px;
     }
+
   }
 
-
   .friend-item-list {
+    width: 100%;
     flex: 1;
   }
 }

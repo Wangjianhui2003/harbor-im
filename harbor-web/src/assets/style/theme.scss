@@ -1,0 +1,16 @@
+/**
+自定义主题颜色
+ */
+@import url(https://fonts.googleapis.com/css?family=Lato:400,700);
+
+:root{
+  --theme-dark: #31333b;
+  --theme-black: #4d515e;
+  --theme-blue: #94C2ED;
+  --theme-orange: #E38968;
+  --theme-gray: #92959E;
+  --theme-light-gray: #F2F5F8;
+  --theme-white: #FFFFFF;
+  --theme-font-family: "Lato", sans-serif;
+  --theme-green: #86BB71;
+}

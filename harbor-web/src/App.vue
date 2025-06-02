@@ -3,11 +3,13 @@
 </script>
 
 <template>
-  <div>
+  <div class="main">
     <router-view></router-view>
   </div>
 </template>
 
 <style scoped>
+.main{
+}
 
 </style>

@@ -1,7 +1,7 @@
 import {defineStore} from "pinia";
 import useUserStore from "./userStore.js";
 import localForage from "localforage";
-import {CHATINFO_TYPE, MESSAGE_TYPE} from "../common/enums.js";
+import {CHATINFO_TYPE, MESSAGE_STATUS, MESSAGE_TYPE} from "../common/enums.js";
 
 /* 为了加速拉取离线消息效率，拉取时消息暂时存储到cacheChats,等
 待所有离线消息拉取完成后，再统一渲染*/
@@ -72,7 +72,6 @@ const useChatStore = defineStore("chatStore", {
                         })
                         //过滤，init
                         Promise.all(promises).then(chats => {
-                            console.log(chats)
                             chatsData.chats = chats.filter(o => o)
                             this.initChat(chatsData)
                             resolve()
@@ -185,7 +184,7 @@ const useChatStore = defineStore("chatStore", {
             this.chats = this.chats.filter(chat => !chat.delete)
         },
 
-        insertMessage([msgInfo, chatInfo]) {
+        insertMessage(msgInfo, chatInfo) {
             let type = chatInfo.type
             //记录消息的最大id
             if (msgInfo.id && type === "PRIVATE" && msgInfo.id > this.privateMsgMaxId) {
@@ -283,10 +282,67 @@ const useChatStore = defineStore("chatStore", {
                 }
             }
         },
+        updateChatFromFriend(friend){
+            let chat = this.findChatByFriendId(friend.id);
+            // 更新会话中的群名和头像
+            if (chat && (chat.headImage != friend.headImage ||
+                chat.showName != friend.friendNickname)) {
+                chat.headImage = friend.headImage;
+                chat.showName = friend.friendNickname;
+                chat.stored = false;
+                this.saveToStorage()
+            }
+        },
         clear() {
             cacheChats = []
             this.chats = [];
             this.activeChat = null;
+        },
+        //清除未读状态(未读消息数，at等)
+        resetUnread(chatInfo){
+            let chats = this.findChats
+            for (let idx in chats) {
+                if(chats[idx].type == chatInfo.type && chats[idx].targetId == chatInfo.targetId){
+                    chats[idx].unreadCount = 0;
+                    chats[idx].atMe = false;
+                    chats[idx].atAll = false;
+                    chats[idx].stored = false;
+                    this.saveToStorage()
+                    break;
+                }
+            }
+        },
+        recallMsg(msgInfo,chatInfo){
+            let chat = chatStore.findChat(chatInfo);
+            if (!chat) return;
+            //要撤回的消息id
+            let id = msgInfo.content;
+            //群聊和私聊撤回标识
+            let name = msgInfo.selfSend ? '你' : chat.type == 'PRIVATE' ? '对方' : msgInfo.sendNickname;
+            for (let idx in chat.messages){
+                let m = chat.messages[idx]
+                if(m.id && m.id == id){
+                    // 改造成一条提示消息
+                    m.status = MESSAGE_STATUS.RECALL;
+                    m.content = name + "撤回了一条消息";
+                    m.type = MESSAGE_TYPE.TIP_TEXT
+                    // 会话列表变化
+                    chat.lastContent = m.content;
+                    chat.lastSendTime = msgInfo.sendTime;
+                    chat.sendNickname = '';
+                    if (!msgInfo.selfSend && msgInfo.status != MESSAGE_STATUS.READED) {
+                        chat.unreadCount++;
+                    }
+                }
+                // 被引用的消息也要撤回
+                if (m.quoteMessage && m.quoteMessage.id == msgInfo.id) {
+                    m.quoteMessage.content = "引用内容已撤回";
+                    m.quoteMessage.status = MESSAGE_STATUS.RECALL;
+                    m.quoteMessage.type = MESSAGE_TYPE.TIP_TEXT
+                }
+            }
+            chat.stored = false;
+            this.saveToStorage()
         }
     },
     getters: {
@@ -341,7 +397,7 @@ const useChatStore = defineStore("chatStore", {
         findChatByFriendId(state) {
             return (friendId) => {
                 let chats = this.findChats
-                return chats.find(chat => chat.type == 'PRIVATE' && chat.targertId == friendId)
+                return chats.find(chat => chat.type == 'PRIVATE' && chat.targetId == friendId)
             }
         },
         //根据groupId找chat

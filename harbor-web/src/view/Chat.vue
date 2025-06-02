@@ -31,7 +31,7 @@ const onTop = (idx) => {
 <template>
   <el-container>
     <el-aside class="chat-list">
-      <input class="input" v-model="searchText" placeholder="搜索..." type="search">
+      <input class="input" v-model="searchText" placeholder="搜索聊天" type="search">
       <el-scrollbar>
         <div v-for="(chat,idx) in chatStore.chats" :key="idx">
           <chat-item
@@ -61,7 +61,7 @@ const onTop = (idx) => {
   flex-direction: column;
   width: 270px;
   height: 100vh;
-  background-color: #f5f7fa;
+  background-color: var(--theme-black);
 }
 
 .input {

@@ -15,23 +15,19 @@ const props = defineProps({
   },
 });
 
-const errorHeadImage = computed(() => {
-  return props.friend.friendNickname[0].toUpperCase();
-})
-
 </script>
 
 <template>
   <div class="friend-item">
     <head-image
-        class="avatar"
-        :url="friend.headImage"
+        :url="props.friend.headImage"
         :name="props.friend.friendNickname"
-    >
+        :online="props.friend.online" >
     </head-image>
     <div class="friend-info">
       {{ props.friend.friendNickname }}
     </div>
+    <slot></slot>
   </div>
 </template>
 
@@ -41,18 +37,13 @@ const errorHeadImage = computed(() => {
   display: flex;
   align-items: center;
   cursor: pointer;
-  padding: 8px;
+  padding: 3px;
+  margin: 4px;
   transition: transform 0.2s, box-shadow 0.2s;
-  margin: 2px;
+  border-radius: 10px;
 
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
-  }
-
-  .avatar {
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    font-size: 20px;
+    background-color: var(--theme-gray);
   }
 
   .friend-info {

@@ -56,7 +56,7 @@ const onFileUpload = (file) => {
       lock: true,
       text: "正在上传",
       spinner: "el-icon-loading",
-      background: 'rgba(0, 0, 0, 0.7)'
+      background: 'rgba(255,255,255,0.7)'
     })
   }
   let formData = new FormData();

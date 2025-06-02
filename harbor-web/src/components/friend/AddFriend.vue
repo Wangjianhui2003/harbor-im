@@ -70,9 +70,7 @@ const onAddFriend = (user) => {
   >
     <el-input type="text" placeholder="输入用户名或昵称来查找" v-model="searchText" @keyup.enter="onSearch()">
       <template #suffix>
-        <el-icon>
-          <Search/>
-        </el-icon>
+        <el-icon> <Search/> </el-icon>
       </template>
     </el-input>
     <el-scrollbar class="userinfo-list">

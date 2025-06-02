@@ -84,11 +84,21 @@ const CHATINFO_TYPE = {
 	GROUP: "GROUP"
 }
 
+/**
+ * 聊天框内容类型
+ */
+const MSG_CONTENT_TYPE = {
+	TEXT: 'text',
+	FILE: 'file',
+	IMAGE: 'image'
+}
+
 export {
 	MESSAGE_TYPE,
 	RTC_STATE,
 	TERMINAL_TYPE,
 	MESSAGE_STATUS,
 	CMD_TYPE,
-	CHATINFO_TYPE
+	CHATINFO_TYPE,
+	MSG_CONTENT_TYPE
 }

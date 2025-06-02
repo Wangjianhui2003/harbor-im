@@ -69,7 +69,7 @@ const resetForm = () => {
 const rules = {
   username: [
     {required: true, message: '请输入用户名', trigger: 'blur'},
-    {min: 3, max: 20, message: '长度在 3 到 20 个字符之间', trigger: 'blur'}
+    {min: 3,max:100, message: '长度在 3 个字符以上', trigger: 'blur'}
   ],
   password: [
     {required: true, message: '请输入密码', trigger: 'blur'},
@@ -77,7 +77,7 @@ const rules = {
   ],
   nickname: [
     {required: true, message: '请输入昵称', trigger: 'blur'},
-    {min: 2, max: 10, message: '长度在 2 到 10 个字符之间', trigger: 'blur'}
+    {min: 3, max: 100, message: '长度在 3个字符以上', trigger: 'blur'}
   ],
   confirmPassword: [
     {required: true, message: '请再次输入密码', trigger: 'blur'},

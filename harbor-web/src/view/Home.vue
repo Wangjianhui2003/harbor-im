@@ -11,6 +11,7 @@ import useUserStore from "../store/userStore.js";
 import {pullOfflinePrivateMsg} from "../api/message.js";
 import * as checkMsgType from "../common/checkMsgType.js";
 import useFriendStore from "../store/friendStore.js";
+import {useGroupStore} from "../store/groupStore.js";
 
 /**
  * 主页
@@ -23,6 +24,7 @@ const mainStore = useMainStore()
 const chatStore = useChatStore()
 const userStore = useUserStore()
 const friendStore = useFriendStore()
+const groupStore = useGroupStore()
 
 //ws地址
 const wsUrl = import.meta.env.VITE_WS_URL;
@@ -101,6 +103,7 @@ const init = () => {
         handlePrivateMessage(msgInfo);
       } else if (cmd === CMD_TYPE.GROUP_MESSAGE) {
         // 处理群聊消息
+        console.log(msgInfo);
         handleGroupMessage(msgInfo);
       } else if (cmd === CMD_TYPE.SYSTEM_MESSAGE) {
         // 处理系统消息
@@ -148,8 +151,23 @@ const insertPrivateMsg = (friend, msgInfo) => {
   //打开会话
   chatStore.openChat(chatInfo)
   //插入信息
-  chatStore.insertMessage([msgInfo,chatInfo])
+  chatStore.insertMessage(msgInfo,chatInfo)
   //TODO:私聊接收消息提示
+}
+
+
+
+//加载好友信息(好友给你发消息)
+const loadFriendInfo = (friendId) => {
+  let friend = friendStore.findFriend(friendId)
+  if(!friend){
+    friend = {
+      id: friendId,
+      friendNickname: "未知用户",
+      headImage: ""
+    }
+  }
+  return friend
 }
 
 //处理消息
@@ -205,22 +223,74 @@ const handlePrivateMessage = (msgInfo) => {
   }
 }
 
-//加载好友信息(好友给你发消息)
-const loadFriendInfo = (friendId) => {
-  let friend = friendStore.findFriend(friendId)
-  if(!friend){
-    friend = {
-      id: friendId,
-      friendNickname: "未知用户",
-      headImage: ""
-    }
-  }
-  return friend
-}
-
 //TODO:处理群聊消息
 const handleGroupMessage = (msgInfo) => {
+  //表示是否是自己发的(其他终端或其他功能)
+  msgInfo.selfSend = msgInfo.sendId === userStore.userInfo.id
+  let chatInfo = {
+    type: CHATINFO_TYPE.GROUP,
+    targetId: msgInfo.groupId
+  }
+  //更改加载标记
+  if (msgInfo.type == MESSAGE_TYPE.LOADING) {
+    chatStore.setLoadingGroupMsgState(JSON.parse(msgInfo.content))
+    return
+  }
+  //收到已读信号，前端标记已读
+  if (msgInfo.type == MESSAGE_TYPE.READED){
+    chatStore.resetUnread(chatInfo)
+    return
+  }
+  //回执消息
+  if (msgInfo.type == MESSAGE_TYPE.RECEIPT) {
+    //TODO:群回执消息
+  }
+  //撤回消息信号
+  if (msgInfo.type == MESSAGE_TYPE.RECALL) {
+    chatStore.recallMsg(msgInfo,chatInfo);
+    return
+  }
+  //新增群聊
+  if (msgInfo.type == MESSAGE_TYPE.GROUP_NEW) {
+    groupStore.addGroup(JSON.parse(msgInfo.content))
+    return
+  }
+  // 删除群
+  if (msgInfo.type == MESSAGE_TYPE.GROUP_DEL) {
+    groupStore.removeGroup(JSON.parse(msgInfo.groupId))
+    return;
+  }
+  //插入群聊消息
+  if (checkMsgType.isNormal(msgInfo.type) || checkMsgType.isTip(msgInfo.type) || checkMsgType.isAction(msgInfo.type)) {
+    let group = loadGroupInfo(msgInfo.groupId)
+    insertGroupMsg(group,msgInfo)
+  }
+  // TODO:群视频
+}
 
+const insertGroupMsg = (group,msgInfo) => {
+  //每次创建一个chatInfo可以动态更新group的头像信息
+  let chatInfo = {
+    type: CHATINFO_TYPE.GROUP,
+    targetId: group.id,
+    showName: group.showGroupName,
+    headImage: group.headImageThumb,
+  }
+  chatStore.openChat(chatInfo)
+  chatStore.insertMessage(msgInfo,chatInfo)
+}
+
+//收到消息时可能前端没有创建会话，需要自行加载
+const loadGroupInfo = (groupId) => {
+  let group = groupStore.findGroup(groupId)
+  if(!group){
+    group = {
+      id: groupId,
+      showGroupName: "未知群聊",
+      headImageThumb: ""
+    }
+  }
+  return group
 }
 
 //TODO:处理系统消息
@@ -270,8 +340,8 @@ onUnmounted(() => {
         </li>
       </ul>
     </el-aside>
-    <el-main class="routerview">
-      <div>
+    <el-main class="el-main">
+      <div class="routerview-panel">
         <router-view></router-view>
       </div>
     </el-main>
@@ -283,12 +353,11 @@ onUnmounted(() => {
 .navibar {
   display: flex;
   justify-content: center;
-  border-right: #dcdfe6 solid 1px;
+  background-color: var(--theme-dark);
 }
 
 .navilist {
   height: 100vh;
-  background: #ffffff;
   text-align: center;
   padding-top: 10px;
 
@@ -300,6 +369,7 @@ onUnmounted(() => {
     justify-content: center;
     margin-bottom: 9px;
     border-radius: 10px;
+    color: var(--theme-gray);
 
     .el-icon {
       font-size: 30px;
@@ -320,7 +390,12 @@ onUnmounted(() => {
   }
 }
 
-.routerview {
+.el-main{
   padding: 0;
+}
+
+.routerview-panel{
+  height: 100%;
+  width: 100%;
 }
 </style>
