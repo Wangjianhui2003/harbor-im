@@ -3,6 +3,7 @@ import ChatBox from "../components/chat/ChatBox.vue";
 import useChatStore from "../store/chatStore.js";
 import ChatItem from "../components/chat/ChatItem.vue";
 import {ref} from "vue";
+import SearchBar from "../components/common/SearchBar.vue";
 //聊天界面
 
 const chatStore = useChatStore();
@@ -31,7 +32,9 @@ const onTop = (idx) => {
 <template>
   <el-container>
     <el-aside class="chat-list">
-      <input class="input" v-model="searchText" placeholder="搜索聊天" type="search">
+      <div class="list-header">
+        <search-bar class="search-bar" v-model:search-text="searchText" placeholder="查找聊天..." ></search-bar>
+      </div>
       <el-scrollbar>
         <div v-for="(chat,idx) in chatStore.chats" :key="idx">
           <chat-item
@@ -56,6 +59,15 @@ const onTop = (idx) => {
 </template>
 
 <style scoped lang="scss">
+.list-header{
+  margin: 10px;
+}
+
+.search-bar{
+  height: 40px;
+  width: 100%;
+}
+
 .chat-list {
   display: flex;
   flex-direction: column;

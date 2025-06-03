@@ -10,6 +10,7 @@ import useChatStore from "../store/chatStore.js";
 import {useRouter} from "vue-router";
 import InvitePanel from "../components/group/InvitePanel.vue";
 import {findGroupMembers} from "../api/group.js";
+import SearchBar from "../components/common/SearchBar.vue";
 
 
 const searchText = ref("");
@@ -90,7 +91,7 @@ const onClickSendButton = () => {
   <div class="group-panel">
     <div class="group-list">
       <div class="list-header">
-        <input class="search-bar" v-model="searchText" placeholder="搜索群名..." type="search">
+        <search-bar class="search-bar" placeholder="搜索群名" v-model:search-text="searchText" ></search-bar>
         <el-button class="add-button" @click="addPanelVisible = true">+</el-button>
         <add-group-panel
             :add-panel-visible="addPanelVisible"
@@ -142,33 +143,23 @@ const onClickSendButton = () => {
     color: var(--theme-white);
 
     .list-header{
+      height: 40px;
+      width: 90%;
       display: flex;
+      margin: 10px;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .search-bar{
-      background-color: #f5f5f5;
-      width: 99%;
-      color: #242424;
-      padding: .15rem .5rem;
-      min-height: 40px;
-      border-radius: 4px;
-      outline: none;
-      border: none;
-      line-height: 1.15;
-      box-shadow: 0px 10px 20px -18px;
-
-      &:focus {
-        border-bottom: 2px solid #5b5fc7;
-        border-radius: 4px 4px 2px 2px;
-      }
-
-      &:hover {
-        outline: 1px solid lightgrey;
-      }
+      width: 190px;
+      height: 40px;
     }
 
     .add-button{
-      height: 40px;
+      height: 36px;
+      width: 36px;
+      border-radius: 30px;
     }
 
     .group-item-list{

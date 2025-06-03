@@ -231,6 +231,7 @@ defineExpose({
     bottom: 10px;
     min-height: 100%;
     width: 98%;
+    outline: none;
     padding: 8px;
     padding-left: 20px;
     padding-top: 15px;

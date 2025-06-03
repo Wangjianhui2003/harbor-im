@@ -11,6 +11,7 @@ import {useRouter} from "vue-router";
 import {CHATINFO_TYPE} from "../common/enums.js";
 import {removeFriend} from "../api/friend.js";
 import {ElMessage, ElMessageBox} from "element-plus";
+import SearchBar from "../components/common/SearchBar.vue";
 
 const router = useRouter()
 
@@ -84,7 +85,7 @@ const showAddFriend = () => {
   addFriendPanelVisible.value = true;
 
 };
-// Close the add friend panel
+
 const closeAddFriend = () => {
   addFriendPanelVisible.value = false;
 };
@@ -171,8 +172,8 @@ const onDelFriend = (userInfo) => {
   <el-container>
     <el-aside class="friend-list">
       <div class="friend-list-header">
-        <input class="search-bar" v-model="searchText" placeholder="搜索好友..." type="search">
-        <el-button class="add-button" @click="showAddFriend()">+</el-button>
+        <search-bar class="search-bar" placeholder="搜索好友" v-model:search-text="searchText" ></search-bar>
+        <el-button :round="true" class="add-button" @click="showAddFriend()">+</el-button>
         <AddFriend :dialog-visible="addFriendPanelVisible" @close="closeAddFriend"/>
       </div>
       <el-scrollbar class="friend-item-list">
@@ -223,34 +224,25 @@ const onDelFriend = (userInfo) => {
   height: 100vh;
   background-color: var(--theme-black);
   color: var(--theme-white);
+  align-items: center;
 
   .friend-list-header {
     display: flex;
+    margin: 10px;
+    width: 90%;
+    height: 40px;
+    justify-content: space-between;
+    align-items: center;
 
-    .search-bar {
-      background-color: #f5f5f5;
-      width: 99%;
-      color: #242424;
-      padding: .15rem .5rem;
-      min-height: 40px;
-      border-radius: 4px;
-      outline: none;
-      border: none;
-      line-height: 1.15;
-      box-shadow: 0px 10px 20px -18px;
 
-      &:focus {
-        border-bottom: 2px solid #5b5fc7;
-        border-radius: 4px 4px 2px 2px;
-      }
-
-      &:hover {
-        outline: 1px solid lightgrey;
-      }
+    .search-bar{
+      height: 40px;
+      width: 190px;
     }
 
     .add-button {
-      height: 40px;
+      height: 36px;
+      width: 36px;
     }
 
   }

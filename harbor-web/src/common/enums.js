@@ -93,6 +93,14 @@ const MSG_CONTENT_TYPE = {
 	IMAGE: 'image'
 }
 
+/**
+ * 消息操作枚举
+ */
+const MSG_ITEM_OP = {
+	DELETE: 'DELETE',
+	RECALL: 'RECALL',
+}
+
 export {
 	MESSAGE_TYPE,
 	RTC_STATE,
@@ -100,5 +108,6 @@ export {
 	MESSAGE_STATUS,
 	CMD_TYPE,
 	CHATINFO_TYPE,
-	MSG_CONTENT_TYPE
+	MSG_CONTENT_TYPE,
+	MSG_ITEM_OP
 }

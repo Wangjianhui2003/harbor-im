@@ -239,16 +239,16 @@ const useChatStore = defineStore("chatStore", {
             cacheChats = null;
             this.saveToStorage()
         },
-        //loading=true,现在在拉取离线消息，loading=false，现在没有在拉取离线消息，可以刷新到chats
+        //isLoading=true,现在在拉取离线消息，isLoading=false，现在没有在拉取离线消息，可以刷新到chats
         setLoadingPrivateMsgState(loading){
             this.loadingPrivateMsg = loading
-            if(!this.loading){
+            if(!this.isLoading){
                 this.refreshChat()
             }
         },
         setLoadingGroupMsgState(loading){
             this.loadingPrivateMsg = loading
-            if(!this.loading){
+            if(!this.isLoading){
                 this.refreshChat()
             }
         },
@@ -343,6 +343,17 @@ const useChatStore = defineStore("chatStore", {
             }
             chat.stored = false;
             this.saveToStorage()
+        },
+        //加载群信息后，如果头像和showGroupName变了要重新加载
+        updateChatFromGroup(group){
+            let chat = this.findChatByGroupId(group.id)
+            if (chat && (chat.headImage != group.headImageThumb || chat.showName != group.showGroupName)) {
+                // 更新会话中的群名称和头像
+                chat.headImage = group.headImageThumb;
+                chat.showName = group.showGroupName;
+                chat.stored = false;
+                this.saveToStorage()
+            }
         }
     },
     getters: {

@@ -8,6 +8,8 @@ import {sendMessageReq} from "../../api/message.js";
 import ChatMessageItem from "./chatbox/ChatMessageItem.vue";
 import useUserStore from "../../store/userStore.js";
 import {CHATINFO_TYPE, MESSAGE_TYPE, MSG_CONTENT_TYPE} from "../../common/enums.js";
+import {findGroup, findGroupMembers} from "../../api/group.js";
+import {useGroupStore} from "../../store/groupStore.js";
 
 const props = defineProps({
   chat: {
@@ -17,6 +19,7 @@ const props = defineProps({
 
 const chatStore = useChatStore();
 const userStore = useUserStore()
+const groupStore = useGroupStore()
 
 const chatEditor = ref(null) //输入框
 
@@ -210,8 +213,16 @@ const onScroll = () => {
 
 }
 
+//加载群、群成员信息
 const loadGroup = (groupId) => {
-
+  findGroup(groupId).then((groupVO) => {
+    group.value = groupVO
+    chatStore.updateChatFromGroup(groupVO)
+    groupStore.updateGroup(groupVO)
+  })
+  findGroupMembers(groupId).then((members) => {
+    groupMembers.value = members;
+  })
 }
 
 const loadFriend = (friendId) => {
@@ -238,6 +249,37 @@ watch(props.chat, async (newChat,oldChat) => {
   }, {immediate: true}
 )
 
+const isGroup = computed(() => {
+  return props.chat.type == CHATINFO_TYPE.GROUP
+})
+
+const isPrivate = computed(() => {
+  return props.chat.type == CHATINFO_TYPE.PRIVATE
+})
+
+const chooseHeadImage = (msgInfo) => {
+  if (isGroup.value){
+    let member = groupMembers.value.find((m) => m.userId == msgInfo.sendId)
+    return member ? member.headImage : "";
+  }else {
+    return msgInfo.sendId == userStore.userInfo.id ? userStore.userInfo.headImageThumb : props.chat.headImage
+  }
+}
+
+const chooseShowName = (msgInfo) => {
+  if (!msgInfo) {
+    return ""
+  }
+  if (isGroup.value) {
+    //群成员头像
+    let member = groupMembers.value.find((m) => m.userId == msgInfo.sendId);
+    return member ? member.showNickname : msgInfo.sendNickname || "";
+  } else {
+    //自己的或好友的头像
+    return msgInfo.selfSend ? userStore.userInfo.nickname : props.chat.showName
+  }
+}
+
 onMounted(() => {
   let msgWindow = document.getElementById('msgWindow');
   msgWindow.addEventListener('scroll',onScroll)
@@ -255,6 +297,8 @@ onMounted(() => {
           <chat-message-item
               v-if="idx >= showMinIdx"
               :mine="msgInfo.sendId == userStore.userInfo.id"
+              :headImage="chooseHeadImage(msgInfo)"
+              :showName="chooseShowName(msgInfo)"
               :msgInfo="msgInfo" >
           </chat-message-item>
         </li>
@@ -269,7 +313,6 @@ onMounted(() => {
       </chat-input>
     </div>
   </div>
-
 </template>
 
 <style scoped lang="scss">
@@ -280,7 +323,9 @@ onMounted(() => {
   background-color: var(--theme-light-gray);
 
   .chatbox-header {
-    height: 50px;
+    line-height: 35px;
+    text-align: center;
+    height: 35px;
     border-bottom: #dcdfe6 solid 1px;
   }
 
