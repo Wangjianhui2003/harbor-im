@@ -62,5 +62,4 @@ public class PrivateMsgController {
             @NotNull(message = "size不能为空") @RequestParam Long size) {
         return Results.success(privateMessageService.findHistoryMessage(friendId, page, size));
     }
-
 }

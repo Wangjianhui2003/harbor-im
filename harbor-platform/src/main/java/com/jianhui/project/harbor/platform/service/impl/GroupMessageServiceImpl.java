@@ -156,7 +156,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         Date minDate = DateUtils.addMonths(new Date(), -months);
         LambdaQueryWrapper<GroupMessage> wp = Wrappers.lambdaQuery(GroupMessage.class)
                 .gt(GroupMessage::getSendTime, minDate)
-                .in(GroupMessage::getSendId, groupIds)
+                .in(GroupMessage::getGroupId, groupIds)
                 .orderByAsc(GroupMessage::getId);
         List<GroupMessage> msgList = list(wp);
         // 通过群聊id对消息进行分组
