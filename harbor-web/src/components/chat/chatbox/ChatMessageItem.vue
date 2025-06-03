@@ -79,14 +79,14 @@ const selfSend = computed(() => {
       </div>
       <div class="content-container" :class="{selfSendContent : selfSend}">
         <div class="send-info" :class="{selfSendRow : selfSend}">
-          <div>
+          <div class="name">
             {{props.showName}}
           </div >
           <div class="send-time">
             {{dateUtil.toTimeText(props.msgInfo.sendTime)}}
           </div>
         </div>
-        <div class="content">
+        <div class="content" :class="{selfSendBubble : selfSend}">
           {{ props.msgInfo.content}}
         </div>
       </div>
@@ -100,6 +100,15 @@ const selfSend = computed(() => {
   background-color: #94C2ED;
   padding: 10px;
   border-radius: 9px;
+  max-width: 60%;
+}
+
+.selfSendBubble{
+  background-color: var(--bubble-green);
+}
+
+.name{
+  font-size: 14px;
 }
 
 .tip{
@@ -126,7 +135,7 @@ const selfSend = computed(() => {
 
 .send-time{
   color: gray;
-  font-size: 12px;
+  font-size: 11px;
   margin: 0 20px
 }
 
@@ -142,8 +151,9 @@ const selfSend = computed(() => {
 .content-container{
   display: flex;
   flex-direction: column;
+  align-items: start;
   margin: 0 10px;
-  max-width: 30%;
+  width: 100%;
 }
 
 .selfSendContent{

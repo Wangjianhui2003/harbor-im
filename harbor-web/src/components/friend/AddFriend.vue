@@ -23,7 +23,7 @@ const users = ref([])
 const searchText = ref("")
 
 //查询用户
-const onSearch = () => {
+const onSarch = () => {
   if (!searchText.value) {
     return;
   }

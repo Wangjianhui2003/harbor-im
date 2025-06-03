@@ -4,7 +4,7 @@
 import ChatInput from "./chatbox/ChatInput.vue";
 import {computed, nextTick, onMounted, reactive, ref, watch} from "vue";
 import useChatStore from "../../store/chatStore.js";
-import {sendMessageReq} from "../../api/message.js";
+import {sendMessageReq} from "../../api/privateMsg.js";
 import ChatMessageItem from "./chatbox/ChatMessageItem.vue";
 import useUserStore from "../../store/userStore.js";
 import {CHATINFO_TYPE, MESSAGE_TYPE, MSG_CONTENT_TYPE} from "../../common/enums.js";
@@ -233,9 +233,9 @@ const loadReaded = (friendId) => {
 
 }
 
-watch(props.chat, async (newChat,oldChat) => {
+//监听chat切换，做刷新信息操作和清除输入栏等操作
+watch(() => props.chat, async (newChat,oldChat) => {
   if (newChat.targetId > 0 && (!oldChat || newChat.type != oldChat.type || newChat.targetId != oldChat.targetId)) {
-    console.log("变换",newChat,oldChat)
     userInfo.value = {}
     groupMembers.value = []
     group.value = {}
@@ -245,8 +245,13 @@ watch(props.chat, async (newChat,oldChat) => {
       loadFriend(props.chat.targetId)
       loadReaded(props.chat.targetId)
     }
+    scrollToBottom()
+    readedMessage()
+    resetEditor();
+    isReceipt.value = false;
+    //TODO:完善刷新
   }
-  }, {immediate: true}
+  }, {immediate: true,deep: true}
 )
 
 const isGroup = computed(() => {
@@ -320,7 +325,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: var(--theme-light-gray);
+  background-color: var(--light-white);
 
   .chatbox-header {
     line-height: 35px;

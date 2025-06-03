@@ -8,10 +8,11 @@ import useChatStore from "../store/chatStore.js";
 import {CHATINFO_TYPE, CMD_TYPE, MESSAGE_TYPE} from "../common/enums.js";
 import {ElMessage, ElMessageBox} from "element-plus";
 import useUserStore from "../store/userStore.js";
-import {pullOfflinePrivateMsg} from "../api/message.js";
+import {pullOfflinePrivateMessage} from "../api/privateMsg.js";
 import * as checkMsgType from "../common/checkMsgType.js";
 import useFriendStore from "../store/friendStore.js";
 import {useGroupStore} from "../store/groupStore.js";
+import {pullOfflineGroupMessage} from "../api/groupMsg.js";
 
 /**
  * 主页
@@ -130,14 +131,21 @@ const pullPrivateOfflineMsg = () => {
   //设置加载标识符
   chatStore.setLoadingPrivateMsgState(true)
   console.log(chatStore.privateMsgMaxId)
-  pullOfflinePrivateMsg(chatStore.privateMsgMaxId).catch((err) => {
-    console.log("拉取离线消息出错",err)
+  //请求后端
+  pullOfflinePrivateMessage(chatStore.privateMsgMaxId).catch((err) => {
+    console.log("拉取私聊离线消息出错",err)
     chatStore.setLoadingPrivateMsgState(false)
   })
 }
 
 //TODO:拉取离线群聊消息
 const pullGroupOfflineMsg = () => {
+  chatStore.setLoadingGroupMsgState(true)
+  console.log(chatStore.groupMsgMaxId)
+  pullOfflineGroupMessage(chatStore.groupMsgMaxId).catch((err) => {
+    console.log("拉取群聊离线消息出错",err)
+    chatStore.setLoadingGroupMsgState(false)
+  })
 }
 
 //插入私聊消息(有人发消息)

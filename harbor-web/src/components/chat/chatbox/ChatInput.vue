@@ -210,8 +210,7 @@ defineExpose({
          ref="content"
          @keydown="onKeydown"
          @compositionstart="compositionFlag=true"
-         @compositionend="onCompositionend"
-    >
+         @compositionend="onCompositionend" >
     </div>
   </div>
 </template>
