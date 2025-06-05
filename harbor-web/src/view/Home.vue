@@ -53,8 +53,8 @@ const onReconnectWS = () => {
   reconnecting.value = false;
   // 重新加载群和好友
   const promises = [];
-  promises.push(friendStore().loadFriend());
-  // promises.push();TODO:reload group
+  promises.push(friendStore.loadFriend());
+  promises.push(groupStore.loadGroups());
   Promise.all(promises).then(() => {
     pullPrivateOfflineMsg()
     pullGroupOfflineMsg()
@@ -111,7 +111,6 @@ const init = () => {
         handleSystemMessage(msgInfo);
       }
     })
-
     //设置ws关闭的回调函数
     wsApi.onClose((e) => {
       console.log(e);

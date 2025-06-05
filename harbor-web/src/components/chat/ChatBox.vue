@@ -4,12 +4,15 @@
 import ChatInput from "./chatbox/ChatInput.vue";
 import {computed, nextTick, onMounted, reactive, ref, watch} from "vue";
 import useChatStore from "../../store/chatStore.js";
-import {sendMessageReq} from "../../api/privateMsg.js";
+import {getMaxReadedPrivateMessageId, readPrivateMessage, sendMessageReq} from "../../api/privateMsg.js";
 import ChatMessageItem from "./chatbox/ChatMessageItem.vue";
 import useUserStore from "../../store/userStore.js";
 import {CHATINFO_TYPE, MESSAGE_TYPE, MSG_CONTENT_TYPE} from "../../common/enums.js";
 import {findGroup, findGroupMembers} from "../../api/group.js";
 import {useGroupStore} from "../../store/groupStore.js";
+import {readGroupMessage} from "../../api/groupMsg.js";
+import {getUserInfo} from "../../api/user.js";
+import useFriendStore from "../../store/friendStore.js";
 
 const props = defineProps({
   chat: {
@@ -20,6 +23,7 @@ const props = defineProps({
 const chatStore = useChatStore();
 const userStore = useUserStore()
 const groupStore = useGroupStore()
+const friendStore = useFriendStore()
 
 const chatEditor = ref(null) //输入框
 
@@ -205,7 +209,18 @@ const resetEditor = () => {
   })
 }
 
+//发送请求：将该会话所有消息标为已读
 const readedMessage = () => {
+  if (props.chat.unreadCount === 0) return
+  console.log('重置未读数:',unreadCount.value)
+  chatStore.resetUnread(props.chat)
+  //私聊
+  if (props.chat.type == CHATINFO_TYPE.PRIVATE) {
+    readPrivateMessage(props.chat.targetId)
+  }else {
+    //群聊
+    readGroupMessage(props.chat.targetId)
+  }
 }
 
 //监听到滚动事件时触发(onMounted时添加监听器到msgWindow)
@@ -225,12 +240,51 @@ const loadGroup = (groupId) => {
   })
 }
 
+//后端请求加载好友信息
 const loadFriend = (friendId) => {
-
+  getUserInfo(friendId).then((userVO) => {
+    userInfo.value = userVO
+    updateFriendInfo()
+  })
 }
 
-const loadReaded = (friendId) => {
+//当前会话未读计数
+const unreadCount = computed(() => {
+  return props.chat.unreadCount
+})
 
+//切换到私聊会话时更新信息
+const updateFriendInfo = () => {
+  if(isFriend.value){
+    let friendInfo = JSON.parse(JSON.stringify(friend.value));
+    friendInfo.headImage = userInfo.value.headImageThumb;
+    friendInfo.friendNickname = userInfo.value.nickname;
+    //有备注显示备注
+    friendInfo.showNickname =
+        friend.value.remarkNickname ? friend.value.remarkNickname : friend.value.friendNickname;
+    chatStore.updateChatFromFriend(friendInfo)
+    friendStore.updateFriend(friendInfo)
+  }else {
+    //已经不是好友
+    chatStore.updateChatFromUser(userInfo.value)
+  }
+}
+
+//判断和当前会话是否是好友
+const isFriend = computed(() => {
+  return friendStore.isFriend(userInfo.value.id)
+})
+
+//返回好友信息(备注)
+const friend = computed(() => {
+  return friendStore.findFriend(userInfo.value.id)
+})
+
+//将当前私聊该为已读的设为已读(多客户端同时在线)
+const loadReaded = (friendId) => {
+  getMaxReadedPrivateMessageId(friendId).then((maxId => {
+    chatStore.readedMessage(friendId,maxId)
+  }))
 }
 
 //监听chat切换，做刷新信息操作和清除输入栏等操作

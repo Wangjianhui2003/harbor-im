@@ -101,6 +101,7 @@ const selfSend = computed(() => {
   padding: 10px;
   border-radius: 9px;
   max-width: 60%;
+  overflow-wrap: break-word;
 }
 
 .selfSendBubble{

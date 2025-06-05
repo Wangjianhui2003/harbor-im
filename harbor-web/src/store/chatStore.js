@@ -2,6 +2,7 @@ import {defineStore} from "pinia";
 import useUserStore from "./userStore.js";
 import localForage from "localforage";
 import {CHATINFO_TYPE, MESSAGE_STATUS, MESSAGE_TYPE} from "../common/enums.js";
+import friend from "../view/Friend.vue";
 
 /* 为了加速拉取离线消息效率，拉取时消息暂时存储到cacheChats,等
 待所有离线消息拉取完成后，再统一渲染*/
@@ -202,12 +203,17 @@ const useChatStore = defineStore("chatStore", {
                 this.saveToStorage()
                 return
             }
-            if (msgInfo.type == MESSAGE_TYPE.TEXT) {
+            if (msgInfo.type == MESSAGE_TYPE.TEXT || msgInfo.type == MESSAGE_TYPE.RECALL || msgInfo.type == MESSAGE_TYPE.TIP_TEXT) {
                 chat.lastContent = msgInfo.content;
             }
             chat.lastSendTime = msgInfo.sendTime;
             chat.sendNickname = msgInfo.sendNickname;
-            // TODO:完善，insertMessage
+            //未读+1
+            if(!msgInfo.selfSend && msgInfo.status != MESSAGE_STATUS.READED &&
+            msgInfo.status != MESSAGE_STATUS.RECALL && msgInfo.type != MESSAGE_TYPE.TIP_TEXT){
+                chat.unreadCount++;
+            }
+
             // 根据id顺序插入，防止消息乱序
             let insertPos = chat.messages.length;
             if (msgInfo.id && msgInfo.id > 0) {
@@ -293,6 +299,17 @@ const useChatStore = defineStore("chatStore", {
                 this.saveToStorage()
             }
         },
+        //用userInfo更新chat(不是好友但出现在会话里)
+        updateChatFromUser(userInfo){
+            let chat = this.findChatByFriendId(userInfo.id)
+            // 更新会话中的昵称和头像
+            if(chat && (chat.headImage != userInfo.headImageThumb || chat.showName != userInfo.nickname)){
+                chat.headImage = userInfo.headImageThumb;
+                chat.showName = userInfo.nickname;
+                chat.stored = false;
+                this.saveToStorage();
+            }
+        },
         clear() {
             cacheChats = []
             this.chats = [];
@@ -312,6 +329,22 @@ const useChatStore = defineStore("chatStore", {
                 }
             }
         },
+        //将私聊会话maxId以下的全部设为已读(多时其他客户端已读客户端)
+        readedMessage(friendId,maxId){
+            let chat = this.findChatByFriendId(friendId)
+            if(!chat) return
+            chat.messages.forEach((m) => {
+                if (m.id && m.selfSend && m.status < MESSAGE_STATUS.RECALL){
+                    // pos.maxId为空表示整个会话已读
+                    if(!maxId || m.id <= maxId){
+                        m.status = MESSAGE_STATUS.READED
+                        chat.stored = false;
+                    }
+                }
+            })
+            this.saveToStorage()
+        },
+        //处理撤回消息
         recallMsg(msgInfo,chatInfo){
             let chat = chatStore.findChat(chatInfo);
             if (!chat) return;

@@ -205,12 +205,15 @@ defineExpose({
 
 <template>
   <div class="chat-input-area">
-    <div class="input"
-         contenteditable="true"
-         ref="content"
-         @keydown="onKeydown"
-         @compositionstart="compositionFlag=true"
-         @compositionend="onCompositionend" >
+    <div class="input-outer">
+      <div class="input"
+           contenteditable="true"
+           ref="content"
+           @keydown="onKeydown"
+           @compositionstart="compositionFlag=true"
+           @compositionend="onCompositionend" >
+      </div>
+      <div>|</div>
     </div>
   </div>
 </template>
@@ -222,15 +225,15 @@ defineExpose({
   width: 100%;
   position: relative;
   background-color: var(--theme-light-gray);
+  border: 1px solid black;
 
-  .input {
+  .input-outer {
     position: absolute;
     left: 11px;
     right: 0;
     bottom: 10px;
     min-height: 100%;
     width: 98%;
-    outline: none;
     padding: 8px;
     padding-left: 20px;
     padding-top: 15px;
@@ -238,7 +241,32 @@ defineExpose({
     border-radius: 10px;
     background-color: white;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+
+    display: flex;
   }
+
+  .input{
+    min-height: 100%;
+    width: 75%;
+    outline: none;
+  }
+
+  //.input-outer {
+  //  position: absolute;
+  //  left: 11px;
+  //  right: 0;
+  //  bottom: 10px;
+  //  min-height: 100%;
+  //  width: 98%;
+  //  outline: none;
+  //  padding: 8px;
+  //  padding-left: 20px;
+  //  padding-top: 15px;
+  //  border: solid 1px #ddd;
+  //  border-radius: 10px;
+  //  background-color: white;
+  //  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  //}
 
 }
 
