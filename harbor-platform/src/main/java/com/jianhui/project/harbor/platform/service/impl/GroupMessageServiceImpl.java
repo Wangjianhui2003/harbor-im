@@ -250,8 +250,8 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         // 原来的已读消息位置
         Object oldMaxReadedId = redisTemplate.opsForHash().get(key, session.getUserId().toString());
         // 记录已读消息位置
-        redisTemplate.opsForHash().put(key, session.getUserId().toString(),maxMsgId);
-        List<GroupMessage> unreadReceiptMsgs = groupMessageMapper.findUnreadReceiptMsg(oldMaxReadedId,maxMsgId,MessageStatus.RECALL.code(),true);
+        redisTemplate.opsForHash().put(key, String.valueOf(session.getUserId()),String.valueOf(maxMsgId));
+        List<GroupMessage> unreadReceiptMsgs = groupMessageMapper.findUnreadReceiptMsg(groupId,oldMaxReadedId,maxMsgId,MessageStatus.RECALL.code(),true);
         if (CollectionUtil.isNotEmpty(unreadReceiptMsgs)) {
             List<Long> userIds = groupMemberService.findUserIdsByGroupId(groupId);
             Map<Object, Object> maxIdMap = redisTemplate.opsForHash().entries(key);

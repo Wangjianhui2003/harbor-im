@@ -107,7 +107,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             throw new GlobalException("部分用户不是您的好友，邀请失败");
         }
         //将friend信息处理成member
-        List<GroupMember> memberList = friends.stream().map(f -> {
+        List<GroupMember> newMemberList = friends.stream().map(f -> {
             Optional<GroupMember> optional =
                     members.stream().filter(member -> member.getUserId().equals(f.getFriendId())).findFirst();
             //之前没加入过的new一个
@@ -122,17 +122,17 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             return member;
         }).toList();
         //存库
-        if(!memberList.isEmpty()){
-            groupMemberService.saveOrUpdateBatch(memberList);
+        if(!newMemberList.isEmpty()){
+            groupMemberService.saveOrUpdateBatch(newMemberList);
         }
         //给每个被邀请的friend发送消息
-        for(GroupMember member : members){
+        for(GroupMember member : newMemberList){
             GroupVO groupVO = convertToVO(group, member);
             sendAddGroupMessage(groupVO, List.of(member.getUserId()), false);
         }
         // 给群成员推送进入群聊消息
         List<Long> userIds = groupMemberService.findUserIdsByGroupId(vo.getGroupId());
-        String memberNames =members.stream().map(GroupMember::getShowNickname).collect(Collectors.joining(","));
+        String memberNames =newMemberList.stream().map(GroupMember::getShowNickname).collect(Collectors.joining(","));
         String content = String.format("'%s'邀请'%s'加入了群聊", session.getNickname(), memberNames);
         sendTipMessage(vo.getGroupId(), userIds, content, true);
         log.info("邀请进入群聊，群聊id:{},群聊名称:{},被邀请用户id:{}", group.getId(), group.getName(), vo.getFriendIds());
