@@ -60,7 +60,7 @@ const onReconnectWS = () => {
     pullGroupOfflineMsg()
     ElMessage.success("重连成功")
   }).catch(error => {
-    ElMessage.error("拉取离线信息失败")
+    ElMessage.error("拉取离线消息失败")
     onExit()
   })
 }
@@ -76,12 +76,14 @@ const init = () => {
   mainStore.loadAll().then(() => {
     wsApi.connect(wsUrl, sessionStorage.getItem("accessToken"))
 
-    //连接成功的回调
+    //连接成功回调
     wsApi.onConnect(() => {
       if (reconnecting.value) {
+        //是重连
         onReconnectWS()
       } else {
-        console.log("ws登录成功，开始拉取离线消息")
+        //是第一次登录
+        console.log("开始拉取离线消息")
         pullPrivateOfflineMsg()
         pullGroupOfflineMsg()
       }
@@ -129,7 +131,7 @@ const init = () => {
 const pullPrivateOfflineMsg = () => {
   //设置加载标识符
   chatStore.setLoadingPrivateMsgState(true)
-  console.log(chatStore.privateMsgMaxId)
+  console.log("max private messageId:",chatStore.privateMsgMaxId)
   //请求后端
   pullOfflinePrivateMessage(chatStore.privateMsgMaxId).catch((err) => {
     console.log("拉取私聊离线消息出错",err)
@@ -140,7 +142,7 @@ const pullPrivateOfflineMsg = () => {
 //TODO:拉取离线群聊消息
 const pullGroupOfflineMsg = () => {
   chatStore.setLoadingGroupMsgState(true)
-  console.log(chatStore.groupMsgMaxId)
+  console.log("max group messageId:",chatStore.groupMsgMaxId)
   pullOfflineGroupMessage(chatStore.groupMsgMaxId).catch((err) => {
     console.log("拉取群聊离线消息出错",err)
     chatStore.setLoadingGroupMsgState(false)
@@ -250,7 +252,15 @@ const handleGroupMessage = (msgInfo) => {
   }
   //回执消息
   if (msgInfo.type == MESSAGE_TYPE.RECEIPT) {
-    //TODO:群回执消息
+    // 更新消息已读人数
+    let msgInfo_ = {
+      id: msg.id,
+      groupId: msg.groupId,
+      readedCount: msg.readedCount,
+      receiptOk: msg.receiptOk
+    };
+    chatStore.updateMessage(msgInfo_,chatInfo)
+    return;
   }
   //撤回消息信号
   if (msgInfo.type == MESSAGE_TYPE.RECALL) {

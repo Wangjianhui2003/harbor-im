@@ -32,15 +32,16 @@ const connect = (wsUrl,accessToken) => {
             websock.send(JSON.stringify(loginInfo));
         }
 
-        //收到消息回调
+        //收到消息
         websock.onmessage = (e) => {
             let sendInfo = JSON.parse(e.data)
             if (sendInfo.cmd === CMD_TYPE.LOGIN) {
-                //心跳
+                //成功登录
+                //开始心跳
                 heartCheck.start()
                 // 连接后回调函数
-                connectCallBack && connectCallBack();
                 console.log('WebSocket登录成功')
+                connectCallBack && connectCallBack();
             }else if (sendInfo.cmd === CMD_TYPE.HEARTBEAT) {
                 //重置心跳
                 heartCheck.reset()

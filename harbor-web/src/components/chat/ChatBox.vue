@@ -203,7 +203,6 @@ const processReqQueue = () => {
 //重置输入区
 const resetEditor = () => {
   nextTick(() => {
-    console.log(chatEditor.value)
     chatEditor.value.clear()
     chatEditor.value.focus()
   })

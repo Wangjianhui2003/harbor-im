@@ -3,6 +3,7 @@ import useUserStore from "./userStore.js";
 import localForage from "localforage";
 import {CHATINFO_TYPE, MESSAGE_STATUS, MESSAGE_TYPE} from "../common/enums.js";
 import friend from "../view/Friend.vue";
+import {TIME_TIP_INTERVAL} from "../common/constant.js";
 
 /* 为了加速拉取离线消息效率，拉取时消息暂时存储到cacheChats,等
 待所有离线消息拉取完成后，再统一渲染*/
@@ -188,10 +189,10 @@ const useChatStore = defineStore("chatStore", {
         insertMessage(msgInfo, chatInfo) {
             let type = chatInfo.type
             //记录消息的最大id
-            if (msgInfo.id && type === "PRIVATE" && msgInfo.id > this.privateMsgMaxId) {
+            if (msgInfo.id && type === CHATINFO_TYPE.PRIVATE && msgInfo.id > this.privateMsgMaxId) {
                 this.privateMsgMaxId = msgInfo.id;
             }
-            if (msgInfo.id && type === "GROUP" && msgInfo.id > this.groupMsgMaxId) {
+            if (msgInfo.id && type === CHATINFO_TYPE.GROUP && msgInfo.id > this.groupMsgMaxId) {
                 this.groupMsgMaxId = msgInfo.id;
             }
             // 如果是已存在消息，则覆盖旧的消息数据
@@ -214,6 +215,27 @@ const useChatStore = defineStore("chatStore", {
                 chat.unreadCount++;
             }
 
+            //@我或@所有人
+            if (msgInfo.selfSend && chat.type === CHATINFO_TYPE.GROUP && msgInfo.atUserIds && msgInfo.status != MESSAGE_STATUS.READED){
+                const userStore = useUserStore()
+                const id = userStore.userInfo.id
+                if(msgInfo.atUserIds.indexOf(id) >= 0){
+                    chat.atMe = true;
+                }
+                if(msgInfo.atUserIds.indexOf(-1) >= 0){
+                    chat.atAll = true;
+                }
+            }
+
+            //间隔大于十分钟插入一个时间提示
+            if(!chat.lastTimeTip || (chat.lastTimeTip < msgInfo.sendTime - TIME_TIP_INTERVAL)){
+                chat.messages.push({
+                    sendTime: msgInfo.sendTime,
+                    type: MESSAGE_TYPE.TIP_TIME,
+                })
+                chat.lastTimeTip = msgInfo.sendTime;
+            }
+
             // 根据id顺序插入，防止消息乱序
             let insertPos = chat.messages.length;
             if (msgInfo.id && msgInfo.id > 0) {
@@ -229,6 +251,7 @@ const useChatStore = defineStore("chatStore", {
             chat.stored = false;
             this.saveToStorage()
         },
+
         //将cacheChats刷新到chats
         refreshChat(){
             //没有缓存，不刷新
@@ -245,6 +268,7 @@ const useChatStore = defineStore("chatStore", {
             cacheChats = null;
             this.saveToStorage()
         },
+
         //isLoading=true,现在在拉取离线消息，isLoading=false，现在没有在拉取离线消息，可以刷新到chats
         setLoadingPrivateMsgState(loading){
             this.loadingPrivateMsg = loading
@@ -252,12 +276,14 @@ const useChatStore = defineStore("chatStore", {
                 this.refreshChat()
             }
         },
+
         setLoadingGroupMsgState(loading){
             this.loadingPrivateMsg = loading
             if(!this.isLoading){
                 this.refreshChat()
             }
         },
+
         //移除chat
         removeChat(idx) {
             let chats = this.findChats;
@@ -268,6 +294,7 @@ const useChatStore = defineStore("chatStore", {
             chats[idx].stored = false;
             this.saveToStorage()
         },
+
         //移除私聊消息
         removePrivateChat(friendId){
             let chats = this.findChats;
@@ -278,6 +305,7 @@ const useChatStore = defineStore("chatStore", {
                 }
             }
         },
+
         //移除群组消息
         removeGroupChat(groupId){
             let chats = this.findChats;
@@ -288,6 +316,7 @@ const useChatStore = defineStore("chatStore", {
                 }
             }
         },
+
         updateChatFromFriend(friend){
             let chat = this.findChatByFriendId(friend.id);
             // 更新会话中的群名和头像
@@ -299,6 +328,7 @@ const useChatStore = defineStore("chatStore", {
                 this.saveToStorage()
             }
         },
+
         //用userInfo更新chat(不是好友但出现在会话里)
         updateChatFromUser(userInfo){
             let chat = this.findChatByFriendId(userInfo.id)
@@ -310,11 +340,13 @@ const useChatStore = defineStore("chatStore", {
                 this.saveToStorage();
             }
         },
+
         clear() {
             cacheChats = []
             this.chats = [];
             this.activeChat = null;
         },
+
         //清除未读状态(未读消息数，at等)
         resetUnread(chatInfo){
             let chats = this.findChats
@@ -329,6 +361,7 @@ const useChatStore = defineStore("chatStore", {
                 }
             }
         },
+
         //将私聊会话maxId以下的全部设为已读(多时其他客户端已读客户端)
         readedMessage(friendId,maxId){
             let chat = this.findChatByFriendId(friendId)
@@ -344,6 +377,7 @@ const useChatStore = defineStore("chatStore", {
             })
             this.saveToStorage()
         },
+
         //处理撤回消息
         recallMsg(msgInfo,chatInfo){
             let chat = chatStore.findChat(chatInfo);
@@ -384,6 +418,16 @@ const useChatStore = defineStore("chatStore", {
                 // 更新会话中的群名称和头像
                 chat.headImage = group.headImageThumb;
                 chat.showName = group.showGroupName;
+                chat.stored = false;
+                this.saveToStorage()
+            }
+        },
+        //更新消息
+        updateMessage(msgInfo,chatInfo){
+            let chat = this.findChat(chatInfo)
+            let message = this.findMessage(chat,msgInfo)
+            if(message){
+                Object.assign(message, msgInfo)
                 chat.stored = false;
                 this.saveToStorage()
             }
