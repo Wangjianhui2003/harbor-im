@@ -71,7 +71,7 @@ public class PrivateMessageProcessor extends AbstractMsgProcessor<IMRecvInfo> {
         rocketMQTemplate.asyncSend(topic,imSendResult, new SendCallback() {
             @Override
             public void onSuccess(SendResult sendResult) {
-                log.info("私聊消息发送结果回推成功:msg,{}",imSendResult.getData());
+                log.info("私聊消息发送结果回推成功:msg:{}",imSendResult.getData());
             }
 
             @Override
