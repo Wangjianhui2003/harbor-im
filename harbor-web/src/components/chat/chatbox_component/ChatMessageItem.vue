@@ -6,6 +6,10 @@ import * as dateUtil from "../../../common/date.js";
 import * as checkMsgType from "../../../common/checkMsgType.js";
 import HeadImage from "../../common/HeadImage.vue";
 
+/**
+ * 消息组件(聊天框里的一条条消息包括提示)
+ */
+
 const props = defineProps({
   msgInfo: {
     type: Object  //消息
@@ -120,7 +124,10 @@ const selfSend = computed(() => {
 }
 
 .time-tip {
-  color: #23c483;
+  margin: 45px 0;
+  text-align: center;
+  color: gray;
+  font-size: 12px;
 }
 
 .msg-item{

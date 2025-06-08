@@ -198,12 +198,12 @@ const handlePrivateMessage = (msgInfo) => {
 
   // 已读消息
   if(msgInfo.type == MESSAGE_TYPE.READED){
-
+    //TODO: 将消息标为已读
   }
 
   // 消息回执处理,改消息状态为已读
   if(msgInfo.type == MESSAGE_TYPE.RECEIPT){
-
+    //TODO：私聊消息回执处理
   }
 
   // 消息撤回

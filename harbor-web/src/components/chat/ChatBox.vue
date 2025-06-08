@@ -1,11 +1,11 @@
 <script setup>
 //聊天对话框
 
-import ChatInput from "./chatbox/ChatInput.vue";
+import ChatInput from "./chatbox_component/ChatInput.vue";
 import {computed, nextTick, onMounted, reactive, ref, watch} from "vue";
 import useChatStore from "../../store/chatStore.js";
 import {getMaxReadedPrivateMessageId, readPrivateMessage, sendMessageReq} from "../../api/privateMsg.js";
-import ChatMessageItem from "./chatbox/ChatMessageItem.vue";
+import ChatMessageItem from "./chatbox_component/ChatMessageItem.vue";
 import useUserStore from "../../store/userStore.js";
 import {CHATINFO_TYPE, MESSAGE_TYPE, MSG_CONTENT_TYPE} from "../../common/enums.js";
 import {findGroup, findGroupMembers} from "../../api/group.js";
