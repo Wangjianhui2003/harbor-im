@@ -1,6 +1,7 @@
 package com.jianhui.project.harbor.server.netty.processor;
 
 import cn.hutool.core.util.StrUtil;
+import com.jianhui.project.harbor.common.constant.IMMQConstant;
 import com.jianhui.project.harbor.common.constant.IMRedisKey;
 import com.jianhui.project.harbor.common.enums.IMCmdType;
 import com.jianhui.project.harbor.common.enums.IMSendCode;
@@ -13,6 +14,9 @@ import com.jianhui.project.harbor.server.netty.UserChannelCxtMap;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -20,7 +24,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PrivateMessageProcessor extends AbstractMsgProcessor<IMRecvInfo> {
 
-    private final RedisMQTemplate redisMQTemplate;
+    private final RocketMQTemplate rocketMQTemplate;
 
     @Override
     public void process(IMRecvInfo recvInfo) {
@@ -59,8 +63,21 @@ public class PrivateMessageProcessor extends AbstractMsgProcessor<IMRecvInfo> {
             result.setCode(sendCode.code());
             result.setData(recvInfo.getData());
             // 推送到结果队列
-            String key = StrUtil.join(":", IMRedisKey.IM_RESULT_PRIVATE_QUEUE,recvInfo.getServiceName());
-            redisMQTemplate.opsForList().rightPush(key, result);
+            asyncSendToMQ(IMMQConstant.PRIVATE_RESULT_TOPIC_PREFIX + recvInfo.getServiceName(),result);
         }
+    }
+
+    private void asyncSendToMQ(String topic,IMSendResult<Object> imSendResult) {
+        rocketMQTemplate.asyncSend(topic,imSendResult, new SendCallback() {
+            @Override
+            public void onSuccess(SendResult sendResult) {
+                log.info("私聊消息发送结果回推成功:msg,{}",imSendResult.getData());
+            }
+
+            @Override
+            public void onException(Throwable throwable) {
+                throw new RuntimeException(throwable);
+            }
+        },5000);
     }
 }

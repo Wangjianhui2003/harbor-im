@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+option java_package = "com.jianhui.project.harbor.common.model";
+option java_outer_classname = "HarborCommonModelProto";
+
+message IMUserInfo {
+  int64 id = 1;
+  int32 terminal = 2; // 使用定义的枚举类型
+}
+
+message IMGroupMessage {
+  IMUserInfo sender = 1;
+  repeated int64 recvIds = 2;
+  repeated int32 recvTerminals = 3; // 使用定义的枚举类型
+  bool sendToSelf = 4;
+  bool isSendBack = 5;
+  bytes data = 6; // 使用 bytes 类型来表示泛型 T
+}
+
+message IMHeartbeatInfo {
+}
+
+message IMLoginInfo {
+  string accessToken = 1;
+}
+
+
+message IMRecvInfo {
+  int32 cmd = 1;
+  IMUserInfo sender = 2;
+  repeated IMUserInfo receivers = 3;
+  bool isSendBack = 4;
+  string serviceName = 5;
+  bytes data = 6;
+}
+
+message IMSendInfo {
+  int32 cmd = 1;
+  bytes data = 2; // 使用 bytes 类型来表示泛型 T
+}
+
+message IMSendResult {
+  IMUserInfo sender = 1;
+  IMUserInfo receiver = 2;
+  int32 code = 3;
+  bytes data = 4;
+}
+
+message IMSessionInfo {
+  int64 userId = 1;
+  int32 terminal = 2;
+}
+
+message IMSystemMessage {
+  repeated int64 recvIds = 1;
+  repeated int32 recvTerminals = 2;
+  bool isSendBack = 3;
+  bytes data = 4;
+}
+

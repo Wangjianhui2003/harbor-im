@@ -155,12 +155,13 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         int months = session.getTerminal().equals(IMTerminalType.APP.code()) ? 1 : 3;
         Date minDate = DateUtils.addMonths(new Date(), -months);
         LambdaQueryWrapper<GroupMessage> wp = Wrappers.lambdaQuery(GroupMessage.class)
+                .gt(GroupMessage::getId, minId)
                 .gt(GroupMessage::getSendTime, minDate)
                 .in(GroupMessage::getGroupId, groupIds)
                 .orderByAsc(GroupMessage::getId);
         List<GroupMessage> msgList = list(wp);
         // 通过群聊id对消息进行分组
-        Map<Long, List<GroupMessage>> msgMap = msgList.stream().collect(Collectors.groupingBy(GroupMessage::getSendId));
+        Map<Long, List<GroupMessage>> msgMap = msgList.stream().collect(Collectors.groupingBy(GroupMessage::getGroupId));
         // 拉取退群前的消息
         List<GroupMember> quitGroupMembers = groupMemberService.findQuitInMonth(session.getUserId());
         for (GroupMember quitMember : quitGroupMembers) {
@@ -171,7 +172,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
                     .ne(GroupMessage::getStatus, MessageStatus.RECALL.code())
                     .orderByAsc(GroupMessage::getId);
             List<GroupMessage> groupMessages = list(wp);
-            msgMap.put(quitMember.getId(), groupMessages);
+            msgMap.put(quitMember.getGroupId(), groupMessages);
             groupMemberMap.put(quitMember.getGroupId(), quitMember);
         }
         // 推送消息
@@ -180,7 +181,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
             // 填充消息状态
             String key = StrUtil.join(":", RedisKey.IM_GROUP_READED_POSITION, groupId);
             Object o = redisTemplate.opsForHash().get(key, session.getUserId().toString());
-            long readedMaxId = Objects.isNull(o) ? -1 : Long.parseLong(o.toString());
+            long readedMaxId = o == null ? -1 : Long.parseLong(o.toString());
             Map<Object, Object> maxIdMap = null;
             for(GroupMessage m : groupMessages){
                 // 排除加群之前的消息

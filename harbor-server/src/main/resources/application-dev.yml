@@ -4,3 +4,8 @@ spring:
       host: common-redis-dev.magestack.cn
       port: 19389
       password: Sm9sVXBOYJjI030b5tz0trjpzvZzRhtZmEbv0uOImcD1wEDOPfeaqNU4PxHob/Wp
+
+rocketmq:
+  name-server: common-rocketmq-dev.magestack.cn:9876
+  producer:
+    group: im_server
