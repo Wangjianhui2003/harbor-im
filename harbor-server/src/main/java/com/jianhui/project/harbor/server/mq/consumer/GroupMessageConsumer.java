@@ -42,13 +42,12 @@ public class GroupMessageConsumer implements ApplicationRunner {
                     byte[] body = msg.getBody();
                     String string = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(body)).toString();
                     IMRecvInfo recvInfo = JSON.parseObject(string, IMRecvInfo.class);
-                    log.info("{}",recvInfo);
                     ProcessorFactory.getProcessor(IMCmdType.GROUP_MESSAGE).process(recvInfo);
                 }
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
         });
-
         consumer.start();
+        log.info("Server:{} 群聊信息消费者启动成功", IMServerGroup.serverId);
     }
 }

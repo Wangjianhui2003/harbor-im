@@ -49,7 +49,7 @@ public class LoginProcessor extends AbstractMsgProcessor<IMLoginInfo>{
         IMSessionInfo sessionInfo = JSON.parseObject(info, IMSessionInfo.class);
         Long userId = sessionInfo.getUserId();
         Integer terminal = sessionInfo.getTerminal();
-        log.info("用户websocket登录成功，userId:{}",userId);
+        log.info("用户websocket登录成功，userId:{},ServerId:{}",userId,IMServerGroup.serverId);
 
         ChannelHandlerContext context = UserChannelCxtMap.getChannelCtx(userId, terminal);
         //已经有相同userid + terminal的channel存在，强制下线之前登录的用户

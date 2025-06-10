@@ -339,6 +339,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
      * 发送加载标志，前端根据这个判断是否将cacheChats刷新到chats里
      */
     private void sendLoadingMessage(Boolean isLoadding){
+        log.info("拉取user:{}群聊消息状态:{}",SessionContext.getSession().getUserId(),isLoadding);
         UserSession session = SessionContext.getSession();
         GroupMessageVO msgInfo = new GroupMessageVO();
         msgInfo.setType(MessageType.LOADING.code());

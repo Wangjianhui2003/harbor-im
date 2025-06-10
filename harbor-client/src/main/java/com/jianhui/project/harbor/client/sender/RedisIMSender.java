@@ -93,7 +93,6 @@ public class RedisIMSender implements IMSender {
                     recvInfo.setIsSendBack(message.getIsSendBack());
                     recvInfo.setReceivers(List.of(new IMUserInfo(message.getRecvId(), terminal)));
                     recvInfo.setData(message.getData());
-                    String jsonString = JSON.toJSONString(recvInfo);
                     asyncSendToMQ(IMMQConstant.PRIVATE_MSG_TOPIC_PREFIX + serverId,recvInfo);
                 } else {
                     //离线用户
@@ -117,7 +116,6 @@ public class RedisIMSender implements IMSender {
                 String key = String.join(":", IMRedisKey.IM_USER_SERVER_ID, sender.getId().toString(), sender.getTerminal().toString());
                 Integer serverId = (Integer)redisMQTemplate.opsForValue().get(key);
                 if(serverId != null){
-                    String queueKey = String.join(":", IMRedisKey.IM_MESSAGE_PRIVATE_QUEUE, serverId.toString());
                     IMRecvInfo recvInfo = new IMRecvInfo();
                     // 自己的消息不需要回推消息发送结果
                     recvInfo.setIsSendBack(false);
@@ -246,17 +244,18 @@ public class RedisIMSender implements IMSender {
      */
     public void asyncSendToMQ(String topic, IMRecvInfo recvInfo){
         String jsonString = JSON.toJSONString(recvInfo);
-        rocketMQTemplate.asyncSend(topic,jsonString,new SendCallback() {
-
-            @Override
-            public void onSuccess(SendResult sendResult) {
-                log.info("推送到消息队列成功{}",sendResult);
-            }
-
-            @Override
-            public void onException(Throwable throwable) {
-                throw new RuntimeException(throwable);
-            }
-        },5000);
+        rocketMQTemplate.syncSend(topic, jsonString);
+//        rocketMQTemplate.asyncSend(topic,jsonString,new SendCallback() {
+//
+//            @Override
+//            public void onSuccess(SendResult sendResult) {
+//                log.info("推送到消息队列成功{}",sendResult);
+//            }
+//
+//            @Override
+//            public void onException(Throwable throwable) {
+//                throw new RuntimeException(throwable);
+//            }
+//        },5000);
     }
 }

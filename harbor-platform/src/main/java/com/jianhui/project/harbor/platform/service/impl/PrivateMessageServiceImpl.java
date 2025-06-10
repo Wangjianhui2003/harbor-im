@@ -189,6 +189,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
      * 告诉前端现在正在推送离线消息，不要将cacheChats加载到chats里
      */
     private void sendLoadingMessage(Boolean isLoading) {
+        log.info("私聊加载信号发送:{}", isLoading);
         UserSession session = SessionContext.getSession();
         PrivateMessageVO msgInfo = new PrivateMessageVO();
         msgInfo.setType(MessageType.LOADING.code());

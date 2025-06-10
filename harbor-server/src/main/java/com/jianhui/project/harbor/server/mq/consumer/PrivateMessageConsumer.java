@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.jianhui.project.harbor.common.constant.IMMQConstant;
 import com.jianhui.project.harbor.common.enums.IMCmdType;
 import com.jianhui.project.harbor.common.model.IMRecvInfo;
+import com.jianhui.project.harbor.server.netty.IMServer;
 import com.jianhui.project.harbor.server.netty.IMServerGroup;
 import com.jianhui.project.harbor.server.netty.processor.AbstractMsgProcessor;
 import com.jianhui.project.harbor.server.netty.processor.ProcessorFactory;
@@ -55,7 +56,7 @@ public class PrivateMessageConsumer implements ApplicationRunner {
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
         });
-
         consumer.start();
+        log.info("Server:{} 私聊信息消费者启动成功", IMServerGroup.serverId);
     }
 }
