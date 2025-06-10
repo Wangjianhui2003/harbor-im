@@ -8,6 +8,7 @@ import './assets/style/reset.css'
 import './assets/style/default.css'
 import {createPinia} from "pinia";
 import './assets/style/theme.scss'
+import 'vue3-emoji-picker/css'
 
 const app = createApp(App)
 const pinia = createPinia();

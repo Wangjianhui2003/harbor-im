@@ -192,6 +192,7 @@ const handlePrivateMessage = (msgInfo) => {
 
   //加载消息
   if(msgInfo.type == MESSAGE_TYPE.LOADING){
+    console.log("私聊加载标志:",msgInfo.content)
     chatStore.setLoadingPrivateMsgState(JSON.parse(msgInfo.content))
     return
   }

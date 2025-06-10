@@ -1,6 +1,7 @@
 <script setup>
 
-import {nextTick, ref} from "vue";
+import {nextTick, onMounted, onUnmounted, ref} from "vue";
+import EmojiPicker from "vue3-emoji-picker";
 
 const props = defineProps({
   ownerId: {
@@ -201,6 +202,55 @@ defineExpose({
   clear
 })
 
+//选择emoji
+function onSelectEmoji(emoji) {
+  console.log(emoji)
+  /*
+    // result
+    {
+        i: "😚",
+        n: ["kissing face"],
+        r: "1f61a", // with skin tone
+        t: "neutral", // skin tone
+        u: "1f61a" // without tone
+    }
+    */
+
+}
+
+const showEmojiPicker = ref(false)
+//emojiPicker ref
+const emojiPicker = ref(null)
+//表情按钮ref
+const emoteBtn = ref(null)
+
+//发生点击事件时处理picker的关闭
+const closeEmojiPicker = (e) => {
+  //未开启
+  if (!showEmojiPicker.value) {
+    return
+  }
+  //在Picker内部
+  if (emojiPicker.value && emojiPicker.value.$el.contains(e.target)){
+    return
+  }
+  //是按钮
+  if (emoteBtn.value && emoteBtn.value.contains(e.target)){
+    return
+  }
+  showEmojiPicker.value = false
+}
+
+// 在组件挂载时添加事件监听器
+onMounted(() => {
+  document.addEventListener('click', closeEmojiPicker);
+});
+
+// 在组件卸载时移除事件监听器，防止内存泄漏
+onUnmounted(() => {
+  document.removeEventListener('click',closeEmojiPicker);
+});
+
 </script>
 
 <template>
@@ -214,12 +264,13 @@ defineExpose({
            @compositionend="onCompositionend" >
       </div>
       <div class="option">
-        <img src="../../../assets/input/emote.svg" alt="表情" class="icon">
+        <img src="../../../assets/input/emote.svg" alt="表情" class="icon emote" @click="showEmojiPicker=!showEmojiPicker" ref="emoteBtn">
         <img src="../../../assets/input/image.svg" alt="图片" class="icon">
         <img src="../../../assets/input/record.svg" alt="语音" class="icon">
         <img src="../../../assets/input/file.svg" alt="文件" class="icon">
         <img src="../../../assets/input/phone-call.svg" alt="电话" class="icon">
         <img src="../../../assets/input/video.svg" alt="视频" class="icon">
+        <EmojiPicker :native="true" @select="onSelectEmoji" v-show="showEmojiPicker" class="emote-picker" ref="emojiPicker"/>
       </div>
     </div>
   </div>
@@ -231,6 +282,14 @@ defineExpose({
   width: 20%;
   display: flex;
   align-items: center;
+
+  position: relative;
+}
+
+.emote-picker{
+  position: absolute;
+  bottom: 40px;
+  right: -15px;
 }
 
 .icon{
@@ -240,12 +299,15 @@ defineExpose({
   margin: 0px 10px;
 }
 
+.emote{
+  position: relative;
+}
+
 .chat-input-area {
   min-height: 100%;
   width: 100%;
   position: relative;
   background-color: var(--theme-light-gray);
-  border: 1px solid black;
 
   .input-outer {
     position: absolute;

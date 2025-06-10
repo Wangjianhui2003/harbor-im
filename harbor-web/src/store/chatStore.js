@@ -258,6 +258,7 @@ const useChatStore = defineStore("chatStore", {
             if(!cacheChats){
                 return
             }
+            console.log("refresh chat")
             //按最新时间排序（在前）
             cacheChats.sort((chat1, chat2) => {
                 return chat2.lastSendTime - chat1.lastSendTime;
