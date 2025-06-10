@@ -213,12 +213,32 @@ defineExpose({
            @compositionstart="compositionFlag=true"
            @compositionend="onCompositionend" >
       </div>
-      <div>|</div>
+      <div class="option">
+        <img src="../../../assets/input/emote.svg" alt="表情" class="icon">
+        <img src="../../../assets/input/image.svg" alt="图片" class="icon">
+        <img src="../../../assets/input/record.svg" alt="语音" class="icon">
+        <img src="../../../assets/input/file.svg" alt="文件" class="icon">
+        <img src="../../../assets/input/phone-call.svg" alt="电话" class="icon">
+        <img src="../../../assets/input/video.svg" alt="视频" class="icon">
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
+
+.option{
+  width: 20%;
+  display: flex;
+  align-items: center;
+}
+
+.icon{
+  cursor: pointer;
+  height: 20px;
+  width: 20px;
+  margin: 0px 10px;
+}
 
 .chat-input-area {
   min-height: 100%;
@@ -232,41 +252,26 @@ defineExpose({
     left: 11px;
     right: 0;
     bottom: 10px;
-    min-height: 100%;
+    min-height: 40px;
     width: 98%;
-    padding: 8px;
-    padding-left: 20px;
-    padding-top: 15px;
+    padding: 12px;
     border: solid 1px #ddd;
     border-radius: 10px;
     background-color: white;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 
     display: flex;
+    align-items: center;
   }
 
   .input{
-    min-height: 100%;
-    width: 75%;
+    height: 100%;
+    max-height: 350px;
+    overflow: auto;
+    flex: 1;
     outline: none;
+    min-width: 0;
   }
-
-  //.input-outer {
-  //  position: absolute;
-  //  left: 11px;
-  //  right: 0;
-  //  bottom: 10px;
-  //  min-height: 100%;
-  //  width: 98%;
-  //  outline: none;
-  //  padding: 8px;
-  //  padding-left: 20px;
-  //  padding-top: 15px;
-  //  border: solid 1px #ddd;
-  //  border-radius: 10px;
-  //  background-color: white;
-  //  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  //}
 
 }
 
