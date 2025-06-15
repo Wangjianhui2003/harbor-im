@@ -42,12 +42,46 @@ const isSending = ref(false) //是否正在发送
 
 const userInfo = ref({}) //私聊时用户信息
 const group = ref({}) //群聊时群信息
+
 const groupMembers = ref([]) //
+
+
+//判断当前会话是否被系统封禁
+const isBanned = computed(() => {
+  return (props.chat.type == CHATINFO_TYPE.GROUP && group.isBanned == true)
+      || (props.chat.type == CHATINFO_TYPE.PRIVATE && userInfo.isBanned == true)
+})
 
 //发送信息的url
 const sendMsgUrl = computed(() => {
   return `/message/${props.chat.type.toLowerCase()}/send`
 })
+
+
+//判断和当前会话是否是好友
+const isFriend = computed(() => {
+  return friendStore.isFriend(userInfo.value.id)
+})
+
+//返回好友信息(备注)
+const friend = computed(() => {
+  return friendStore.findFriend(userInfo.value.id)
+})
+
+//当前会话未读计数
+const unreadCount = computed(() => {
+  return props.chat.unreadCount
+})
+
+
+const isGroup = computed(() => {
+  return props.chat.type === CHATINFO_TYPE.GROUP
+})
+
+const isPrivate = computed(() => {
+  return props.chat.type === CHATINFO_TYPE.PRIVATE
+})
+
 
 const sendImageMessage = (file) => {
 
@@ -62,7 +96,7 @@ const sendMessage = async (fullList) => {
   resetEditor()
   readedMessage()
   //TODO:判断禁言、封禁、回执消息
-  if(isBanned()){
+  if(isBanned.value){
     showBannedTip()
     return
   }
@@ -83,11 +117,7 @@ const sendMessage = async (fullList) => {
   }
 }
 
-//判断是否被封禁
-const isBanned = () => {
-  return (props.chat.type == CHATINFO_TYPE.GROUP && group.isBanned == true)
-    || (props.chat.type == CHATINFO_TYPE.PRIVATE && userInfo.isBanned == true)
-}
+
 
 //
 const showBannedTip =() => {
@@ -125,7 +155,7 @@ const sendTextMessage = (sendText, atUserIds) => {
     //填充id
     fillTargetId(msgInfo, props.chat.targetId)
     //群聊
-    if (props.chat.type == "GROUP") {
+    if (props.chat.type == CHATINFO_TYPE.GROUP) {
       msgInfo.atUserIds = atUserIds;
       //TODO:isReceipt
       msgInfo.receipt = isReceipt.value;
@@ -247,11 +277,6 @@ const loadFriend = (friendId) => {
   })
 }
 
-//当前会话未读计数
-const unreadCount = computed(() => {
-  return props.chat.unreadCount
-})
-
 //切换到私聊会话时更新信息
 const updateFriendInfo = () => {
   if(isFriend.value){
@@ -268,16 +293,6 @@ const updateFriendInfo = () => {
     chatStore.updateChatFromUser(userInfo.value)
   }
 }
-
-//判断和当前会话是否是好友
-const isFriend = computed(() => {
-  return friendStore.isFriend(userInfo.value.id)
-})
-
-//返回好友信息(备注)
-const friend = computed(() => {
-  return friendStore.findFriend(userInfo.value.id)
-})
 
 //将当前私聊该为已读的设为已读(多客户端同时在线)
 const loadReaded = (friendId) => {
@@ -306,14 +321,6 @@ watch(() => props.chat, async (newChat,oldChat) => {
   }
   }, {immediate: true,deep: true}
 )
-
-const isGroup = computed(() => {
-  return props.chat.type == CHATINFO_TYPE.GROUP
-})
-
-const isPrivate = computed(() => {
-  return props.chat.type == CHATINFO_TYPE.PRIVATE
-})
 
 const chooseHeadImage = (msgInfo) => {
   if (isGroup.value){
@@ -362,11 +369,14 @@ onMounted(() => {
         </li>
       </ul>
     </div>
-    <div class="chat-tool-bar">
-    </div>
     <div class="input-box">
       <chat-input
           ref="chatEditor"
+          :is-group="isGroup"
+          :friend="friend"
+          :group="group"
+          :group-members="groupMembers"
+          :is-banned="isBanned"
           @submit="sendMessage">
       </chat-input>
     </div>

@@ -1,8 +1,10 @@
 
 import http from "./http.js";
 
-//添加好友
-export const addFriend = async (friendId) => {
+/**
+ * 添加好友
+ */
+export const addFriend = (friendId) => {
     return http({
         url: '/friend/add',
         method: 'post',
@@ -10,16 +12,32 @@ export const addFriend = async (friendId) => {
     })
 }
 
-export const getFriendList = async () => {
+/**
+ * 查找所有好友
+ */
+export const getFriendList = () => {
     return http({
         url: '/friend/list',
         method: 'get'
     })
 }
 
-export const removeFriend = async (friendId) => {
+/**
+ * 移除好友
+ */
+export const removeFriend = (friendId) => {
     return http({
         url: `/friend/delete/${friendId}`,
-        method: 'DELETE',
+        method: 'delete',
+    })
+}
+
+/**
+ * 查找单个好友的信息
+ */
+export const findFriend = (friendId) => {
+    return http({
+        url: `/friend/find/${friendId}`,
+        method: 'get',
     })
 }

@@ -13,6 +13,8 @@ import * as checkMsgType from "../common/checkMsgType.js";
 import useFriendStore from "../store/friendStore.js";
 import {useGroupStore} from "../store/groupStore.js";
 import {pullOfflineGroupMessage} from "../api/groupMsg.js";
+import RTCPrivateVideo from "../components/rtc/RTCPrivateVideo.vue";
+import mitter from "../common/eventBus.js";
 
 /**
  * 主页
@@ -26,6 +28,9 @@ const chatStore = useChatStore()
 const userStore = useUserStore()
 const friendStore = useFriendStore()
 const groupStore = useGroupStore()
+
+//rtcPrivateVideo ref
+const rtcPrivateVideo = ref(null)
 
 //ws地址
 const wsUrl = import.meta.env.VITE_WS_URL;
@@ -106,7 +111,6 @@ const init = () => {
         handlePrivateMessage(msgInfo);
       } else if (cmd === CMD_TYPE.GROUP_MESSAGE) {
         // 处理群聊消息
-        console.log(msgInfo);
         handleGroupMessage(msgInfo);
       } else if (cmd === CMD_TYPE.SYSTEM_MESSAGE) {
         // 处理系统消息
@@ -184,6 +188,7 @@ const handlePrivateMessage = (msgInfo) => {
   // 标记这条消息是不是自己发的
   msgInfo.selfSend = msgInfo.sendId === userStore.userInfo.id
   let friendId = msgInfo.selfSend ? msgInfo.recvId : msgInfo.sendId
+
   //会话信息
   let chatInfo = {
     type: CHATINFO_TYPE.PRIVATE,
@@ -191,37 +196,46 @@ const handlePrivateMessage = (msgInfo) => {
   }
 
   //加载消息
-  if(msgInfo.type == MESSAGE_TYPE.LOADING){
+  if(msgInfo.type === MESSAGE_TYPE.LOADING){
     console.log("私聊加载标志:",msgInfo.content)
     chatStore.setLoadingPrivateMsgState(JSON.parse(msgInfo.content))
     return
   }
 
   // 已读消息
-  if(msgInfo.type == MESSAGE_TYPE.READED){
-    //TODO: 将消息标为已读
+  if(msgInfo.type === MESSAGE_TYPE.READED){
+    chatStore.resetUnread(chatInfo);
+    return
   }
 
   // 消息回执处理,改消息状态为已读
-  if(msgInfo.type == MESSAGE_TYPE.RECEIPT){
-    //TODO：私聊消息回执处理
+  if(msgInfo.type === MESSAGE_TYPE.RECEIPT){
+    chatStore.readedMessage(friendId)
+    return
   }
 
   // 消息撤回
-  if (msgInfo.type == MESSAGE_TYPE.RECALL) {
+  if (msgInfo.type === MESSAGE_TYPE.RECALL) {
     chatStore.recallMessage([msgInfo,chatInfo])
     return;
   }
 
   // 新增好友
-  if (msgInfo.type == MESSAGE_TYPE.FRIEND_NEW) {
+  if (msgInfo.type === MESSAGE_TYPE.FRIEND_NEW) {
     friendStore.addFriend(JSON.parse(msgInfo.content))
     return;
   }
 
   // (被)删除好友
-  if(msgInfo.type == MESSAGE_TYPE.FRIEND_DEL) {
+  if(msgInfo.type === MESSAGE_TYPE.FRIEND_DEL) {
     friendStore.removeFriend(friendId)
+    return
+  }
+
+  //单人RTC信令
+  if (checkMsgType.isRtcPrivate(msgInfo.type)) {
+    rtcPrivateVideo.value.onRTCPrivateMsg(msgInfo)
+    return
   }
 
   //需要会话显示的消息
@@ -321,14 +335,29 @@ const goTo = (path) => {
   router.push(path)
 }
 
+//初始化RTC面板监听器
+const initRTC = () => {
+  mitter.on("openPrivateVideoEvent",rtcInfo => {
+    rtcPrivateVideo.value.open(rtcInfo);
+  })
+}
+
+//卸载
+const uninstallRTC = () => {
+  mitter.off("openPrivateVideoEvent");
+}
+
+
 onMounted(() => {
   //初始化
+  initRTC()
   init()
 })
 
 onUnmounted(() => {
   //关闭WebSocket
   wsApi.close()
+  uninstallRTC()
 })
 </script>
 
@@ -363,6 +392,7 @@ onUnmounted(() => {
         <router-view></router-view>
       </div>
     </el-main>
+    <RTCPrivateVideo ref="rtcPrivateVideo" />
   </el-container>
 </template>
 

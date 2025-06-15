@@ -2,14 +2,29 @@
 
 import {nextTick, onMounted, onUnmounted, ref} from "vue";
 import EmojiPicker from "vue3-emoji-picker";
+import mitter from "../../../common/eventBus.js";
+import {ElMessage} from "element-plus";
+import {WEBRTC_MODE} from "../../../common/enums.js";
 
 const props = defineProps({
   ownerId: {
     type: Number,
   },
+  isGroup:{
+    type: Boolean,
+  },
+  friend:{
+    type: Object
+  },
+  group: {
+    type: Object
+  },
   groupMembers: {
     type: Array,
   },
+  isBanned: {
+    type: Boolean,
+  }
 })
 
 const emit = defineEmits(['submit'])
@@ -241,6 +256,27 @@ const closeEmojiPicker = (e) => {
   showEmojiPicker.value = false
 }
 
+const openPrivateVideo = (mode) => {
+  //检验是否被封禁
+  if(props.isBanned){
+    showBannedTip()
+    return
+  }
+
+  let rtcInfo = {
+    mode: mode,
+    isHost: true,
+    friend: props.friend
+  }
+  mitter.emit("openPrivateVideoEvent", rtcInfo);
+}
+
+//TODO:显示通话用户被封禁提示
+const showBannedTip = () => {
+  ElMessage.error("该用户已经被封禁")
+}
+
+
 // 在组件挂载时添加事件监听器
 onMounted(() => {
   document.addEventListener('click', closeEmojiPicker);
@@ -269,7 +305,8 @@ onUnmounted(() => {
         <img src="../../../assets/input/record.svg" alt="语音" class="icon">
         <img src="../../../assets/input/file.svg" alt="文件" class="icon">
         <img src="../../../assets/input/phone-call.svg" alt="电话" class="icon">
-        <img src="../../../assets/input/video.svg" alt="视频" class="icon">
+        <img src="../../../assets/input/video.svg" alt="视频" v-if="!isGroup" class="icon" @click="openPrivateVideo(WEBRTC_MODE.VIDEO)">
+        <img src="../../../assets/input/video.svg" alt="视频" v-if="isGroup" class="icon" @click="console.log('实现中')">
         <EmojiPicker :native="true" @select="onSelectEmoji" v-show="showEmojiPicker" class="emote-picker" ref="emojiPicker"/>
       </div>
     </div>
