@@ -2,10 +2,12 @@ package com.jianhui.project.harbor.server.netty;
 
 import com.jianhui.project.harbor.common.constant.IMRedisKey;
 import com.jianhui.project.harbor.common.mq.RedisMQTemplate;
+import com.jianhui.project.harbor.server.event.IMServerReadyEvent;
 import jakarta.annotation.PreDestroy;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -20,6 +22,8 @@ public class IMServerGroup implements CommandLineRunner {
     private final RedisMQTemplate redisMQTemplate;
 
     private final List<IMServer> imServers;
+
+    private final ApplicationEventPublisher  publisher;
 
     public boolean isReady() {
         for (IMServer imServer : imServers) {
@@ -38,6 +42,7 @@ public class IMServerGroup implements CommandLineRunner {
         for (IMServer imServer : imServers) {
             imServer.start();
         }
+        publisher.publishEvent(new IMServerReadyEvent(serverId));
     }
 
     @PreDestroy
