@@ -1,22 +1,27 @@
 <script setup>
 
-import {computed, nextTick, onBeforeMount, onBeforeUnmount, onMounted, ref} from "vue";
+import {computed, nextTick, onBeforeUnmount, onMounted, ref} from "vue";
 import WebRTC from "../../common/webrtc.js";
 import IMCamera from "../../common/camera.js";
-import {MESSAGE_TYPE, RTC_STATE, WEBRTC_MODE, WEBRTC_STATE} from "../../common/enums.js";
+import {MESSAGE_TYPE, WEBRTC_MODE, WEBRTC_STATE} from "../../common/enums.js";
 import {ElMessage} from "element-plus";
 import {useWebRTCStore} from "../../store/webRTCStore.js";
 import {accept, call, cancel, failed, hangup, heartbeat, reject, sendCandidate} from "../../api/rtcPrivate.js";
 import {findFriend} from "../../api/friend.js";
 import {RTC_WAIT_TIMEOUT} from "../../common/constant.js";
 import RTCPrivateCallPanel from "./RTCPrivateCallPanel.vue";
-import {onMessage} from "../../connect/wssocket.js";
+import HeadImage from "../common/HeadImage.vue";
+import useUserStore from "../../store/userStore.js";
+
+/**
+ *视频语音通话面板
+ */
 
 //显示通话面板
 const showRTCPanel = ref(false)
 
 //本地媒体(摄像头,麦克风
-const camera =  new IMCamera()
+const camera = new IMCamera()
 const webRTC = new WebRTC()
 //呼叫音频
 const audio = new Audio()
@@ -26,7 +31,7 @@ const friend = ref({})
 // 是否发起人
 const isHost = ref(false)
 // 状态: CLOSE:关闭  WAITING:等待呼叫或接听 CHATTING:聊天中 ERROR:出现异常
-const state= ref(WEBRTC_STATE.CLOSE)
+const state = ref(WEBRTC_STATE.CLOSE)
 // 模式 VIDEO:视频聊 VOICE:语音聊天
 const mode = ref(WEBRTC_MODE.VIDEO)
 // 本地视频流
@@ -57,7 +62,7 @@ const modeText = computed(() => {
 //webRTC配置
 const webRTCConfig = computed(() => {
   const webRTCStore = useWebRTCStore()
-  let iceServers =  webRTCStore.webRTCConfig.iceServers
+  let iceServers = webRTCStore.webRTCConfig.iceServers
   return {
     iceServers: iceServers,
   }
@@ -69,35 +74,40 @@ const isClosed = computed(() => {
 
 let offer = null
 
+const candidatesReceived = []
+
 //用rtcInfo打开RTC面板,如果是本人发起，调用call
 const open = (rtcInfo) => {
-  console.log('打开WebRTC',rtcInfo)
   showRTCPanel.value = true
   mode.value = rtcInfo.mode
   isHost.value = rtcInfo.isHost
   friend.value = rtcInfo.friend
   //是自己发起的
   if (isHost.value) {
-    console.log('主动发起')
+    console.log('主动发起RTC')
     onCall()
   }
 }
 
 //开始呼叫
 const onCall = () => {
-  if (!checkDevEnable()){
+  if (!checkDevEnable()) {
     close()
+    console.log('设备不支持')
+    return
   }
 
   initRTC()
 
   startHeartbeat()
 
-  openStream().then(() => {
-    webRTC.setStream(localStream)
+  openStream().then((stream) => {
+    console.log('setStream', stream)
+    webRTC.setStream(stream)
+    state.value = WEBRTC_STATE.WAITING
     webRTC.createOffers().then(offer => {
-      call(friend.value.id,mode.value,offer).then(() => {
-        state.value = WEBRTC_STATE.WAITING
+      console.log('offer:', offer)
+      call(friend.value.id, mode.value, offer).then(() => {
         //TODO:播放铃声
       }).catch(error => {
         console.log(error)
@@ -119,27 +129,25 @@ const initRTC = () => {
   webRTC.setupPeerConnection((stream) => {
     remoteStream = stream;
     nextTick(() => {
-      if (remoteVideo.value){
-        remoteVideo.value.srcObject = remoteStream;
-      }
+      remoteVideo.value.srcObject = remoteStream;
     })
   })
 
   webRTC.onIceCandidate((candidate) => {
     if (isChatting.value) {
       //直接发candidate
-      sendCandidate(friend.value.id,candidate)
-    }else{
+      sendCandidate(friend.value.id, candidate)
+    } else {
       //保存起来
       candidates.value.push(candidate)
     }
   })
 
   webRTC.onICEStateChange((state) => {
-    if (state === 'connected'){
-      console.log("webrtc连接成功")
-    }else if (state === 'disconnected'){
-      console.log("webrtc连接断开")
+    if (state === 'connected') {
+      console.log('ice connected')
+    } else if (state === 'disconnected') {
+      console.log("ice disconnected")
     }
   })
 }
@@ -150,39 +158,41 @@ const startHeartbeat = () => {
   heartbeatTimer && clearInterval(heartbeatTimer)
   heartbeatTimer = setInterval(() => {
     heartbeat(friend.value.id)
-  },15000)
+  }, 15000)
 }
 
 const openStream = async () => {
   if (isVideo.value) {
     //视频通话,打开摄像头和麦克风
-    camera.openVideo().then((stream) => {
+    try {
+      let stream = await camera.openVideo()
       localStream = stream;
       nextTick(() => {
-        if (localVideo.value){
-          localVideo.value.srcObject = stream;
+        if (localVideo.value) {
+          localVideo.value.srcObject = stream
           localVideo.value.muted = true;
-        }else {
+        } else {
           console.log('摄像头未准备好')
         }
       })
       return stream
-    }).catch(err => {
-      ElMessage.error("打开摄像头失败")
-      console.log("本地摄像头打开失败:" + err.message)
-      throw(err)
-    })
-  }else {
+    } catch (error) {
+      ElMessage.error('打开摄像头失败')
+      console.log('打开摄像头失败:', error)
+      throw error
+    }
+  } else {
     //语音通话
-    camera.openAudio().then((stream) => {
+    try {
+      let stream = await camera.openAudio()
       localStream = stream;
-      localVideo.value.srcObject = stream;
+      localVideo.value.srcObject = stream
       return stream
-    }).catch(err => {
-      ElMessage.error("打开麦克风失败")
-      console.log("本地麦克风打开失败:" + err.message)
-      throw(err)
-    })
+    } catch (error) {
+      ElMessage.error('打开麦克风失败')
+      console.log('打开麦克风失败', error)
+      throw error
+    }
   }
 }
 
@@ -206,11 +216,11 @@ const close = () => {
 
 //检查设备
 const checkDevEnable = () => {
-  if (!camera.isEnable()){
+  if (!camera.isEnable()) {
     ElMessage.error("打开摄像头失败")
     return false;
   }
-  if(!webRTC.isEnable()){
+  if (!webRTC.isEnable()) {
     ElMessage.error("打开WebRTC失败")
     return false;
   }
@@ -224,7 +234,7 @@ const onRTCPrivateMsg = (msgInfo) => {
       msgInfo.type !== MESSAGE_TYPE.RTC_CALL_VOICE && isClosed.value) {
     return
   }
-  switch (msgInfo.type){
+  switch (msgInfo.type) {
     case MESSAGE_TYPE.RTC_CALL_VOICE:
       onRTCCall(msgInfo, WEBRTC_MODE.VOICE)
       break;
@@ -253,8 +263,9 @@ const onRTCPrivateMsg = (msgInfo) => {
 }
 
 
-const onRTCCall = (msgInfo,mode0) => {
+const onRTCCall = (msgInfo, mode0) => {
   offer = JSON.parse(msgInfo.content)
+  console.log('offer:', offer)
   isHost.value = false
   mode.value = mode0
   findFriend(msgInfo.sendId).then(friendVO => {
@@ -262,23 +273,29 @@ const onRTCCall = (msgInfo,mode0) => {
     state.value = WEBRTC_STATE.WAITING
     startHeartbeat()
     waitTimer = setTimeout(() => {
-      failed(friend.value.id,"对方未接听")
+      failed(friend.value.id, "对方未接听")
       ElMessage.warning("你未接听")
       close()
-    },RTC_WAIT_TIMEOUT)
+    }, RTC_WAIT_TIMEOUT)
   })
 };
 
 const onRTCAccept = (msgInfo) => {
-  if (msgInfo.selfSend){
+  if (msgInfo.selfSend) {
     //是接收方
     ElMessage.success("已在其他设备接听")
     close()
-  }else {
+  } else {
     //是发送方收到了接受请求
     let answer = JSON.parse(msgInfo.content)
-    webRTC.setRemoteSDP(answer)
-    state.value = WEBRTC_STATE.CHATTING
+    console.log('answer', answer)
+    webRTC.setRemoteSDP(answer).then(() => {
+      state.value = WEBRTC_STATE.CHATTING
+      console.log(webRTC.peerConnection.remoteDescription)
+      addCachedICECandidate()
+    }).catch(err => {
+      console.log('error:set remote sdp', err)
+    })
     //TODO:停止播放语音
     //发送candidate
     candidates.value.forEach(candidates => {
@@ -288,19 +305,26 @@ const onRTCAccept = (msgInfo) => {
   }
 };
 
+const addCachedICECandidate = () => {
+  candidatesReceived.forEach(candidate => {
+    console.log('add cached candidate', candidate)
+    webRTC.addICECandidate(candidate)
+  })
+}
+
 //开始通话计时
 const startChatTime = () => {
   chatTime.value = 0
   chatTimer && clearInterval(chatTimer)
   chatTimer = setInterval(() => {
     chatTime.value++
-  },1000)
+  }, 1000)
 }
 
 const onRTCReject = (msgInfo) => {
-  if(msgInfo.selfSend){
+  if (msgInfo.selfSend) {
     ElMessage.success('其他设备已经拒绝')
-  }else{
+  } else {
     ElMessage.warning('对方拒绝了你的请求')
     close()
   }
@@ -323,23 +347,28 @@ const onRTCHangup = () => {
 
 //添加candidate信息
 const onRTCCandidate = (msgInfo) => {
-  webRTC.addICECandidate(JSON.parse(msgInfo.content))
+  if (isChatting.value) {
+    webRTC.addICECandidate(JSON.parse(msgInfo.content))
+  } else {
+    console.log('缓存candidate')
+    candidatesReceived.push(JSON.parse(msgInfo.content))
+  }
 };
 
 const onCloseDialog = () => {
-  if(isChatting.value){
+  if (isChatting.value) {
     onHangup()
-  }else if(isWaiting.value){
+  } else if (isWaiting.value) {
     onCancel()
-  }else {
+  } else {
     close()
   }
 }
 
 //手动接受
 const onAccept = () => {
-  if (!checkDevEnable()){
-    failed(friend.value.id,"对方设备不支持通话")
+  if (!checkDevEnable()) {
+    failed(friend.value.id, "对方设备不支持通话")
     close()
     return
   }
@@ -349,10 +378,11 @@ const onAccept = () => {
   showRTCPanel.value = true
   state.value = WEBRTC_STATE.CHATTING
 
-  openStream().then((stream) => {
-    webRTC.setStream(stream)
+  openStream().then(() => {
+    webRTC.setStream(localStream)
     webRTC.createAnswers(offer).then((answer) => {
-      accept(friend.value.id,answer)
+      console.log('answer', answer)
+      accept(friend.value.id, answer)
       startChatTime()
       waitTimer && clearTimeout(waitTimer)
     })
@@ -395,45 +425,78 @@ defineExpose({
 
 onMounted(() => {
   //TODO:初始化音频
-  window.addEventListener('beforeunload',onCloseDialog)
+  window.addEventListener('beforeunload', onCloseDialog)
 })
 
 onBeforeUnmount(() => {
   onCloseDialog()
-  window.removeEventListener('beforeunload',onCloseDialog)
+  window.removeEventListener('beforeunload', onCloseDialog)
 })
+
+const title = computed(() => {
+  return isWaiting.value ? '正在呼叫...' : modeText.value
+})
+
+const userStore = useUserStore()
 
 </script>
 
 <template>
-  <el-dialog v-model="showRTCPanel" :before-close="onCloseDialog" :title="modeText + state">
-    <div class="con">
+  <el-dialog :modal="false" :close-on-click-modal="false" :center="true" v-model="showRTCPanel"
+             :before-close="onCloseDialog" :title="title">
+    <div v-show='isVideo' class="video-panel">
+      <div class="remote-video">
+        <video ref="remoteVideo" autoplay class="video"></video>
+        <div class="local-video">
+          <video ref="localVideo" autoplay class="video"></video>
+        </div>
+      </div>
+      <button>挂断</button>
+    </div>
+    <div v-show='!isVideo' class='voice-panel'>
       <div>
-        <video ref="localVideo" autoplay class="local-video"></video>
+        <head-image :url="userStore.userInfo.headImageThumb"/>
       </div>
       <div>
-        <video ref="remoteVideo" autoplay class="remote-video"></video>
+        <head-image :url="friend.headImage"/>
       </div>
     </div>
   </el-dialog>
-  <RTCPrivateCallPanel v-if="!isHost && isWaiting" :friend="friend" :modeText="modeText" @acceptRTCPrivateEvent="onAccept" @rejectRTCPrivateEvent="onReject"></RTCPrivateCallPanel>
+  <RTCPrivateCallPanel v-if="!isHost && isWaiting" :friend="friend" :modeText="modeText"
+                       @acceptRTCPrivateEvent="onAccept" @rejectRTCPrivateEvent="onReject"></RTCPrivateCallPanel>
 </template>
 
 <style scoped lang="scss">
 
-.con{
+.voice-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.video-panel {
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .local-video {
-  height: 200px;
-  width: 200px
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  width: 160px
 }
 
 .remote-video {
-  height: 200px;
-  width: 200px
+  height: 487.5px;
+  width: 650px;
+  position: relative;
+}
+
+.video {
+  height: auto;
+  width: 100%;
 }
 
 </style>

@@ -304,7 +304,7 @@ onUnmounted(() => {
         <img src="../../../assets/input/image.svg" alt="图片" class="icon">
         <img src="../../../assets/input/record.svg" alt="语音" class="icon">
         <img src="../../../assets/input/file.svg" alt="文件" class="icon">
-        <img src="../../../assets/input/phone-call.svg" alt="电话" class="icon">
+        <img src="../../../assets/input/phone-call.svg" alt="电话" class="icon" @click="openPrivateVideo(WEBRTC_MODE.VOICE)">
         <img src="../../../assets/input/video.svg" alt="视频" v-if="!isGroup" class="icon" @click="openPrivateVideo(WEBRTC_MODE.VIDEO)">
         <img src="../../../assets/input/video.svg" alt="视频" v-if="isGroup" class="icon" @click="console.log('实现中')">
         <EmojiPicker :native="true" @select="onSelectEmoji" v-show="showEmojiPicker" class="emote-picker" ref="emojiPicker"/>

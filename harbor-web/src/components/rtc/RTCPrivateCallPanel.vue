@@ -28,7 +28,7 @@ const emit = defineEmits(['acceptRTCPrivateEvent','rejectRTCPrivateEvent']);
     >
     </head-image>
     <div class="information">
-      {{props.friend.friendNickname}}向你请求{{props.modeText}}通话
+      {{props.friend.friendNickname}}请求{{props.modeText}}通话
       <div class="button-group">
         <button class="accept button" @click="emit('acceptRTCPrivateEvent')">接受</button>
         <button class="refuse button" @click="emit('rejectRTCPrivateEvent')">拒绝</button>

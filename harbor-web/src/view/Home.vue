@@ -210,13 +210,13 @@ const handlePrivateMessage = (msgInfo) => {
 
   // 消息回执处理,改消息状态为已读
   if(msgInfo.type === MESSAGE_TYPE.RECEIPT){
-    chatStore.readedMessage(friendId)
+    chatStore.readedMessage(friendId,null)
     return
   }
 
   // 消息撤回
   if (msgInfo.type === MESSAGE_TYPE.RECALL) {
-    chatStore.recallMessage([msgInfo,chatInfo])
+    chatStore.recallMsg(msgInfo,chatInfo)
     return;
   }
 

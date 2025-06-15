@@ -38,14 +38,17 @@ class WebRTC{
     setStream(stream) {
         // 原来有流，移除
         if (this.stream) {
+            console.log('移除stream')
             //TODO：removeStream api已经被废弃,通过sender来移除
             let senders = this.peerConnection.getSenders();
             senders.forEach((sender) => {
                 this.peerConnection.removeTrack(sender)
             })
         }
+        console.log('stream:',stream)
         if (stream) {
             stream.getTracks().forEach((track) => {
+                console.log('添加track')
                 this.peerConnection.addTrack(track,stream)
             })
         }
@@ -84,6 +87,7 @@ class WebRTC{
             // 创建本地sdp信息
             this.peerConnection.createOffer(offerParam).then((offer) => {
                 //设置
+                console.log('offer:',offer)
                 this.peerConnection.setLocalDescription(offer)
                 resolve(offer)
             }).catch(err => {
@@ -96,42 +100,43 @@ class WebRTC{
      * 接收offer
      * @param offer 发起方发来的offer
      */
-    createAnswers(offer) {
-        return new Promise((resolve, reject) => {
-            //设置远端sdp
-            this.setRemoteSDP(offer)
-            //创建本地sdp
-            const offerParam = {
-                offerToReceiveAudio: 1,
-                offerToReceiveVideo: 1
-            }
-            this.peerConnection.createAnswer(offerParam).then((answer) => {
-                this.peerConnection.setLocalDescription(answer)
-                resolve(answer)
-            }).catch(err => {
-                reject(err)
-            })
-        })
+    async createAnswers(offer) {
+        console.log('收到offer，生成answer,offer:offer', offer)
+        //设置远端sdp
+        await this.setRemoteSDP(offer)
+        console.log('remote sdp',this.peerConnection.remoteDescription)
+        //创建本地sdp
+        const offerParam = {
+            offerToReceiveAudio: 1,
+            offerToReceiveVideo: 1
+        }
+        try {
+            let answer = await this.peerConnection.createAnswer(offerParam)
+            this.peerConnection.setLocalDescription(answer)
+            return answer
+        }catch (err){
+            console.error(err)
+        }
     }
 
     //设置远程SDP信息
-    setRemoteSDP(sdp) {
-       this.peerConnection.setRemoteDescription(sdp)
+    setRemoteSDP(sdpObject) {
+       return this.peerConnection.setRemoteDescription(sdpObject)
     }
 
     //添加candidate信息
     addICECandidate(candidate) {
-        this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
+        this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate)).catch(err => console.log(err))
     }
 
     //关闭RTC连接
     close(){
         if(this.peerConnection) {
-            this.peerConnection.close();
-            this.peerConnection.onicecandidate = null;
-            this.peerConnection.oniceconnectionstatechange = null;
-            this.peerConnection.onaddstream = null;
-            this.peerConnection = null;
+            this.peerConnection.close()
+            this.peerConnection.onicecandidate = null
+            this.peerConnection.oniceconnectionstatechange = null
+            this.peerConnection.ontrack = null
+            this.peerConnection = null
         }
     }
 }

@@ -18,6 +18,7 @@ class IMCamera {
                 track.stop()
             })
         }
+        this.stream = null
     }
 
     //打开音视频
@@ -51,11 +52,11 @@ class IMCamera {
     }
 
     //打开音频
-    openAudio(){
-        return new Promise((resolve,reject)=>{
-            if(this.stream){
-                this.close()
-            }
+    async openAudio(){
+        if(this.stream){
+            this.close()
+        }
+        try {
             let constraints = {
                 video: false,
                 audio: {
@@ -63,16 +64,16 @@ class IMCamera {
                     noiseSuppression: true,
                 }
             }
-            navigator.mediaDevices.getUserMedia(constraints).then(stream => {
-                this.stream = stream;
-            }).catch(err=>{
-                console.log(err,"音频未能打开")
-                reject({
-                    code: 0,
-                    message: "音频未能打开"
-                })
-            })
-        })
+            let stream = await navigator.mediaDevices.getUserMedia(constraints)
+            this.stream = stream;
+            return stream
+        }catch (err) {
+            console.log('未能获取麦克风stream流');
+            throw {
+                code: 0,
+                message: "未能获取麦克风stream流"
+            }
+        }
     }
 }
 
