@@ -12,9 +12,9 @@ public class RedisKey {
     public static final long CHECK_CODE_EXPIRE_TIME = 5 * 60;
 
     /**
-     *  用户状态 无值:空闲  1:正在忙
+     *  前缀，后接用户id，redis里有值说明该用户忙线
      */
-    public static final String IM_USER_STATE = "im:user:state";
+    public static final String IM_USER_BUSY = "im:user:busy";
     /**
      * 已读群聊消息位置(已读最大id)
      */

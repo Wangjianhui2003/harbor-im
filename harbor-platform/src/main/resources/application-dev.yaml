@@ -22,7 +22,7 @@ minio:
 
 webrtc:
   max-channel: 9 # 多人通话最大通道数量，最大不能超过16,建议值:4,9,16
-  iceServers:
+  ice-servers:
     - urls: stun:stun.l.google.com:19302
 
 rocketmq:

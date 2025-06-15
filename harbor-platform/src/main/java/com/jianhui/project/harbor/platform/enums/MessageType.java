@@ -53,7 +53,7 @@ public enum MessageType {
     RTC_REJECT(103, "拒绝"),
     RTC_CANCEL(104, "取消呼叫"),
     RTC_FAILED(105, "呼叫失败"),
-    RTC_HANDUP(106, "挂断"),
+    RTC_HANGUP(106, "挂断"),
     RTC_CANDIDATE(107, "同步candidate"),
 
     RTC_GROUP_SETUP(200,"发起群视频通话"),
