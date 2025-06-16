@@ -25,7 +25,9 @@ const props = defineProps({
         :online="props.friend.online" >
     </head-image>
     <div class="friend-info">
-      {{ props.friend.friendNickname }}
+      <div class="name">
+        {{ props.friend.friendNickname }}
+      </div>
     </div>
     <slot></slot>
   </div>
@@ -48,7 +50,14 @@ const props = defineProps({
 
   .friend-info {
     flex: 1;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-left: 10px;
+  }
+
+  .name{
+    font-size: 14px;
   }
 }
 

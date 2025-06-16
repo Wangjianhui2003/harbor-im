@@ -256,17 +256,17 @@ const handleGroupMessage = (msgInfo) => {
     targetId: msgInfo.groupId
   }
   //更改加载标记
-  if (msgInfo.type == MESSAGE_TYPE.LOADING) {
+  if (msgInfo.type === MESSAGE_TYPE.LOADING) {
     chatStore.setLoadingGroupMsgState(JSON.parse(msgInfo.content))
     return
   }
   //收到已读信号，前端标记已读
-  if (msgInfo.type == MESSAGE_TYPE.READED){
+  if (msgInfo.type === MESSAGE_TYPE.READED){
     chatStore.resetUnread(chatInfo)
     return
   }
   //回执消息
-  if (msgInfo.type == MESSAGE_TYPE.RECEIPT) {
+  if (msgInfo.type === MESSAGE_TYPE.RECEIPT) {
     // 更新消息已读人数
     let msgInfo_ = {
       id: msg.id,
@@ -278,17 +278,17 @@ const handleGroupMessage = (msgInfo) => {
     return;
   }
   //撤回消息信号
-  if (msgInfo.type == MESSAGE_TYPE.RECALL) {
+  if (msgInfo.type === MESSAGE_TYPE.RECALL) {
     chatStore.recallMsg(msgInfo,chatInfo);
     return
   }
   //新增群聊
-  if (msgInfo.type == MESSAGE_TYPE.GROUP_NEW) {
+  if (msgInfo.type === MESSAGE_TYPE.GROUP_NEW) {
     groupStore.addGroup(JSON.parse(msgInfo.content))
     return
   }
   // 删除群
-  if (msgInfo.type == MESSAGE_TYPE.GROUP_DEL) {
+  if (msgInfo.type === MESSAGE_TYPE.GROUP_DEL) {
     groupStore.removeGroup(JSON.parse(msgInfo.groupId))
     return;
   }

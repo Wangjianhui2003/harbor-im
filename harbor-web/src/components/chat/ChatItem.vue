@@ -2,6 +2,7 @@
 //聊天会话标签
 
 import HeadImage from "../common/HeadImage.vue";
+import {computed} from "vue";
 
 const props = defineProps({
   chat: {
@@ -12,6 +13,15 @@ const props = defineProps({
   },
 })
 
+//最后一条消息
+const lastContent = computed(() => {
+  let str = props.chat.lastContent
+  if (str.length > 14){
+    return str.substring(0,14) + '...'
+  }
+  return str
+})
+
 </script>
 
 <template>
@@ -19,10 +29,12 @@ const props = defineProps({
     <head-image class="avatar"
                 :url="props.chat.headImage"
                 :name="props.chat.showName"
-                :id="props.chat.targetId">
+                :id="props.chat.targetId"
+    >
     </head-image>
     <div class="chat-mini-info">
-      <div>{{ props.chat.showName }}</div>
+      <div class="name">{{ props.chat.showName }}</div>
+      <div class="last-content">{{lastContent}}</div>
     </div>
   </div>
 </template>
@@ -42,16 +54,26 @@ const props = defineProps({
   &:hover {
     background-color: var(--theme-gray);
   }
+}
 
-  .avatar {
-    font-size: 20px;
-    height: 50px;
-    width: 50px;
-  }
+.chat-mini-info {
+  flex: 1;
+  text-align: center;
 
-  .chat-mini-info {
-    flex: 1;
-    text-align: center;
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  margin-left: 10px;
+}
+
+.last-content{
+  color: #a6a6a6;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.name{
+  font-size: 14px;
 }
 </style>

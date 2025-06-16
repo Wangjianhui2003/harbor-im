@@ -7,7 +7,7 @@ import uploadFile from "../../api/file.js";
 
 const props = defineProps({
   //上传地址
-  action: {
+  url: {
     type: String,
     required: false
   },
@@ -62,7 +62,7 @@ const onFileUpload = (file) => {
   let formData = new FormData();
   formData.append("file", file.file)
   //调用后端接口上传
-  uploadFile(formData, props.action, {'Content-Type': 'multipart/form-data'})
+  uploadFile(formData, props.url, {'Content-Type': 'multipart/form-data'})
   .then((data) => {
     emit("uploadSuccess", data)
   }).catch((err) => {

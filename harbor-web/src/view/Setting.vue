@@ -61,7 +61,7 @@ onMounted(() => {
     <el-form-item label="头像">
       <file-upload
           class="avatar-uploader"
-          :action="uploadImage"
+          :url="uploadImage"
           :show-loading="true"
           :max-size=maxSize
           :file-types=fileTypes
