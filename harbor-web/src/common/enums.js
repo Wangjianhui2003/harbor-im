@@ -56,7 +56,13 @@ const MESSAGE_STATUS = {
 	UNSEND: 0,
 	SENDED: 1,
 	RECALL: 2,
-	READED: 3
+	READED: 3,
+}
+
+const MSG_INFO_LOAD_STATUS = {
+	LOADING: 'loading',
+	FAIL: 'fail',
+	OK: 'ok'
 }
 
 /**
@@ -129,5 +135,6 @@ export {
 	MSG_CONTENT_TYPE,
 	MSG_ITEM_OP,
 	WEBRTC_STATE,
-	WEBRTC_MODE
+	WEBRTC_MODE,
+	MSG_INFO_LOAD_STATUS
 }

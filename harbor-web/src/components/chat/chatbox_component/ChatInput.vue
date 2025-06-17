@@ -1,19 +1,24 @@
 <script setup>
 
-import {nextTick, onMounted, onUnmounted, ref} from "vue";
+import {inject, nextTick, onMounted, onUnmounted, ref} from "vue";
 import EmojiPicker from "vue3-emoji-picker";
 import mitter from "../../../common/eventBus.js";
 import {ElMessage} from "element-plus";
-import {WEBRTC_MODE} from "../../../common/enums.js";
+import {MESSAGE_STATUS, MESSAGE_TYPE, MSG_INFO_LOAD_STATUS, WEBRTC_MODE} from "../../../common/enums.js";
+import FileUpload from "../../common/FileUpload.vue";
+import {FILE_MSG_MAX_SIZE, IMAGE_MSG_MAX_SIZE} from "../../../common/constant.js";
+import useUserStore from "../../../store/userStore.js";
+import useChatStore from "../../../store/chatStore.js";
+import {sendMessageReq} from "../../../api/privateMsg.js";
 
 const props = defineProps({
   ownerId: {
     type: Number,
   },
-  isGroup:{
+  isGroup: {
     type: Boolean,
   },
-  friend:{
+  friend: {
     type: Object
   },
   group: {
@@ -24,11 +29,16 @@ const props = defineProps({
   },
   isBanned: {
     type: Boolean,
-  }
+  },
+  chat: {
+    type: Object
+  },
 })
 
-const emit = defineEmits(['submit'])
+const emit = defineEmits(['submit','sendFileMsg'])
 
+const userStore = useUserStore()
+const chatStore = useChatStore()
 
 //输入区
 const content = ref(null)
@@ -46,16 +56,16 @@ const blurRange = ref(null)
 //自定义enter
 const onKeydown = (e) => {
   //enter
-  if(e.keyCode === 13) {
+  if (e.keyCode === 13) {
     e.preventDefault()
     e.stopPropagation()
-    if(e.ctrlKey){
+    if (e.ctrlKey) {
       //ctrl + enter换行 TODO:不能连续换行bug
       let line = newLine()
       let after = document.createTextNode('\u00A0')
       line.appendChild(after)
       selectElement(line.childNodes[0], 0)
-    }else{
+    } else {
       //正在输入不要提交(适配中文输入法)
       if (compositionFlag.value) {
         return
@@ -85,7 +95,7 @@ const onKeydown = (e) => {
 }
 
 //
-const selectElement = (element,endOffset) => {
+const selectElement = (element, endOffset) => {
   let selection = window.getSelection();
   // 插入元素可能不是立即执行的，vue可能会在插入元素后再更新dom
   nextTick(() => {
@@ -125,17 +135,17 @@ const newLine = () => {
 }
 
 //发送(触发时间，让父组件处理
-const submit = () =>{
+const submit = () => {
   console.log(content.value.innerHTML)
   let nodes = content.value.childNodes
   let fullList = [];
   let tempText = '';
   let atUserIds = [];
   let each = (nodes) => {
-    for(let i = 0; i < nodes.length; i++) {
+    for (let i = 0; i < nodes.length; i++) {
       //TODO:处理图片at等数据
       let node = nodes[i]
-      if(!node){
+      if (!node) {
         continue;
       }
       //纯文本
@@ -147,7 +157,7 @@ const submit = () =>{
       //跳过脚本
       if (nodeName === 'script') {
         continue;
-      }else if(nodeName === 'div') {
+      } else if (nodeName === 'div') {
         tempText += '\n';
         each(node.childNodes);
       }
@@ -163,8 +173,8 @@ const submit = () =>{
       atUserIds: atUserIds
     })
   }
-  console.log("submit",fullList)
-  emit('submit',fullList)
+  console.log("submit", fullList)
+  emit('submit', fullList)
 }
 
 //转义,防止xss攻击
@@ -191,7 +201,7 @@ const onEditorInput = (e) => {
 }
 
 //清空
-const clear = () =>{
+const clear = () => {
   empty();
   imageList.value = [];
   fileList.value = [];
@@ -207,7 +217,7 @@ const empty = () => {
 }
 
 //聚焦
-const focus = () =>{
+const focus = () => {
   content.value.focus()
 }
 
@@ -246,11 +256,11 @@ const closeEmojiPicker = (e) => {
     return
   }
   //在Picker内部
-  if (emojiPicker.value && emojiPicker.value.$el.contains(e.target)){
+  if (emojiPicker.value && emojiPicker.value.$el.contains(e.target)) {
     return
   }
   //是按钮
-  if (emoteBtn.value && emoteBtn.value.contains(e.target)){
+  if (emoteBtn.value && emoteBtn.value.contains(e.target)) {
     return
   }
   showEmojiPicker.value = false
@@ -258,7 +268,7 @@ const closeEmojiPicker = (e) => {
 
 const openPrivateVideo = (mode) => {
   //检验是否被封禁
-  if(props.isBanned){
+  if (props.isBanned) {
     showBannedTip()
     return
   }
@@ -282,32 +292,135 @@ onMounted(() => {
   document.addEventListener('click', closeEmojiPicker);
 });
 
-// 在组件卸载时移除事件监听器，防止内存泄漏
+// 在组件卸载时移除事件监听器
 onUnmounted(() => {
-  document.removeEventListener('click',closeEmojiPicker);
+  document.removeEventListener('click', closeEmojiPicker);
 });
+
+const onUploadImageBefore = (file) => {
+
+}
+
+const chatBoxMethod = inject('chatBoxMethod')
+
+const fillTargetId = (msgInfo) => {
+  if (props.isGroup){
+    msgInfo.groupId = props.group.id
+  }else {
+    msgInfo.recvId = props.friend.id
+  }
+}
+
+const generateRandomId = () => {
+  return String(new Date().getTime()) + String(Math.floor(Math.random() * 1000));
+}
+
+const onUploadImageSuccess = () => {
+
+}
+
+const onUploadImageFail = () => {
+
+}
+
+//文件上传前准备(插入到聊天框展示)
+const onUploadFileBefore = (file) => {
+  if (props.isBanned){
+    showBannedTip()
+    return
+  }
+  let url = URL.createObjectURL(file)
+  let data = {
+    name: file.name,
+    size: file.size,
+    url: url
+  }
+  let msgInfo = {
+    id: 0,
+    tmpId: generateRandomId(),
+    sendId: userStore.userInfo.id,
+    content: JSON.stringify(data),
+    sendTime: new Date().getTime(),
+    selfSend: true,
+    type: MESSAGE_TYPE.FILE,
+    loadStatus: "loading",
+    readedCount: 0,
+    status: MESSAGE_STATUS.UNSEND
+  }
+  fillTargetId(msgInfo)
+  //先插入，上传成功后再请求后端
+  chatStore.insertMessage(msgInfo,props.chat)
+  chatBoxMethod.scrollToBottom()
+  chatBoxMethod.moveChatToTop()
+  //用file透传
+  file.msgInfo = msgInfo
+  file.chat = props.chat
+}
+
+//文件上传成功后：发消息到后端，改变原消息状态
+const onUploadFileSuccess = (url,file) => {
+  let data = {
+    name: file.name,
+    size: file.size,
+    url: url
+  }
+  let msgInfo = JSON.parse(JSON.stringify(file.msgInfo));
+  msgInfo.content = JSON.stringify(data);
+  //TODO:receipt
+  chatBoxMethod.sendMessageRequest(msgInfo).then(m => {
+    msgInfo.loadStatus = MSG_INFO_LOAD_STATUS.OK
+    msgInfo.id = m.id
+    chatStore.insertMessage(msgInfo,file.chat)
+  })
+}
+
+//文件上传失败，将原消息状态修改
+const onUploadFileFail = (err,file) => {
+  let msgInfo = JSON.parse(JSON.stringify(file.msgInfo))
+  msgInfo.loadStatus = MSG_INFO_LOAD_STATUS.FAIL
+  chatStore.insertMessage(msgInfo,props.chat)
+}
+
+//ref
+const imageUploader = ref(null)
+
+//ref
+const fileUploader = ref(null)
+
+//image msg type
+const imageTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp', 'image/gif']
+
 
 </script>
 
 <template>
   <div class="chat-input-area">
     <div class="input-outer">
-      <div class="input"
-           contenteditable="true"
-           ref="content"
-           @keydown="onKeydown"
-           @compositionstart="compositionFlag=true"
-           @compositionend="onCompositionend" >
+      <div class="input" contenteditable="true" ref="content" @keydown="onKeydown"
+           @compositionstart="compositionFlag=true" @compositionend="onCompositionend">
       </div>
       <div class="option">
-        <img src="../../../assets/input/emote.svg" alt="表情" class="icon emote" @click="showEmojiPicker=!showEmojiPicker" ref="emoteBtn">
-        <img src="../../../assets/input/image.svg" alt="图片" class="icon">
-        <img src="../../../assets/input/record.svg" alt="语音" class="icon">
-        <img src="../../../assets/input/file.svg" alt="文件" class="icon">
-        <img src="../../../assets/input/phone-call.svg" alt="电话" class="icon" @click="openPrivateVideo(WEBRTC_MODE.VOICE)">
-        <img src="../../../assets/input/video.svg" alt="视频" v-if="!isGroup" class="icon" @click="openPrivateVideo(WEBRTC_MODE.VIDEO)">
-        <img src="../../../assets/input/video.svg" alt="视频" v-if="isGroup" class="icon" @click="console.log('实现中')">
-        <EmojiPicker :native="true" @select="onSelectEmoji" v-show="showEmojiPicker" class="emote-picker" ref="emojiPicker"/>
+        <img title='表情' src="../../../assets/input/emote.svg" alt="表情" class="icon emote"
+             @click="showEmojiPicker=!showEmojiPicker" ref="emoteBtn">
+        <file-upload title="发送图片" ref="imageUploader" :url="'/image/upload'" @before="onUploadImageBefore"
+                     @upload-success="onUploadImageSuccess" @upload-fail="onUploadImageFail"
+                     :max-size="IMAGE_MSG_MAX_SIZE" :file-types="imageTypes">
+          <img src="../../../assets/input/image.svg" alt="图片" class="icon">
+        </file-upload>
+        <img title="发送语音" src="../../../assets/input/record.svg" alt="语音" class="icon">
+        <file-upload title="发送文件" ref="fileUploader" :url="'/file/upload'" @before="onUploadFileBefore"
+                     @upload-success="onUploadFileSuccess" @upload-fail="onUploadFileFail"
+                     :max-size="FILE_MSG_MAX_SIZE">
+          <img src="../../../assets/input/file.svg" alt="文件" class="icon">
+        </file-upload>
+        <img title="音频通话" src="../../../assets/input/phone-call.svg" alt="电话" class="icon"
+             @click="openPrivateVideo(WEBRTC_MODE.VOICE)">
+        <img title="视频通话" src="../../../assets/input/video.svg" alt="视频" v-if="!isGroup" class="icon"
+             @click="openPrivateVideo(WEBRTC_MODE.VIDEO)">
+        <img title='群视频通话' src="../../../assets/input/video.svg" alt="视频" v-if="isGroup" class="icon"
+             @click="console.log('实现中')">
+        <EmojiPicker :native="true" @select="onSelectEmoji" v-show="showEmojiPicker" class="emote-picker"
+                     ref="emojiPicker"/>
       </div>
     </div>
   </div>
@@ -315,7 +428,7 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 
-.option{
+.option {
   width: 20%;
   display: flex;
   align-items: center;
@@ -323,20 +436,20 @@ onUnmounted(() => {
   position: relative;
 }
 
-.emote-picker{
+.emote-picker {
   position: absolute;
   bottom: 40px;
   right: -15px;
 }
 
-.icon{
+.icon {
   cursor: pointer;
   height: 20px;
   width: 20px;
   margin: 0px 10px;
 }
 
-.emote{
+.emote {
   position: relative;
 }
 
@@ -363,7 +476,7 @@ onUnmounted(() => {
     align-items: center;
   }
 
-  .input{
+  .input {
     height: 100%;
     max-height: 350px;
     overflow: auto;

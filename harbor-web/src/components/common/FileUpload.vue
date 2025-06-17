@@ -63,8 +63,8 @@ const onFileUpload = (file) => {
   formData.append("file", file.file)
   //调用后端接口上传
   uploadFile(formData, props.url, {'Content-Type': 'multipart/form-data'})
-  .then((data) => {
-    emit("uploadSuccess", data)
+  .then((url) => {
+    emit("uploadSuccess",url,file.file)
   }).catch((err) => {
     emit("uploadFail", err, file.file)
   }).finally(() => {
@@ -90,7 +90,7 @@ const beforeUpload = (file) => {
     ElMessage.error(`文件大小不能超过 ${fileSizeStr}!`);
     return false;
   }
-  // emit("before",file);
+  emit("before",file);
   return true;
 }
 
@@ -103,11 +103,18 @@ const beforeUpload = (file) => {
              :show-file-list="false"
              :disabled="props.disabled"
              :before-upload="beforeUpload"
-             :multiple="true">
+             :multiple="true"
+             class="upload"
+  >
     <slot></slot>
   </el-upload>
 </template>
 
 <style scoped>
+
+.upload{
+  display: flex;
+  align-items: center;
+}
 
 </style>

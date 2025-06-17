@@ -197,7 +197,7 @@ const useChatStore = defineStore("chatStore", {
             }
             // 如果是已存在消息，则覆盖旧的消息数据
             let chat = this.findChat(chatInfo);
-            let message = this.findMessage(chat, chatInfo)
+            let message = this.findMessage(chat,msgInfo)
             if (message) {
                 Object.assign(message, msgInfo);
                 chat.stored = false;
@@ -449,7 +449,7 @@ const useChatStore = defineStore("chatStore", {
         findMessage(state) {
             return (chat, msgInfo) => {
                 if (!chat) return null;
-                for (let msg in chat.msgInfo) {
+                for (let idx in chat.messages) {
                     // 通过id判断
                     if (msgInfo.id && chat.messages[idx].id == msgInfo.id) {
                         return chat.messages[idx];

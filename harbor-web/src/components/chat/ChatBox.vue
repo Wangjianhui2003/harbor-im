@@ -2,7 +2,7 @@
 //聊天对话框
 
 import ChatInput from "./chatbox_component/ChatInput.vue";
-import {computed, nextTick, onMounted, reactive, ref, watch} from "vue";
+import {computed, nextTick, onMounted, provide, reactive, ref, watch} from "vue";
 import useChatStore from "../../store/chatStore.js";
 import {getMaxReadedPrivateMessageId, readPrivateMessage, sendMessageReq} from "../../api/privateMsg.js";
 import ChatMessageItem from "./chatbox_component/ChatMessageItem.vue";
@@ -349,6 +349,14 @@ onMounted(() => {
   let msgWindow = document.getElementById('msgWindow');
   msgWindow.addEventListener('scroll',onScroll)
 })
+
+
+provide('chatBoxMethod',{
+  sendMessageRequest,
+  scrollToBottom,
+  moveChatToTop
+})
+
 </script>
 
 <template>
@@ -371,6 +379,7 @@ onMounted(() => {
     </div>
     <div class="input-box">
       <chat-input
+          :chat="props.chat"
           ref="chatEditor"
           :is-group="isGroup"
           :friend="friend"

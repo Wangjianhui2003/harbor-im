@@ -1,7 +1,7 @@
 <script setup>
 
 import {computed, ref} from "vue";
-import {MESSAGE_TYPE, MSG_ITEM_OP} from "../../../common/enums.js";
+import {MESSAGE_TYPE, MSG_INFO_LOAD_STATUS, MSG_ITEM_OP} from "../../../common/enums.js";
 import * as dateUtil from "../../../common/date.js";
 import * as checkMsgType from "../../../common/checkMsgType.js";
 import HeadImage from "../../common/HeadImage.vue";
@@ -62,6 +62,38 @@ const isNormal = () => {
 const selfSend = computed(() => {
   return props.msgInfo.selfSend
 })
+
+//是否是交互类消息
+const isAction = computed(() => {
+  return checkMsgType.isAction(props.msgInfo.type)
+})
+
+const isLoading = computed(() => {
+  return props.msgInfo.loadStatus && props.msgInfo.loadStatus === MSG_INFO_LOAD_STATUS.LOADING
+})
+
+const isLoadingFail = computed(() => {
+  return props.msgInfo.loadStatus && props.msgInfo.loadStatus === MSG_INFO_LOAD_STATUS.FAIL
+})
+
+const data = computed(() => {
+  return JSON.parse(props.msgInfo.content)
+})
+
+const fileSize = computed(() => {
+  let size = data.value.size;
+  if (size > 1024 * 1024) {
+    return Math.round(size / 1024 / 1024) + "M";
+  }
+  if (size > 1024) {
+    return Math.round(size / 1024) + "KB";
+  }
+  return size + "B";
+})
+
+const isFileMsg = computed(() => {
+  return props.msgInfo.type === MESSAGE_TYPE.FILE
+})
 </script>
 
 <template>
@@ -90,8 +122,29 @@ const selfSend = computed(() => {
             {{dateUtil.toTimeText(props.msgInfo.sendTime)}}
           </div>
         </div>
-        <div class="content" :class="{selfSendBubble : selfSend}">
-          {{ props.msgInfo.content}}
+        <div class="content" :class="{selfSendBubble : selfSend,fileMsg : isFileMsg}">
+          <div class="text" v-if="props.msgInfo.type === MESSAGE_TYPE.TEXT">
+            {{ props.msgInfo.content}}
+          </div>
+          <div class="action-content" v-if="isAction">
+            <img class="rtc-icon" v-if="props.msgInfo.type === MESSAGE_TYPE.ACT_RT_VOICE" src="../../../assets/msgIcon/phone-msg.svg" alt="语音通话" title="重新发起语音通话">
+            <img class="rtc-icon" v-if="props.msgInfo.type === MESSAGE_TYPE.ACT_RT_VIDEO" src="../../../assets/msgIcon/video-msg.svg" alt="视频通话" title="重新发起视频通话">
+            {{ props.msgInfo.content}}
+          </div>
+          <div class="file" v-if="props.msgInfo.type === MESSAGE_TYPE.FILE">
+            <div class="file-msg-box" v-loading="isLoading">
+              <div class="file-info">
+                <el-link class="file-name-text" :download="data.name" :href="data.url" :underline="true" target="_blank" type="primary">{{data.name}}</el-link>
+                <div class="file-size-text">
+                  {{fileSize}}
+                </div>
+              </div>
+              <div>
+                <svg class="file-msg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              </div>
+            </div>
+            <span v-if="isLoadingFail" class="send-fail">发送失败!</span>
+          </div>
         </div>
       </div>
     </div>
@@ -99,6 +152,47 @@ const selfSend = computed(() => {
 </template>
 
 <style scoped lang="scss">
+
+.send-fail{
+  color: #b40000;
+  font-size: 12px;
+}
+
+.file-name-text{
+  font-size: 15px;
+}
+
+.file-size-text{
+  color: gray;
+  font-size: 12px;
+}
+
+.file-info{
+  margin-right: 30px;
+}
+
+.file-msg-box{
+  height: auto;
+  width: auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.file-msg-icon{
+  width: 50px;
+  color: #48a6ff;
+}
+
+.action-content{
+  display: flex;
+  align-items: center;
+}
+
+.rtc-icon{
+  margin-right: 5px;
+  cursor: pointer;
+}
 
 .content{
   background-color: #94C2ED;
@@ -110,6 +204,11 @@ const selfSend = computed(() => {
 
 .selfSendBubble{
   background-color: var(--bubble-green);
+}
+
+
+.fileMsg{
+  background-color: white;
 }
 
 .name{
