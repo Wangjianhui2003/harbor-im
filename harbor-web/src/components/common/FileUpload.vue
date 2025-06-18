@@ -63,8 +63,8 @@ const onFileUpload = (file) => {
   formData.append("file", file.file)
   //调用后端接口上传
   uploadFile(formData, props.url, {'Content-Type': 'multipart/form-data'})
-  .then((url) => {
-    emit("uploadSuccess",url,file.file)
+  .then((data) => {
+    emit("uploadSuccess",data,file.file)
   }).catch((err) => {
     emit("uploadFail", err, file.file)
   }).finally(() => {

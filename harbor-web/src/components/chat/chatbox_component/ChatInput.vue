@@ -227,20 +227,45 @@ defineExpose({
   clear
 })
 
+let selection = null
+
+function saveSelection() {
+  const sel = window.getSelection()
+  if (sel.rangeCount > 0) {
+    selection = sel.getRangeAt(0)
+  }
+}
+
 //选择emoji
 function onSelectEmoji(emoji) {
-  console.log(emoji)
-  /*
-    // result
-    {
-        i: "😚",
-        n: ["kissing face"],
-        r: "1f61a", // with skin tone
-        t: "neutral", // skin tone
-        u: "1f61a" // without tone
-    }
-    */
+  if (!content.value) return
 
+  // 聚焦回 contenteditable
+  content.value.focus()
+
+  const sel = window.getSelection()
+  sel.removeAllRanges()
+
+  // 如果之前保存了 range，就使用它
+  if (selection) {
+    sel.addRange(selection)
+  }
+
+  // 插入 emoji
+  const range = sel.getRangeAt(0)
+  const textNode = document.createTextNode(emoji.i)
+  range.deleteContents() // 删除选中内容
+  range.insertNode(textNode)
+
+  // 移动光标到 emoji 后
+  range.setStartAfter(textNode)
+  range.collapse(true)
+
+  sel.removeAllRanges()
+  sel.addRange(range)
+
+  // 更新保存的 range
+  saveSelection()
 }
 
 const showEmojiPicker = ref(false)
@@ -286,7 +311,6 @@ const showBannedTip = () => {
   ElMessage.error("该用户已经被封禁")
 }
 
-
 // 在组件挂载时添加事件监听器
 onMounted(() => {
   document.addEventListener('click', closeEmojiPicker);
@@ -296,10 +320,6 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('click', closeEmojiPicker);
 });
-
-const onUploadImageBefore = (file) => {
-
-}
 
 const chatBoxMethod = inject('chatBoxMethod')
 
@@ -315,12 +335,54 @@ const generateRandomId = () => {
   return String(new Date().getTime()) + String(Math.floor(Math.random() * 1000));
 }
 
-const onUploadImageSuccess = () => {
+const onUploadImageBefore = (file) => {
+  if (props.isBanned){
+    showBannedTip()
+    return
+  }
+  let url = URL.createObjectURL(file)
+  //预览
+  let data = {
+    thumbUrl: url,
+    originUrl: url
+  }
+  let msgInfo = {
+    id: 0,
+    tmpId: generateRandomId(),
+    sendId: userStore.userInfo.id,
+    content: JSON.stringify(data),
+    sendTime: new Date().getTime(),
+    selfSend: true,
+    type: MESSAGE_TYPE.IMAGE,
+    loadStatus: "loading",
+    readedCount: 0,
+    status: MESSAGE_STATUS.UNSEND
+  }
+  fillTargetId(msgInfo)
+  //先插入，上传成功后再请求后端
+  chatStore.insertMessage(msgInfo,props.chat)
+  chatBoxMethod.scrollToBottom()
+  chatBoxMethod.moveChatToTop()
+  //用file透传
+  file.msgInfo = msgInfo
+  file.chat = props.chat
 
 }
 
-const onUploadImageFail = () => {
+const onUploadImageSuccess = (data,file) => {
+  let msgInfo = JSON.parse(JSON.stringify(file.msgInfo))
+  msgInfo.content = JSON.stringify(data)
+  chatBoxMethod.sendMessageRequest(msgInfo).then(m => {
+    msgInfo.loadStatus = MSG_INFO_LOAD_STATUS.OK
+    msgInfo.id = m.id
+    chatStore.insertMessage(msgInfo,file.chat)
+  })
+}
 
+const onUploadImageFail = (err,file) => {
+  let msgInfo = JSON.parse(JSON.stringify(file.msgInfo));
+  msgInfo.loadStatus = MSG_INFO_LOAD_STATUS.FAIL
+  chatStore.insertMessage(msgInfo,file.chat)
 }
 
 //文件上传前准备(插入到聊天框展示)
@@ -397,7 +459,7 @@ const imageTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp', 'image
   <div class="chat-input-area">
     <div class="input-outer">
       <div class="input" contenteditable="true" ref="content" @keydown="onKeydown"
-           @compositionstart="compositionFlag=true" @compositionend="onCompositionend">
+           @compositionstart="compositionFlag=true" @compositionend="onCompositionend" @keyup="saveSelection" @mouseup="saveSelection" @focus="saveSelection">
       </div>
       <div class="option">
         <img title='表情' src="../../../assets/input/emote.svg" alt="表情" class="icon emote"

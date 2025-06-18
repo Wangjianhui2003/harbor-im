@@ -94,6 +94,31 @@ const fileSize = computed(() => {
 const isFileMsg = computed(() => {
   return props.msgInfo.type === MESSAGE_TYPE.FILE
 })
+
+const maxWidth = 300
+const maxHeight = 200
+
+const imageRef = ref(null)
+const imageThumb = ref({
+  width: 'auto',
+  height: 'auto',
+})
+
+const onLoadImage = () => {
+  const img = imageRef.value
+  const naturalWidth = img.naturalWidth
+  const naturalHeight = img.naturalHeight
+
+  // 计算缩放比例
+  const scaleW = maxWidth / naturalWidth
+  const scaleH = maxHeight / naturalHeight
+  const scale = Math.min(scaleW, scaleH, 1) // 不放大，只缩小
+
+  imageThumb.value = {
+    width: `${naturalWidth * scale}px`,
+    height: `${naturalHeight * scale}px`,
+  }
+}
 </script>
 
 <template>
@@ -134,16 +159,18 @@ const isFileMsg = computed(() => {
           <div class="file" v-if="props.msgInfo.type === MESSAGE_TYPE.FILE">
             <div class="file-msg-box" v-loading="isLoading">
               <div class="file-info">
-                <el-link class="file-name-text" :download="data.name" :href="data.url" :underline="true" target="_blank" type="primary">{{data.name}}</el-link>
-                <div class="file-size-text">
-                  {{fileSize}}
-                </div>
+                <el-link class="file-name-text" :href="data.url" :underline="true" target="_blank" type="primary">{{data.name}}</el-link>
+                <div class="file-size-text"> {{fileSize}} </div>
               </div>
-              <div>
-                <svg class="file-msg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-              </div>
+              <div> <svg class="file-msg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> </div>
             </div>
             <span v-if="isLoadingFail" class="send-fail">发送失败!</span>
+          </div>
+          <div class="image" v-if="props.msgInfo.type === MESSAGE_TYPE.IMAGE">
+            <div class="img-box" v-loading="isLoading">
+              <img ref="imageRef" class='imageThumb' :src="data.originUrl" alt="图片" loading="lazy" @load="onLoadImage" :style="imageThumb">
+            </div>
+            <span class="send-fail" v-if="isLoadingFail">发送失败!</span>
           </div>
         </div>
       </div>
@@ -153,8 +180,13 @@ const isFileMsg = computed(() => {
 
 <style scoped lang="scss">
 
+.imageThumb{
+  width: auto;
+  height: auto;
+}
+
 .send-fail{
-  color: #b40000;
+  color: #e30000;
   font-size: 12px;
 }
 
