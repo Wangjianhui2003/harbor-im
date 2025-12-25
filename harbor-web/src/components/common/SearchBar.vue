@@ -1,34 +1,34 @@
 <script setup>
-
 const props = defineProps({
-  placeholder:{
+  placeholder: {
     type: String,
-    default: '',
+    default: "",
   },
-  searchText:{
+  searchText: {
     type: String,
   },
   type: {
     type: String,
-    default: 'search',
-  }
-})
+    default: "search",
+  },
+});
 </script>
 
 <template>
-  <input class="search-bar"
-         :value="props.searchText"
-         :placeholder="props.placeholder"
-         @input="$emit('update:searchText',$event.target.value)"
-         :type="props.type">
+  <input
+    class="search-bar"
+    :value="props.searchText"
+    :placeholder="props.placeholder"
+    @input="$emit('update:searchText', $event.target.value)"
+    :type="props.type"
+  />
 </template>
 
 <style scoped lang="scss">
-
-.search-bar{
+.search-bar {
   background-color: #464955;
   color: #ffffff;
-  padding: .15rem .5rem;
+  padding: 0.15rem 0.5rem;
   border-radius: 4px;
   outline: none;
   border: none;
@@ -38,9 +38,5 @@ const props = defineProps({
     border-bottom: 2px solid #5e5e5e;
     border-radius: 4px 4px 2px 2px;
   }
-
-  &:hover {
-  }
 }
-
 </style>

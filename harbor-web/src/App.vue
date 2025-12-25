@@ -1,6 +1,4 @@
-<script setup>
-
-</script>
+<script setup></script>
 
 <template>
   <div class="main">
@@ -9,7 +7,6 @@
 </template>
 
 <style scoped>
-.main{
+.main {
 }
-
 </style>

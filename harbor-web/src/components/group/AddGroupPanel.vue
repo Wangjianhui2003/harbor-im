@@ -1,46 +1,48 @@
 <script setup>
 //创建或加入群聊面板
 
-import {reactive, ref} from "vue";
-import {createGroup} from "../../api/group.js";
-import {useGroupStore} from "../../store/groupStore.js";
+import { reactive, ref } from "vue";
+import { createGroup } from "../../api/group.js";
+import { useGroupStore } from "../../store/groupStore.js";
 
-const emit = defineEmits(['groupCreated'])
+const emit = defineEmits(["groupCreated"]);
 
 const props = defineProps({
   addPanelVisible: {
     type: Boolean,
-    default: false
-  }
-})
+    default: false,
+  },
+});
 
-const groupStore = useGroupStore()
-const searchText = ref("")
+const groupStore = useGroupStore();
+const searchText = ref("");
 const form = reactive({
-  name:"",
-  headImage:"",
-  headImageThumb:"",
-  joinType:0
-})
+  name: "",
+  headImage: "",
+  headImageThumb: "",
+  joinType: 0,
+});
 
 /**
  * 提交表单
  */
 const onSubmit = () => {
-  createGroup(form).then(groupVO => {
-    groupStore.addGroup(groupVO)
-    emit("groupCreated")
-  })
-}
-
+  createGroup(form).then((groupVO) => {
+    groupStore.addGroup(groupVO);
+    emit("groupCreated");
+  });
+};
 </script>
 
 <template>
-  <el-dialog v-model="props.addPanelVisible" :modal="false" title="搜索或创建群聊">
+  <el-dialog
+    v-model="props.addPanelVisible"
+    :modal="false"
+    title="搜索或创建群聊"
+  >
     <el-tabs>
       <el-tab-pane label="搜索">
-        <el-input v-model="searchText">
-        </el-input>
+        <el-input v-model="searchText"> </el-input>
       </el-tab-pane>
       <div>
         <el-scrollbar>
@@ -65,6 +67,4 @@ const onSubmit = () => {
   </el-dialog>
 </template>
 
-<style scoped lang="scss">
-
-</style>
+<style scoped lang="scss"></style>

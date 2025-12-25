@@ -5,25 +5,22 @@
 import HeadImage from "../common/HeadImage.vue";
 
 const props = defineProps({
-  member:{
+  member: {
     type: Object,
-    required: true
-  }
-})
-
+    required: true,
+  },
+});
 </script>
 
 <template>
   <div>
     <head-image
-        :url="props.member.headImage"
-        :name="props.member.showNickname"
-        :online="props.member.online" >
+      :url="props.member.headImage"
+      :name="props.member.showNickname"
+      :online="props.member.online"
+    >
     </head-image>
   </div>
-
 </template>
 
-<style scoped lang="scss">
-
-</style>
+<style scoped lang="scss"></style>

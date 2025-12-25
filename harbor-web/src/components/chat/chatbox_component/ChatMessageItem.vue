@@ -1,7 +1,10 @@
 <script setup>
-
-import {computed, ref} from "vue";
-import {MESSAGE_TYPE, MSG_INFO_LOAD_STATUS, MSG_ITEM_OP} from "../../../common/enums.js";
+import { computed, ref } from "vue";
+import {
+  MESSAGE_TYPE,
+  MSG_INFO_LOAD_STATUS,
+  MSG_ITEM_OP,
+} from "../../../common/enums.js";
 import * as dateUtil from "../../../common/date.js";
 import * as checkMsgType from "../../../common/checkMsgType.js";
 import HeadImage from "../../common/HeadImage.vue";
@@ -12,73 +15,82 @@ import HeadImage from "../../common/HeadImage.vue";
 
 const props = defineProps({
   msgInfo: {
-    type: Object  //消息
+    type: Object, //消息
   },
   mine: {
-    type: Boolean //自己的消息
+    type: Boolean, //自己的消息
   },
   headImage: {
     type: String,
   },
   showName: {
-    type: String //显示名称
+    type: String, //显示名称
   },
   groupMembers: {
-    type: Array //群成员
+    type: Array, //群成员
   },
   haveRightMenu: {
     type: Boolean, //是否右键有菜单
-    default: true
-  }
-})
+    default: true,
+  },
+});
 
-const audioPlayState = ref('STOP')
+const audioPlayState = ref("STOP");
 
 //消息在加载
 const loading = computed(() => {
-  return props.msgInfo.loadStatus && props.msgInfo.loadStatus === 'loading'
-})
+  return props.msgInfo.loadStatus && props.msgInfo.loadStatus === "loading";
+});
 
 //右键菜单栏项目
 const menuItems = computed(() => {
-  let items = []
+  let items = [];
   items.push({
     key: MSG_ITEM_OP.DELETE,
-    name: '删除'
-  })
+    name: "删除",
+  });
   if (props.msgInfo.selfSend && props.msgInfo.id > 0) {
     items.push({
       key: MSG_ITEM_OP.RECALL,
-      name: '撤回',
-    })
+      name: "撤回",
+    });
   }
-  return items
-})
+  return items;
+});
 
 const isNormal = () => {
-  return checkMsgType.isNormal(props.msgInfo.type) || checkMsgType.isAction(props.msgInfo.type)
-}
+  return (
+    checkMsgType.isNormal(props.msgInfo.type) ||
+    checkMsgType.isAction(props.msgInfo.type)
+  );
+};
 
 const selfSend = computed(() => {
-  return props.msgInfo.selfSend
-})
+  return props.msgInfo.selfSend;
+});
 
 //是否是交互类消息
 const isAction = computed(() => {
-  return checkMsgType.isAction(props.msgInfo.type)
-})
+  return checkMsgType.isAction(props.msgInfo.type);
+});
 
 const isLoading = computed(() => {
-  return props.msgInfo.loadStatus && props.msgInfo.loadStatus === MSG_INFO_LOAD_STATUS.LOADING
-})
+  return (
+    props.msgInfo.loadStatus &&
+    props.msgInfo.loadStatus === MSG_INFO_LOAD_STATUS.LOADING
+  );
+});
 
 const isLoadingFail = computed(() => {
-  return props.msgInfo.loadStatus && props.msgInfo.loadStatus === MSG_INFO_LOAD_STATUS.FAIL
-})
+  return (
+    props.msgInfo.loadStatus &&
+    props.msgInfo.loadStatus === MSG_INFO_LOAD_STATUS.FAIL
+  );
+});
 
 const data = computed(() => {
-  return JSON.parse(props.msgInfo.content)
-})
+  return JSON.parse(props.msgInfo.content);
+});
 
 const fileSize = computed(() => {
   let size = data.value.size;
@@ -89,36 +101,36 @@ const fileSize = computed(() => {
     return Math.round(size / 1024) + "KB";
   }
   return size + "B";
-})
+});
 
 const isFileMsg = computed(() => {
-  return props.msgInfo.type === MESSAGE_TYPE.FILE
-})
+  return props.msgInfo.type === MESSAGE_TYPE.FILE;
+});
 
-const maxWidth = 300
-const maxHeight = 200
+const maxWidth = 300;
+const maxHeight = 200;
 
-const imageRef = ref(null)
+const imageRef = ref(null);
 const imageThumb = ref({
-  width: 'auto',
-  height: 'auto',
-})
+  width: "auto",
+  height: "auto",
+});
 
 const onLoadImage = () => {
-  const img = imageRef.value
-  const naturalWidth = img.naturalWidth
-  const naturalHeight = img.naturalHeight
+  const img = imageRef.value;
+  const naturalWidth = img.naturalWidth;
+  const naturalHeight = img.naturalHeight;
 
   // 计算缩放比例
-  const scaleW = maxWidth / naturalWidth
-  const scaleH = maxHeight / naturalHeight
-  const scale = Math.min(scaleW, scaleH, 1) // 不放大，只缩小
+  const scaleW = maxWidth / naturalWidth;
+  const scaleH = maxHeight / naturalHeight;
+  const scale = Math.min(scaleW, scaleH, 1); // 不放大，只缩小
 
   imageThumb.value = {
     width: `${naturalWidth * scale}px`,
     height: `${naturalHeight * scale}px`,
-  }
-}
+  };
+};
 </script>
 
 <template>
@@ -126,49 +138,102 @@ const onLoadImage = () => {
     <div v-if="props.msgInfo.type === MESSAGE_TYPE.TIP_TEXT" class="tip">
       {{ props.msgInfo.content }}
     </div>
-    <div v-else-if="props.msgInfo.type === MESSAGE_TYPE.TIP_TIME" class="time-tip">
+    <div
+      v-else-if="props.msgInfo.type === MESSAGE_TYPE.TIP_TIME"
+      class="time-tip"
+    >
       {{ dateUtil.toTimeText(props.msgInfo.sendTime) }}
     </div>
-    <div v-else-if="isNormal" class="normal" :class="{selfSendRow : selfSend}">
+    <div v-else-if="isNormal" class="normal" :class="{ selfSendRow: selfSend }">
       <div>
         <head-image
-            :size="36"
-            :url="props.headImage"
-            :name="props.showName"
-            :id="props.msgInfo.sendId" >
+          :size="36"
+          :url="props.headImage"
+          :name="props.showName"
+          :id="props.msgInfo.sendId"
+        >
         </head-image>
       </div>
-      <div class="content-container" :class="{selfSendContent : selfSend}">
-        <div class="send-info" :class="{selfSendRow : selfSend}">
+      <div class="content-container" :class="{ selfSendContent: selfSend }">
+        <div class="send-info" :class="{ selfSendRow: selfSend }">
           <div class="name">
-            {{props.showName}}
-          </div >
+            {{ props.showName }}
+          </div>
           <div class="send-time">
-            {{dateUtil.toTimeText(props.msgInfo.sendTime)}}
+            {{ dateUtil.toTimeText(props.msgInfo.sendTime) }}
           </div>
         </div>
-        <div class="content" :class="{selfSendBubble : selfSend,fileMsg : isFileMsg}">
+        <div
+          class="content"
+          :class="{ selfSendBubble: selfSend, fileMsg: isFileMsg }"
+        >
           <div class="text" v-if="props.msgInfo.type === MESSAGE_TYPE.TEXT">
-            {{ props.msgInfo.content}}
+            {{ props.msgInfo.content }}
           </div>
           <div class="action-content" v-if="isAction">
-            <img class="rtc-icon" v-if="props.msgInfo.type === MESSAGE_TYPE.ACT_RT_VOICE" src="../../../assets/msgIcon/phone-msg.svg" alt="语音通话" title="重新发起语音通话">
-            <img class="rtc-icon" v-if="props.msgInfo.type === MESSAGE_TYPE.ACT_RT_VIDEO" src="../../../assets/msgIcon/video-msg.svg" alt="视频通话" title="重新发起视频通话">
-            {{ props.msgInfo.content}}
+            <img
+              class="rtc-icon"
+              v-if="props.msgInfo.type === MESSAGE_TYPE.ACT_RT_VOICE"
+              src="../../../assets/msgIcon/phone-msg.svg"
+              alt="语音通话"
+              title="重新发起语音通话"
+            />
+            <img
+              class="rtc-icon"
+              v-if="props.msgInfo.type === MESSAGE_TYPE.ACT_RT_VIDEO"
+              src="../../../assets/msgIcon/video-msg.svg"
+              alt="视频通话"
+              title="重新发起视频通话"
+            />
+            {{ props.msgInfo.content }}
           </div>
           <div class="file" v-if="props.msgInfo.type === MESSAGE_TYPE.FILE">
             <div class="file-msg-box" v-loading="isLoading">
               <div class="file-info">
-                <el-link class="file-name-text" :href="data.url" :underline="true" target="_blank" type="primary">{{data.name}}</el-link>
-                <div class="file-size-text"> {{fileSize}} </div>
+                <el-link
+                  class="file-name-text"
+                  :href="data.url"
+                  :underline="true"
+                  target="_blank"
+                  type="primary"
+                  >{{ data.name }}</el-link
+                >
+                <div class="file-size-text">{{ fileSize }}</div>
               </div>
-              <div> <svg class="file-msg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> </div>
+              <div>
+                <svg
+                  class="file-msg-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                  ></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+              </div>
             </div>
             <span v-if="isLoadingFail" class="send-fail">发送失败!</span>
           </div>
           <div class="image" v-if="props.msgInfo.type === MESSAGE_TYPE.IMAGE">
             <div class="img-box" v-loading="isLoading">
-              <img ref="imageRef" class='imageThumb' :src="data.originUrl" alt="图片" loading="lazy" @load="onLoadImage" :style="imageThumb">
+              <img
+                ref="imageRef"
+                class="imageThumb"
+                :src="data.thumbUrl"
+                alt="图片"
+                loading="lazy"
+                @load="onLoadImage"
+                :style="imageThumb"
+              />
             </div>
             <span class="send-fail" v-if="isLoadingFail">发送失败!</span>
           </div>
@@ -179,31 +244,40 @@ const onLoadImage = () => {
 </template>
 
 <style scoped lang="scss">
-
-.imageThumb{
-  width: auto;
-  height: auto;
+.image .img-box {
+  max-width: 300px;
+  max-height: 200px;
+  overflow: hidden;
+  display: inline-block;
 }
 
-.send-fail{
+.imageThumb {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.send-fail {
   color: #e30000;
   font-size: 12px;
 }
 
-.file-name-text{
+.file-name-text {
   font-size: 15px;
 }
 
-.file-size-text{
+.file-size-text {
   color: gray;
   font-size: 12px;
 }
 
-.file-info{
+.file-info {
   margin-right: 30px;
 }
 
-.file-msg-box{
+.file-msg-box {
   height: auto;
   width: auto;
   display: flex;
@@ -211,43 +285,42 @@ const onLoadImage = () => {
   align-items: center;
 }
 
-.file-msg-icon{
+.file-msg-icon {
   width: 50px;
   color: #48a6ff;
 }
 
-.action-content{
+.action-content {
   display: flex;
   align-items: center;
 }
 
-.rtc-icon{
+.rtc-icon {
   margin-right: 5px;
   cursor: pointer;
 }
 
-.content{
-  background-color: #94C2ED;
+.content {
+  background-color: #94c2ed;
   padding: 10px;
   border-radius: 9px;
   max-width: 60%;
   overflow-wrap: break-word;
 }
 
-.selfSendBubble{
+.selfSendBubble {
   background-color: var(--bubble-green);
 }
 
-
-.fileMsg{
+.fileMsg {
   background-color: white;
 }
 
-.name{
+.name {
   font-size: 14px;
 }
 
-.tip{
+.tip {
   margin: 45px 0;
   text-align: center;
   color: gray;
@@ -261,21 +334,21 @@ const onLoadImage = () => {
   font-size: 12px;
 }
 
-.msg-item{
+.msg-item {
   margin-top: 18px;
 }
 
-.send-info{
+.send-info {
   height: 20px;
   display: flex;
   align-items: center;
   margin-bottom: 10px;
 }
 
-.send-time{
+.send-time {
   color: gray;
   font-size: 11px;
-  margin: 0 20px
+  margin: 0 20px;
 }
 
 .normal {
@@ -283,11 +356,11 @@ const onLoadImage = () => {
   display: flex;
 }
 
-.selfSendRow{
+.selfSendRow {
   flex-direction: row-reverse;
 }
 
-.content-container{
+.content-container {
   display: flex;
   flex-direction: column;
   align-items: start;
@@ -295,13 +368,11 @@ const onLoadImage = () => {
   width: 100%;
 }
 
-.selfSendContent{
+.selfSendContent {
   align-items: flex-end;
 }
 
-.send-info{
+.send-info {
   display: flex;
 }
-
-
 </style>

@@ -2,68 +2,74 @@
 import ChatBox from "../components/chat/ChatBox.vue";
 import useChatStore from "../store/chatStore.js";
 import ChatItem from "../components/chat/ChatItem.vue";
-import {ref} from "vue";
+import { ref } from "vue";
 import SearchBar from "../components/common/SearchBar.vue";
 //聊天界面
 
 const chatStore = useChatStore();
-const loading = chatStore.isLoading
+const loading = chatStore.isLoading;
 
 //搜索文本
-const searchText = ref('')
+const searchText = ref("");
 
 //选择一个聊天
 const onActiveItem = (idx) => {
-  chatStore.activateChat(idx)
-}
+  chatStore.activateChat(idx);
+};
 
 //删除
 const onDeleteItem = (idx) => {
-  chatStore.removeChat(idx)
-}
+  chatStore.removeChat(idx);
+};
 
 //移动到顶部
 const onTop = (idx) => {
-  chatStore.moveTop(idx)
-}
-
+  chatStore.moveTop(idx);
+};
 </script>
 
 <template>
   <el-container>
     <el-aside class="chat-list">
       <div class="list-header">
-        <search-bar class="search-bar" v-model:search-text="searchText" placeholder="查找聊天..." ></search-bar>
+        <search-bar
+          class="search-bar"
+          v-model:search-text="searchText"
+          placeholder="查找聊天..."
+        ></search-bar>
       </div>
       <el-scrollbar>
-        <div v-for="(chat,idx) in chatStore.chats" :key="idx">
+        <div v-for="(chat, idx) in chatStore.chats" :key="idx">
           <chat-item
-              v-show="!chat.delete && chat.showName && chat.showName.includes(searchText)"
-              :chat="chat"
-              :index="idx"
-              :active="chat === chatStore.activeChat"
-              @click="onActiveItem(idx)"
-              @delete="onDeleteItem(idx)"
-              @top="onTop(idx)"
+            v-show="
+              !chat.delete &&
+              chat.showName &&
+              chat.showName.includes(searchText)
+            "
+            :chat="chat"
+            :index="idx"
+            :active="chat === chatStore.activeChat"
+            @click="onActiveItem(idx)"
+            @delete="onDeleteItem(idx)"
+            @top="onTop(idx)"
           >
           </chat-item>
         </div>
       </el-scrollbar>
     </el-aside>
     <el-main class="chat-box">
-      <chat-box v-if="chatStore.activeChat"
-                :chat="chatStore.activeChat">
+      <chat-box v-if="chatStore.activeChat" :chat="chatStore.activeChat">
       </chat-box>
     </el-main>
   </el-container>
 </template>
 
 <style scoped lang="scss">
-.list-header{
+.list-header {
   margin: 10px;
 }
 
-.search-bar{
+.search-bar {
   height: 40px;
   width: 100%;
 }
@@ -79,7 +85,7 @@ const onTop = (idx) => {
 .input {
   background-color: #f5f5f5;
   color: #242424;
-  padding: .15rem .5rem;
+  padding: 0.15rem 0.5rem;
   min-height: 40px;
   border-radius: 4px;
   outline: none;
@@ -100,5 +106,4 @@ const onTop = (idx) => {
 .chat-box {
   padding: 0px;
 }
-
 </style>

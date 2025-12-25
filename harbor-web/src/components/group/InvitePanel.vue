@@ -1,12 +1,12 @@
 <script setup>
 //选择成员界面，用于多处
-import {computed, ref} from "vue";
+import { computed, ref } from "vue";
 import useFriendStore from "../../store/friendStore.js";
 import FriendItem from "../friend/FriendItem.vue";
-import {inviteToGroup} from "../../api/group.js";
-import {ElMessage} from "element-plus";
+import { inviteToGroup } from "../../api/group.js";
+import { ElMessage } from "element-plus";
 
-const friendStore = useFriendStore()
+const friendStore = useFriendStore();
 
 const props = defineProps({
   groupId: {
@@ -17,69 +17,68 @@ const props = defineProps({
   },
   groupName: {
     type: String,
-  }
-})
+  },
+});
 
-const friends = ref([])
-const show = ref(false)
+const friends = ref([]);
+const show = ref(false);
 
 //搜索文本
 const open = () => {
-  show.value = true
-  friends.value = []
-  friendStore.friends.forEach(friend => {
-    if (friend.deleted) return
-    let f = JSON.parse(JSON.stringify(friend))
-    let m = props.members.filter(m => !m.quit).find(m => m.userId == f.id);
+  show.value = true;
+  friends.value = [];
+  friendStore.friends.forEach((friend) => {
+    if (friend.deleted) return;
+    let f = JSON.parse(JSON.stringify(friend));
+    let m = props.members.filter((m) => !m.quit).find((m) => m.userId == f.id);
     //好友已经在群里
-    if(m){
+    if (m) {
       f.checked = true;
       f.disabled = true;
-    }else {
+    } else {
       f.checked = false;
       f.disabled = false;
     }
-    friends.value.push(f)
-  })
-}
+    friends.value.push(f);
+  });
+};
 
 const close = () => {
-  show.value = false
-}
+  show.value = false;
+};
 
 defineExpose({
   open,
-  close
-})
+  close,
+});
 
 const dialogTitle = computed(() => {
-  return "邀请好友到: " + props.groupName
-})
+  return "邀请好友到: " + props.groupName;
+});
 
 //点击好友item选择加入
 const onClickItem = (friend) => {
-  if (!friend.disabled){
-    friend.checked = !friend.checked
+  if (!friend.disabled) {
+    friend.checked = !friend.checked;
   }
-}
+};
 
 const onSubmit = () => {
-  let ids = []
-  friends.value.forEach(f => {
+  let ids = [];
+  friends.value.forEach((f) => {
     if (!f.disabled && f.checked) {
-      ids.push(f.id)
+      ids.push(f.id);
     }
-  })
+  });
   let inviteVO = {
     groupId: props.groupId,
-    friendIds: ids
-  }
+    friendIds: ids,
+  };
   inviteToGroup(inviteVO).then(() => {
-    close()
-    ElMessage.success("邀请成功")
-  })
-}
-
+    close();
+    ElMessage.success("邀请成功");
+  });
+};
 </script>
 
 <template>
@@ -92,7 +91,11 @@ const onSubmit = () => {
             <div class="item-container">
               <div v-for="friend in friends" :key="friend.id">
                 <friend-item :friend="friend" @click="onClickItem(friend)">
-                  <el-checkbox :disabled="friend.disabled" v-model="friend.checked" @click.stop>
+                  <el-checkbox
+                    :disabled="friend.disabled"
+                    v-model="friend.checked"
+                    @click.stop
+                  >
                   </el-checkbox>
                 </friend-item>
               </div>
@@ -104,8 +107,9 @@ const onSubmit = () => {
             <div class="item-container">
               <div v-for="friend in friends" :key="friend.id">
                 <friend-item
-                    v-if="friend.checked && !friend.disabled"
-                    :friend="friend">
+                  v-if="friend.checked && !friend.disabled"
+                  :friend="friend"
+                >
                 </friend-item>
               </div>
             </div>
@@ -118,8 +122,7 @@ const onSubmit = () => {
 </template>
 
 <style scoped lang="scss">
-
-.container{
+.container {
   display: flex;
   flex-direction: column;
   align-items: center;

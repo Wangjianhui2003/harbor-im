@@ -1,6 +1,6 @@
 <script setup>
 import HeadImage from "../common/HeadImage.vue";
-import {computed} from "vue";
+import { computed } from "vue";
 
 const props = defineProps({
   active: {
@@ -11,18 +11,18 @@ const props = defineProps({
   },
   menu: {
     type: Boolean,
-    default: true
+    default: true,
   },
 });
-
 </script>
 
 <template>
   <div class="friend-item">
     <head-image
-        :url="props.friend.headImage"
-        :name="props.friend.friendNickname"
-        :online="props.friend.online" >
+      :url="props.friend.headImage"
+      :name="props.friend.friendNickname"
+      :online="props.friend.online"
+    >
     </head-image>
     <div class="friend-info">
       <div class="name">
@@ -34,14 +34,15 @@ const props = defineProps({
 </template>
 
 <style lang="scss" scoped>
-
 .friend-item {
   display: flex;
   align-items: center;
   cursor: pointer;
   padding: 3px;
   margin: 4px;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
   border-radius: 10px;
 
   &:hover {
@@ -56,9 +57,8 @@ const props = defineProps({
     margin-left: 10px;
   }
 
-  .name{
+  .name {
     font-size: 14px;
   }
 }
-
 </style>

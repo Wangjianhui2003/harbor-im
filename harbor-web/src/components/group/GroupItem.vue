@@ -1,23 +1,23 @@
 <script setup>
-
 import HeadImage from "../common/HeadImage.vue";
 
 const props = defineProps({
-  group:{
+  group: {
     type: Object,
-  }
-})
+  },
+});
 </script>
 
 <template>
   <div class="group-item">
     <head-image
-        class="avatar"
-        :url="props.group.headImageThumb"
-        :name="props.group.showGroupName" >
+      class="avatar"
+      :url="props.group.headImageThumb"
+      :name="props.group.showGroupName"
+    >
     </head-image>
     <div class="group-info">
-      {{ props.group.showGroupName}}
+      {{ props.group.showGroupName }}
     </div>
   </div>
 </template>
@@ -46,5 +46,4 @@ const props = defineProps({
     text-align: center;
   }
 }
-
 </style>
