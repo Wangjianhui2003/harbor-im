@@ -14,4 +14,4 @@ tcpsocket:
 
 jwt:
   accessToken:
-    secret: MIIBIjANBgkq  # 跟im-platfrom的secret必须一致
+    secret: MIIBIjANBgkq # 跟im-platfrom的secret必须一致

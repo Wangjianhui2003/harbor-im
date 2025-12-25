@@ -29,7 +29,6 @@ public enum IMTerminalType {
 
     private final String desc;
 
-
     public static IMTerminalType fromCode(Integer code) {
         for (IMTerminalType typeEnum : values()) {
             if (typeEnum.code.equals(code)) {

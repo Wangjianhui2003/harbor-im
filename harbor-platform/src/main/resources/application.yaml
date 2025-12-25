@@ -20,7 +20,7 @@ mybatis-plus:
     db-config:
       id-type: AUTO # ID自增
   configuration:
-    map-underscore-to-camel-case: true  #开启自动驼峰命名规则
+    map-underscore-to-camel-case: true #开启自动驼峰命名规则
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 jwt:
