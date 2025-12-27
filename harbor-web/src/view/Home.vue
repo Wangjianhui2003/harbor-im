@@ -34,6 +34,7 @@ const rtcPrivateVideo = ref(null);
 
 //ws地址
 const wsUrl = import.meta.env.VITE_WS_URL;
+// const wsUrl = "wss://117.72.198.67:8101/im";
 
 //重连标识
 const reconnecting = ref(false);
@@ -86,6 +87,7 @@ const init = () => {
   mainStore
     .loadAll()
     .then(() => {
+      console.log("WebSocketURL:", wsUrl);
       wsApi.connect(wsUrl, sessionStorage.getItem("accessToken"));
 
       //连接成功回调

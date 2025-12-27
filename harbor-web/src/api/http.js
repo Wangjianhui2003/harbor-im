@@ -2,7 +2,7 @@ import axios from "axios";
 import { ElMessage } from "element-plus";
 
 const http = axios.create({
-  baseURL: "http://localhost:8100/api",
+  baseURL: import.meta.env.VITE_BASE_API,
   timeout: "1000 * 10",
 });
 

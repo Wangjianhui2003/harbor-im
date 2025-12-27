@@ -61,10 +61,12 @@ const friendMap = computed(() => {
   // 排序
   let arrayObj = Array.from(map);
   arrayObj.sort((a, b) => {
+    // "在线"组在最前面
+    if (a[0] == "在线") return -1;
+    if (b[0] == "在线") return 1;
     // #组在最后面
-    if (a[0] == "#" || b[0] == "#") {
-      return b[0].localeCompare(a[0]);
-    }
+    if (a[0] == "#") return 1;
+    if (b[0] == "#") return -1;
     return a[0].localeCompare(b[0]);
   });
   map = new Map(arrayObj.map((i) => [i[0], i[1]]));

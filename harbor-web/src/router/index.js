@@ -26,6 +26,7 @@ const routes = [
     name: "Home",
     path: "/home",
     component: Home,
+    redirect: "/home/chat", //不加这个出现/chat/undefined问题
     children: [
       {
         name: "Chat",
