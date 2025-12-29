@@ -1,7 +1,7 @@
 <script setup>
 import ChatBox from "../components/chat/ChatBox.vue";
 import useChatStore from "../store/chatStore.js";
-import ChatItem from "../components/chat/ChatItem.vue";
+import ChatListItem from "../components/chat/ChatListItem.vue";
 import { ref } from "vue";
 import SearchBar from "../components/common/SearchBar.vue";
 //聊天界面
@@ -40,7 +40,7 @@ const onTop = (idx) => {
       </div>
       <el-scrollbar>
         <div v-for="(chat, idx) in chatStore.chats" :key="idx">
-          <chat-item
+          <chat-list-item
             v-show="
               !chat.delete &&
               chat.showName &&
@@ -53,7 +53,7 @@ const onTop = (idx) => {
             @delete="onDeleteItem(idx)"
             @top="onTop(idx)"
           >
-          </chat-item>
+          </chat-list-item>
         </div>
       </el-scrollbar>
     </el-aside>
