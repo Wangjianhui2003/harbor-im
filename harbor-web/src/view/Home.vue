@@ -313,6 +313,7 @@ const handleGroupMessage = (msgInfo) => {
   // TODO:群视频
 };
 
+
 const insertGroupMsg = (group, msgInfo) => {
   //每次创建一个chatInfo可以动态更新group的头像信息
   let chatInfo = {

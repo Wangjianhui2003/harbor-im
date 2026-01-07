@@ -1,9 +1,11 @@
 import axios from "axios";
 import { ElMessage } from "element-plus";
+import { HttpResponse } from "../types";
+import { refreshToken as refresh } from "./connect.ts";
 
 const http = axios.create({
   baseURL: import.meta.env.VITE_BASE_API,
-  timeout: "1000 * 10",
+  timeout: 1000 * 10,
 });
 
 http.interceptors.request.use(
@@ -21,41 +23,34 @@ http.interceptors.request.use(
 
 http.interceptors.response.use(
   async (response) => {
-    //后端成功返回
-    if (response.data.code == 200) {
-      return response.data.data;
-    } else if (response.data.code == 400) {
+    const data: HttpResponse = response.data;
+    if (data.code == 200) {
+      return data.data;
+    } else if (data.code == 400) {
       location.href = "/";
+      return Promise.reject(response);
+    } else if (data.code == 401) {
       //鉴权失败
-    } else if (response.data.code == 401) {
       console.log("token失效，尝试重新获取");
-      let refreshToken = sessionStorage.getItem("refreshToken");
+      let refreshToken: string | null = sessionStorage.getItem("refreshToken");
       if (!refreshToken) {
         location.href = "/";
       }
       // 发送请求, 进行刷新token操作, 获取新的token
-      const data = await http({
-        method: "put",
-        url: "/refreshToken",
-        headers: {
-          refreshToken: refreshToken,
-        },
-      }).catch(() => {
-        location.href = "/";
-      });
+      const data = await refresh(refreshToken!);
       // 保存token
       sessionStorage.setItem("accessToken", data.accessToken);
       sessionStorage.setItem("refreshToken", data.refreshToken);
-      // 重新发送刚才的请求
+      //重试
       return http(response.config);
-      //其他错误,打印msg
     } else {
+      //其他错误,打印msg
       ElMessage({
-        message: response.data.message,
+        message: data.message,
         type: "error",
         duration: 1500,
       });
-      return Promise.reject(response.data);
+      return Promise.reject(data);
     }
   },
   (error) => {

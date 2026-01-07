@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
-@RestController
+@RestController()
 @Tag(name = "文件上传")
 @RequiredArgsConstructor
 public class FileController {

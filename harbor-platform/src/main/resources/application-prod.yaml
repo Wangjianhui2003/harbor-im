@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://www.jianhui03.cn:3306/harbor?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://mysql:3306/harbor?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true
     username: root
     password: Wjh_ns4jzw
   data:
@@ -11,8 +11,8 @@ spring:
       password: Sm9sVXBOYJjI030b5tz0trjpzvZzRhtZmEbv0uOImcD1wEDOPfeaqNU4PxHob/Wp
 
 minio:
-  endpoint: http://www.jianhui03.cn:9002 #内网地址
-  domain: http://www.jianhui03.cn:9002 #外网访问地址
+  endpoint: http://minio:9002 #内网地址
+  domain: https://www.jianhui03.cn #外网访问地址
   accessKey: minioadmin
   secretKey: minioadmin
   bucketName: harbor-im
@@ -21,7 +21,7 @@ minio:
   videoPath: video
 
 webrtc:
-  max-channel: 9 # 多人通话最大通道数量，最大不能超过16,建议值:4,9,16
+  max-channel: 9 # 多人通话最大通道数量，最大不能超过16
   ice-servers:
     - urls: stun:stun.l.google.com:19302
 

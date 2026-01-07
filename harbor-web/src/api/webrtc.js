@@ -1,4 +1,4 @@
-import http from "./http.js";
+import http from "./http.ts";
 
 export const loadWebRTCConfig = () => {
   return http({

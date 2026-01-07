@@ -1,12 +1,9 @@
 <script setup></script>
 
 <template>
-  <div class="main">
+  <div>
     <router-view></router-view>
   </div>
 </template>
 
-<style scoped>
-.main {
-}
-</style>
+<style scoped></style>

@@ -93,7 +93,7 @@ public class GroupController {
 
     @RepeatSubmit
     @Operation(summary = "搜索群聊", description = "通过id搜索群聊(用于加入)")
-    @GetMapping("/search")
+    @GetMapping("/search/")
     public Result<GroupVO> searchGroups(@RequestParam(required = true) Long groupId) {
         GroupVO groupVO = groupService.searchById(groupId);
         return Results.success(groupVO);

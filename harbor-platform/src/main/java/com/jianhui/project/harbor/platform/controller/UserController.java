@@ -50,7 +50,7 @@ public class UserController {
 
     @PutMapping("/update")
     @Operation(summary = "修改用户信息", description = "修改用户信息，仅允许修改登录用户信息")
-    public Result update(@Valid @RequestBody UserVO userVO) {
+    public Result<Void> update(@Valid @RequestBody UserVO userVO) {
         userService.updateUserInfo(userVO);
         return Results.success();
     }

@@ -56,21 +56,21 @@ public class LoginController {
 
     @PutMapping("/refreshToken")
     @Operation(summary = "刷新token", description = "用refreshtoken换取新的token")
-    public Result refreshToken(@RequestHeader("refreshToken") String refreshToken) {
+    public Result<LoginResp> refreshToken(@RequestHeader("refreshToken") String refreshToken) {
         LoginResp vo = userService.refreshToken(refreshToken);
         return Results.success(vo);
     }
 
     @PostMapping("/register")
     @Operation(summary = "用户注册", description = "用户注册")
-    public Result register(@Valid @RequestBody RegisterReq dto) {
+    public Result<Void> register(@Valid @RequestBody RegisterReq dto) {
         userService.register(dto);
         return Results.success();
     }
 
     @PutMapping("/modifyPwd")
     @Operation(summary = "修改密码", description = "修改用户密码")
-    public Result modifyPassword(@Valid @RequestBody ModifyPwdDTO dto) {
+    public Result<Void> modifyPassword(@Valid @RequestBody ModifyPwdDTO dto) {
         userService.modifyPassword(dto);
         return Results.success();
     }

@@ -21,4 +21,10 @@
         friend_nickname,remark,friend_head_image,
         deleted,update_time,created_time
     </sql>
+    <update id="updateFriendNicknameByUserIdAndFriendId">
+        update t_friend
+        set remark = #{remark,jdbcType=VARCHAR}
+        where user_id = #{userId,jdbcType=NUMERIC}
+          AND friend_id = #{friendId,jdbcType=NUMERIC}
+    </update>
 </mapper>

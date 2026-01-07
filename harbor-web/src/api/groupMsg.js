@@ -1,4 +1,4 @@
-import http from "./http.js";
+import http from "./http.ts";
 
 /**
  * 发送群聊消息

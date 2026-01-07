@@ -1,4 +1,4 @@
-import http from "./http.js";
+import http from "./http.ts";
 
 /**
  * 添加好友

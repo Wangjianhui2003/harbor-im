@@ -42,7 +42,7 @@ public class GroupMember {
     private String remarkNickname;
 
     /**
-     * 角色
+     * 角色 0-群主 1-管理员 2-普通成员
      */
     private Integer role;
 

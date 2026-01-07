@@ -1,4 +1,4 @@
-import http from "./http.js";
+import http from "./http.ts";
 import { WEBRTC_MODE } from "../common/enums.js";
 
 /**

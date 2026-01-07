@@ -66,7 +66,7 @@ public class FileServiceImpl implements FileService {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "文件上传失败");
         }
         //访问路径
-        String url = generUrl(FileType.FILE, filename);
+        String url = generateUrl(FileType.FILE, filename);
         log.info("上传文件成功，用户id:{},url:{}", userId, url);
         return url;
     }
@@ -92,7 +92,7 @@ public class FileServiceImpl implements FileService {
             if (StringUtils.isEmpty(fileName)) {
                 throw new GlobalException(ResultCode.PROGRAM_ERROR, "图片上传失败");
             }
-            vo.setOriginUrl(generUrl(FileType.IMAGE, fileName));
+            vo.setOriginUrl(generateUrl(FileType.IMAGE, fileName));
             // 大于30K的文件需上传缩略图
             if(file.getSize() > 30 * 1024){
                 byte[] imageByte = ImageUtil.compressForScale(file.getBytes(), 30);
@@ -101,7 +101,7 @@ public class FileServiceImpl implements FileService {
                     throw new GlobalException(ResultCode.PROGRAM_ERROR, "缩略图上传失败");
                 }
             }
-            vo.setThumbUrl(generUrl(FileType.IMAGE, fileName));
+            vo.setThumbUrl(generateUrl(FileType.IMAGE, fileName));
             log.info("文件图片成功，用户id:{},origin url:{}", userId, vo.getOriginUrl());
             return vo;
         }catch(Exception e){
@@ -113,7 +113,7 @@ public class FileServiceImpl implements FileService {
     /**
      * 生成文件访问url
      */
-    public String generUrl(FileType fileTypeEnum, String fileName) {
+    public String generateUrl(FileType fileTypeEnum, String fileName) {
         String url = minioProps.getDomain() + "/" + minioProps.getBucketName();
         switch (fileTypeEnum) {
             case FILE:

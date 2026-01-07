@@ -1,5 +1,5 @@
 // 创建群聊
-import http from "./http.js";
+import http from "./http.ts";
 
 export const createGroup = (data) => {
   return http({

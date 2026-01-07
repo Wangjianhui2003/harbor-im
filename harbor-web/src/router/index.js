@@ -1,8 +1,4 @@
-import {
-  createMemoryHistory,
-  createRouter,
-  createWebHistory,
-} from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 import Login from "../view/Login.vue";
 import Home from "../view/Home.vue";
 import Register from "../view/Register.vue";

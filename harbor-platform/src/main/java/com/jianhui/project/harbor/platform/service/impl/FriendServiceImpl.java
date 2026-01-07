@@ -150,6 +150,15 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         sendAddFriendMessage(userId, friendId, friend);
     }
 
+    @Override
+    public void editFriendRemarkName(FriendVO friendVO) {
+        long userId = SessionContext.getSession().getUserId();
+        int i = friendMapper.updateFriendNicknameByUserIdAndFriendId(friendVO.getFriendNickname(),userId,friendVO.getId());
+        if (i != 1){
+            throw new GlobalException("更新好友昵称失败");
+        }
+    }
+
     @CacheEvict(key = "#userId + ':' + #friendId")
     public void unbindFriend(Long userId,Long friendId){
         // 逻辑删除

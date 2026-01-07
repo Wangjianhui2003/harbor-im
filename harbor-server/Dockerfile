@@ -6,4 +6,4 @@ COPY target/harbor-server.jar /app
 
 EXPOSE 8101
 
-ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:InitialRAMPercentage=50.0", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/harbor-server.jar","--spring.profiles.active=prod"]
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:InitialRAMPercentage=50.0", "-XX:MaxRAMPercentage=75.0", "-Dspring.profiles.active=prod", "-jar", "/app/harbor-server.jar"]

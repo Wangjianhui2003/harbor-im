@@ -1,4 +1,4 @@
-import http from "./http.js";
+import http from "./http.ts";
 
 /**
  * public class PrivateMessageVO {

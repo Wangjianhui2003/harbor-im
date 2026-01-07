@@ -6,7 +6,6 @@ import {
   MESSAGE_STATUS,
   MESSAGE_TYPE,
 } from "../common/enums.js";
-import friend from "../view/Friend.vue";
 import { TIME_TIP_INTERVAL } from "../common/constant.js";
 
 /* 为了加速拉取离线消息效率，拉取时消息暂时存储到cacheChats,等
@@ -361,7 +360,7 @@ const useChatStore = defineStore("chatStore", {
     },
 
     updateChatFromFriend(friend) {
-      let chat = this.findChatByFriendId(friend.id);
+      let chat = this.find0ChatByFriendId(friend.id);
       // 更新会话中的群名和头像
       if (
         chat &&
