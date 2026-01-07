@@ -37,4 +37,11 @@ public interface RequestGroupService {
      * @return 请求记录列表
      */
     List<RequestGroup> findGroupRequests(Long groupId);
+    /**
+     * 根据群组id列表查询请求
+     *
+     * @param groupIds 群组id列表
+     * @return 请求记录列表
+     */
+    List<RequestGroup> findRequestsByGroupIds(List<Long> groupIds);
 }

@@ -23,4 +23,20 @@
         comment,deal_time,created_time,
         update_time
     </sql>
+
+    <!-- 根据群组id列表查询请求（未处理 或 一个月内已处理） -->
+    <select id="findRequestsByGroupIds" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List"/>
+        from t_request_group
+        where group_id in
+        <foreach collection="groupIds" item="groupId" open="(" separator="," close=")">
+            #{groupId}
+        </foreach>
+        and (
+            status = 0
+            or
+            (status != 0 and deal_time &gt;= #{oneMonthAgo})
+        )
+        order by created_time desc
+    </select>
 </mapper>

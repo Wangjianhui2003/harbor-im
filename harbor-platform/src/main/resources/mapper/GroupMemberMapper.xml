@@ -90,5 +90,12 @@
           AND quit = #{quit,jdbcType=BOOLEAN}
     </select>
 
+    <select id="findManagedGroupIds" resultType="Long">
+        select group_id
+        from t_group_member
+        where user_id = #{userId,jdbcType=NUMERIC}
+          AND quit = false
+          AND role IN (0, 1)
+    </select>
 
 </mapper>

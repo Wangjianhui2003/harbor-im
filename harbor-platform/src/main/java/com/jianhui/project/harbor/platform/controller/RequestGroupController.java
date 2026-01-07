@@ -53,4 +53,11 @@ public class RequestGroupController {
     public Result<List<RequestGroup>> findGroupRequests(@PathVariable("groupId") Long groupId) {
         return Results.success(requestGroupService.findGroupRequests(groupId));
     }
+
+    
+    @PostMapping("/group/list")
+    @Operation(summary = "根据群组id列表查询请求", description = "根据群组id列表查询请求，返回未处理的和一个月内处理完成的")
+    public Result<List<RequestGroup>> findRequestsByGroupIds(@RequestBody List<Long> groupIds) {
+        return Results.success(requestGroupService.findRequestsByGroupIds(groupIds));
+    }
 }

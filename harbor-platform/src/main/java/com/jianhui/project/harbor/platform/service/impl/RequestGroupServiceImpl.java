@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -104,7 +105,7 @@ public class RequestGroupServiceImpl extends ServiceImpl<RequestGroupMapper, Req
             // 保存请求记录，状态为已同意
             requestGroup.setStatus(1);
             requestGroup.setDealTime(new Date());
-            requestGroup.setComment("自动同意（直接加入）");
+            requestGroup.setComment("自动同意");
             // 如果是直接加入，dealUserId 可以设置为群主或空
             if (group.getOwnerId() != null) {
                 requestGroup.setDealUserId(group.getOwnerId());
@@ -255,5 +256,20 @@ public class RequestGroupServiceImpl extends ServiceImpl<RequestGroupMapper, Req
         }
 
         return requestGroupMapper.findGroupRequests(groupId);
+    }
+
+    @Override
+    public List<RequestGroup> findRequestsByGroupIds(List<Long> groupIds) {
+        if (groupIds == null || groupIds.isEmpty()) {
+            return List.of();
+        }
+        
+        // 计算一个月前的时间
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, -30);
+        Date oneMonthAgo = calendar.getTime();
+        
+        
+        return requestGroupMapper.findRequestsByGroupIds(groupIds, oneMonthAgo);
     }
 }

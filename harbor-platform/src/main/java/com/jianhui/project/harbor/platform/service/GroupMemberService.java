@@ -87,4 +87,12 @@ public interface GroupMemberService extends IService<GroupMember> {
      */
     Boolean isInGroup(Long groupId,List<Long> userIds);
 
+    /**
+     * 查询用户作为群主(role=0)或管理员(role=1)的群组ID列表
+     *
+     * @param userId 用户id
+     * @return 群组id列表
+     */
+    List<Long> findManagedGroupIds(Long userId);
+
 }

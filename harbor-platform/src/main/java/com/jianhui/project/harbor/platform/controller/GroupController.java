@@ -6,7 +6,10 @@ import com.jianhui.project.harbor.platform.pojo.vo.GroupMemberVO;
 import com.jianhui.project.harbor.platform.pojo.vo.GroupVO;
 import com.jianhui.project.harbor.platform.result.Result;
 import com.jianhui.project.harbor.platform.result.Results;
+import com.jianhui.project.harbor.platform.service.GroupMemberService;
 import com.jianhui.project.harbor.platform.service.GroupService;
+import com.jianhui.project.harbor.platform.session.SessionContext;
+import com.jianhui.project.harbor.platform.session.UserSession;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -23,6 +26,7 @@ import java.util.List;
 public class GroupController {
 
     private final GroupService groupService;
+    private final GroupMemberService groupMemberService;
 
     @RepeatSubmit
     @Operation(summary = "创建群聊", description = "创建群聊")
@@ -57,6 +61,13 @@ public class GroupController {
     @GetMapping("/list")
     public Result<List<GroupVO>> findGroups() {
         return Results.success(groupService.findGroups());
+    }
+
+    @Operation(summary = "查询管理的群聊ID列表", description = "查询当前用户作为群主或管理员的群聊ID列表")
+    @GetMapping("/managed")
+    public Result<List<Long>> findManagedGroupIds() {
+        UserSession session = SessionContext.getSession();
+        return Results.success(groupMemberService.findManagedGroupIds(session.getUserId()));
     }
 
     @RepeatSubmit
@@ -99,4 +110,5 @@ public class GroupController {
         return Results.success(groupVO);
     }
 }
+
 

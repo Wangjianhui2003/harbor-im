@@ -24,6 +24,14 @@ public interface GroupMemberMapper extends BaseMapper<GroupMember> {
     int updateQuitAndQuitTimeByGroupId(@Param("quit") Boolean quit, @Param("quitTime") Date quitTime, @Param("groupId") Long groupId);
 
     int updateQuitAndQuitTimeByGroupIdAndUserId(@Param("quit") Boolean quit, @Param("quitTime") Date quitTime, @Param("groupId") Long groupId, @Param("userId") Long userId);
+
+    /**
+     * 查询用户作为群主(role=0)或管理员(role=1)的群组ID列表
+     *
+     * @param userId 用户id
+     * @return 群组id列表
+     */
+    List<Long> findManagedGroupIds(@Param("userId") Long userId);
 }
 
 

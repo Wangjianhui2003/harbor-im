@@ -91,6 +91,11 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         //TODO:isInGroup
         return null;
     }
+
+    @Override
+    public List<Long> findManagedGroupIds(Long userId) {
+        return groupMemberMapper.findManagedGroupIds(userId);
+    }
 }
 
 
