@@ -3,51 +3,68 @@
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
 
-  <!-- Docker 容器内的本地仓库路径 -->
-  <localRepository>/root/.m2/repository</localRepository>
+    <localRepository>/root/.m2/repository</localRepository>
 
-  <mirrors>
-    <!-- 使用阿里云镜像加速 -->
-    <mirror>
-      <id>aliyunmaven</id>
-      <mirrorOf>*</mirrorOf>
-      <name>阿里云公共仓库</name>
-      <url>https://maven.aliyun.com/repository/public</url>
-    </mirror>
-  </mirrors>
+    <mirrors>
+        <mirror>
+            <id>aliyunmaven</id>
+            <mirrorOf>central</mirrorOf>
+            <name>阿里云公共仓库</name>
+            <url>https://maven.aliyun.com/repository/public</url>
+        </mirror>
+    </mirrors>
 
-  <profiles>
-    <profile>
-      <id>default</id>
-      <repositories>
-        <repository>
-          <id>central</id>
-          <url>https://maven.aliyun.com/repository/public</url>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-        </repository>
-      </repositories>
-      <pluginRepositories>
-        <pluginRepository>
-          <id>central</id>
-          <url>https://maven.aliyun.com/repository/public</url>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-        </pluginRepository>
-      </pluginRepositories>
-    </profile>
-  </profiles>
+    <profiles>
+        <profile>
+            <id>multi-repo</id>
+            <repositories>
+                <repository>
+                    <id>central</id>
+                    <url>https://maven.aliyun.com/repository/public</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>true</enabled></snapshots>
+                </repository>
 
-  <activeProfiles>
-    <activeProfile>default</activeProfile>
-  </activeProfiles>
+                <repository>
+                    <id>jboss-public-repository-group</id>
+                    <name>JBoss Public Repository Group</name>
+                    <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>false</enabled></snapshots>
+                </repository>
+
+                <repository>
+                    <id>google-maven-central</id>
+                    <name>Google Maven Central</name>
+                    <url>https://maven-central.storage.googleapis.com/</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>false</enabled></snapshots>
+                </repository>
+
+                <repository>
+                    <id>spring-milestones</id>
+                    <name>Spring Milestones</name>
+                    <url>https://repo.spring.io/milestone</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>false</enabled></snapshots>
+                </repository>
+            </repositories>
+
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>central</id>
+                    <url>https://maven.aliyun.com/repository/public</url>
+                </pluginRepository>
+                <pluginRepository>
+                    <id>spring-milestones</id>
+                    <url>https://repo.spring.io/milestone</url>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+    </profiles>
+
+    <activeProfiles>
+        <activeProfile>multi-repo</activeProfile>
+    </activeProfiles>
 
 </settings>

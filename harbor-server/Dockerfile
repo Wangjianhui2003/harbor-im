@@ -3,38 +3,41 @@ FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /build
 
-# 1. 拷贝 Docker 专用的 Maven 配置（使用阿里云镜像加速）
+# 1. 拷贝 Maven 配置
 COPY docker-settings.xml /usr/share/maven/ref/settings-docker.xml
 
-# 2. 拷贝所有 pom.xml 文件（保持目录结构）
+# 2. 拷贝所有 pom.xml 文件
 COPY pom.xml .
 COPY harbor-common/pom.xml ./harbor-common/
 COPY harbor-client/pom.xml ./harbor-client/
 COPY harbor-platform/pom.xml ./harbor-platform/
 COPY harbor-server/pom.xml ./harbor-server/
 
-# 3. 拷贝源码（只拷贝 harbor-server 依赖的模块）
+# 3. 单独下载依赖
+# 空构建 harbor-server 模块，触发依赖下载
+RUN mvn -s /usr/share/maven/ref/settings-docker.xml \
+    package \
+    -DskipTests \
+    -pl harbor-server -am \
+    || true
+
+
+# 4. 拷贝所有源码
+# 即使这里因为代码修改导致缓存失效，上面的依赖层依然是从缓存读取的
 COPY harbor-common/src ./harbor-common/src
 COPY harbor-server/src ./harbor-server/src
 
-# 4. 构建 harbor-server 及其依赖模块
-# -pl harbor-server: 只构建 harbor-server 模块
-# -am: 同时构建其依赖的模块 (harbor-common)
-# -DskipTests: 跳过测试以加快构建速度
-RUN mvn -s /usr/share/maven/ref/settings-docker.xml clean package -pl harbor-server -am -DskipTests
+# 5. 构建
+RUN mvn -s /usr/share/maven/ref/settings-docker.xml \
+    clean package \
+    -pl harbor-server -am \
+    -DskipTests
 
-# ========== Stage 2: 运行环境 ==========
+# ========== Stage 2: 运行环境==========
 FROM eclipse-temurin:21-jre-alpine
-
 WORKDIR /app
-
-# 拷贝构建产物
 COPY --from=builder /build/harbor-server/target/harbor-server.jar /app/harbor-server.jar
-
-# 暴露端口
 EXPOSE 8101
-
-# 启动命令
 ENTRYPOINT ["java", \
             "-XX:+UseContainerSupport", \
             "-XX:InitialRAMPercentage=50.0", \
