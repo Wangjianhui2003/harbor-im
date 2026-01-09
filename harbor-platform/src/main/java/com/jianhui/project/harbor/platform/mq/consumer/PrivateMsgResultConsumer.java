@@ -60,6 +60,12 @@ public class PrivateMsgResultConsumer implements ApplicationRunner {
                     IMSendResult imSendResult = JSON.parseObject(string, IMSendResult.class);
                     JSONObject jsonObject = (JSONObject)imSendResult.getData();
                     PrivateMessageVO msgVO = jsonObject.toJavaObject(PrivateMessageVO.class);
+                    log.info("收到私聊消息发送结果，消息id:{}，发送者:{},接收者:{},终端:{},结果码:{}",
+                            msgVO.getId(),
+                            imSendResult.getSender().getId(),
+                            imSendResult.getReceiver().getId(),
+                            imSendResult.getReceiver().getTerminal(),
+                            imSendResult.getCode());
                     if (imSendResult.getCode().equals(IMSendCode.SUCCESS.code()) && msgVO.getId() != null){
                         messageIds.add(msgVO.getId());
                         log.info("消息送达，消息id:{}，发送者:{},接收者:{},终端:{}",

@@ -11,7 +11,7 @@ spring:
       password: Sm9sVXBOYJjI030b5tz0trjpzvZzRhtZmEbv0uOImcD1wEDOPfeaqNU4PxHob/Wp
 
 minio:
-  endpoint: http://minio:9002 #内网地址
+  endpoint: http://minio:9000 #内网地址
   domain: https://www.jianhui03.cn #外网访问地址
   accessKey: minioadmin
   secretKey: minioadmin

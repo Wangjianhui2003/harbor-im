@@ -12,7 +12,7 @@ spring:
 
 minio:
   endpoint: http://www.jianhui03.cn:9002 #内网地址
-  domain: http://www.jianhui03.cn:9002 #外网访问地址
+  domain: https://www.jianhui03.cn #外网访问地址
   accessKey: minioadmin
   secretKey: minioadmin
   bucketName: harbor-im
