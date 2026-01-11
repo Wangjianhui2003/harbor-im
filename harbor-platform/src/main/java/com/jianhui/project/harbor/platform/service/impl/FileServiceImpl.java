@@ -1,12 +1,12 @@
 package com.jianhui.project.harbor.platform.service.impl;
 
-
 import com.jianhui.project.harbor.platform.config.props.MinioProperties;
 import com.jianhui.project.harbor.platform.constant.Constant;
 import com.jianhui.project.harbor.platform.enums.FileType;
 import com.jianhui.project.harbor.platform.enums.ResultCode;
 import com.jianhui.project.harbor.platform.exception.GlobalException;
 import com.jianhui.project.harbor.platform.pojo.vo.UploadImageVO;
+import com.jianhui.project.harbor.platform.pojo.vo.UploadVideoVO;
 import com.jianhui.project.harbor.platform.service.FileService;
 import com.jianhui.project.harbor.platform.session.SessionContext;
 import com.jianhui.project.harbor.platform.util.FileUtil;
@@ -56,16 +56,15 @@ public class FileServiceImpl implements FileService {
         if (file.getSize() > Constant.MAX_FILE_SIZE) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "文件不能超过" + Constant.MAX_FILE_SIZE / 1024 / 1024 + "MB");
         }
-        //上传到file路径
+        // 上传到file路径
         String filename = minioUtil.upload(
                 minioProps.getBucketName(),
                 minioProps.getFilePath(),
-                file
-        );
-        if(StringUtils.isBlank(filename)) {
+                file);
+        if (StringUtils.isBlank(filename)) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "文件上传失败");
         }
-        //访问路径
+        // 访问路径
         String url = generateUrl(FileType.FILE, filename);
         log.info("上传文件成功，用户id:{},url:{}", userId, url);
         return url;
@@ -76,14 +75,15 @@ public class FileServiceImpl implements FileService {
      */
     @Override
     public UploadImageVO uploadImage(MultipartFile file) {
-        try{
+        try {
             Long userId = SessionContext.getSession().getUserId();
             // 大小校验
-            if(file.getSize() > Constant.MAX_IMAGE_SIZE){
-                throw new GlobalException(ResultCode.PROGRAM_ERROR, "图片不能超过" + Constant.MAX_IMAGE_SIZE / 1024 / 1024 + "MB");
+            if (file.getSize() > Constant.MAX_IMAGE_SIZE) {
+                throw new GlobalException(ResultCode.PROGRAM_ERROR,
+                        "图片不能超过" + Constant.MAX_IMAGE_SIZE / 1024 / 1024 + "MB");
             }
             // 图片格式校验
-            if(!FileUtil.isImage(file.getOriginalFilename())){
+            if (!FileUtil.isImage(file.getOriginalFilename())) {
                 throw new GlobalException(ResultCode.PROGRAM_ERROR, "图片格式不正确");
             }
             // 上传原图
@@ -94,9 +94,10 @@ public class FileServiceImpl implements FileService {
             }
             vo.setOriginUrl(generateUrl(FileType.IMAGE, fileName));
             // 大于30K的文件需上传缩略图
-            if(file.getSize() > 30 * 1024){
+            if (file.getSize() > 30 * 1024) {
                 byte[] imageByte = ImageUtil.compressForScale(file.getBytes(), 30);
-                fileName = minioUtil.upload(minioProps.getBucketName(), minioProps.getImagePath(), Objects.requireNonNull(file.getOriginalFilename()), imageByte, file.getContentType());
+                fileName = minioUtil.upload(minioProps.getBucketName(), minioProps.getImagePath(),
+                        Objects.requireNonNull(file.getOriginalFilename()), imageByte, file.getContentType());
                 if (StringUtils.isEmpty(fileName)) {
                     throw new GlobalException(ResultCode.PROGRAM_ERROR, "缩略图上传失败");
                 }
@@ -104,9 +105,44 @@ public class FileServiceImpl implements FileService {
             vo.setThumbUrl(generateUrl(FileType.IMAGE, fileName));
             log.info("文件图片成功，用户id:{},origin url:{}", userId, vo.getOriginUrl());
             return vo;
-        }catch(Exception e){
+        } catch (Exception e) {
             log.error("上传图片失败，{}", e.getMessage(), e);
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "图片上传失败");
+        }
+    }
+
+    /**
+     * 上传视频
+     */
+    @Override
+    public UploadVideoVO uploadVideo(MultipartFile file) {
+        try {
+            Long userId = SessionContext.getSession().getUserId();
+            // 大小校验
+            if (file.getSize() > Constant.MAX_VIDEO_SIZE) {
+                throw new GlobalException(ResultCode.PROGRAM_ERROR,
+                        "视频不能超过" + Constant.MAX_VIDEO_SIZE / 1024 / 1024 + "MB");
+            }
+            // 视频格式校验
+            if (!FileUtil.isVideo(file.getOriginalFilename())) {
+                throw new GlobalException(ResultCode.PROGRAM_ERROR, "视频格式不正确");
+            }
+            // 上传视频文件
+            UploadVideoVO vo = new UploadVideoVO();
+            String fileName = minioUtil.upload(minioProps.getBucketName(), minioProps.getVideoPath(), file);
+            if (StringUtils.isEmpty(fileName)) {
+                throw new GlobalException(ResultCode.PROGRAM_ERROR, "视频上传失败");
+            }
+            vo.setUrl(generateUrl(FileType.VIDEO, fileName));
+            // 封面图暂时使用默认封面或留空，后续可通过ffmpeg提取第一帧
+            vo.setCoverUrl("");
+            // 时长暂时设为0，后续可通过ffmpeg获取
+            vo.setDuration(0.0);
+            log.info("上传视频成功，用户id:{},url:{}", userId, vo.getUrl());
+            return vo;
+        } catch (Exception e) {
+            log.error("上传视频失败，{}", e.getMessage(), e);
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "视频上传失败");
         }
     }
 

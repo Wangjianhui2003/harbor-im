@@ -14,6 +14,10 @@ public final class Constant {
      * 最大上传文件大小
      */
     public static final Long MAX_FILE_SIZE = 20 * 1024 * 1024L;
+    /**
+     * 最大视频上传大小
+     */
+    public static final Long MAX_VIDEO_SIZE = 100 * 1024 * 1024L;
 
     /**
      * 大群人数上限
