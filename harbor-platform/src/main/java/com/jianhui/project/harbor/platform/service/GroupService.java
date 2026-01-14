@@ -91,4 +91,13 @@ public interface GroupService extends IService<Group> {
      * 用id查询群组(专用于查询加入)
      */
     GroupVO searchById(Long groupId);
+
+    /**
+     * 设置或移除群管理员
+     *
+     * @param groupId 群聊id
+     * @param userId  目标用户id
+     * @param isAdmin true设置为管理员，false移除管理员
+     */
+    void setAdmin(Long groupId, Long userId, Boolean isAdmin);
 }

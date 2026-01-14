@@ -50,7 +50,6 @@ public class GroupController {
         return Results.success();
     }
 
-
     @Operation(summary = "查询群聊", description = "查询单个群聊信息")
     @GetMapping("/find/{groupId}")
     public Result<GroupVO> findGroup(@NotNull(message = "群聊id不能为空") @PathVariable Long groupId) {
@@ -81,7 +80,7 @@ public class GroupController {
     @Operation(summary = "查询群聊成员", description = "查询群聊成员")
     @GetMapping("/members/{groupId}")
     public Result<List<GroupMemberVO>> findGroupMembers(
-        @NotNull(message = "群聊id不能为空") @PathVariable Long groupId) {
+            @NotNull(message = "群聊id不能为空") @PathVariable Long groupId) {
         return Results.success(groupService.findGroupMembers(groupId));
     }
 
@@ -97,18 +96,26 @@ public class GroupController {
     @Operation(summary = "踢出群聊", description = "将用户踢出群聊")
     @DeleteMapping("/kick/{groupId}")
     public Result kickGroup(@NotNull(message = "群聊id不能为空") @PathVariable Long groupId,
-        @NotNull(message = "用户id不能为空") @RequestParam Long userId) {
+            @NotNull(message = "用户id不能为空") @RequestParam Long userId) {
         groupService.kickFromGroup(groupId, userId);
         return Results.success();
     }
 
     @RepeatSubmit
     @Operation(summary = "搜索群聊", description = "通过id搜索群聊(用于加入)")
-    @GetMapping("/search/")
+    @GetMapping("/search")
     public Result<GroupVO> searchGroups(@RequestParam(required = true) Long groupId) {
         GroupVO groupVO = groupService.searchById(groupId);
         return Results.success(groupVO);
     }
+
+    @RepeatSubmit
+    @Operation(summary = "设置管理员", description = "设置或移除群管理员")
+    @PutMapping("/admin/{groupId}")
+    public Result setAdmin(@NotNull(message = "群聊id不能为空") @PathVariable Long groupId,
+            @NotNull(message = "用户id不能为空") @RequestParam Long userId,
+            @NotNull(message = "是否设置为管理员不能为空") @RequestParam Boolean isAdmin) {
+        groupService.setAdmin(groupId, userId, isAdmin);
+        return Results.success();
+    }
 }
-
-

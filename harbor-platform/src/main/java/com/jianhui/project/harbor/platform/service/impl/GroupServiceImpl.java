@@ -44,12 +44,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 @RequiredArgsConstructor
 @Service
 @CacheConfig(cacheNames = RedisKey.IM_CACHE_GROUP)
 @Slf4j
-public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements GroupService{
+public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements GroupService {
 
     private final UserService userService;
     private final GroupMemberService groupMemberService;
@@ -88,11 +87,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     public void invite(GroupInviteVO vo) {
         UserSession session = SessionContext.getSession();
-        //拿到group并检查
+        // 拿到group并检查
         Group group = getAndCheckById(vo.getGroupId());
-        //校验
+        // 校验
         GroupMember groupMember = groupMemberService.findByGroupAndUserId(vo.getGroupId(), session.getUserId());
-        if(groupMember == null || groupMember.getQuit()) {
+        if (groupMember == null || groupMember.getQuit()) {
             throw new GlobalException("您不在群聊中,邀请失败");
         }
         // 群聊人数校验
@@ -106,11 +105,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (vo.getFriendIds().size() != friends.size()) {
             throw new GlobalException("部分用户不是您的好友，邀请失败");
         }
-        //将friend信息处理成member
+        // 将friend信息处理成member
         List<GroupMember> newMemberList = friends.stream().map(f -> {
-            Optional<GroupMember> optional =
-                    members.stream().filter(member -> member.getUserId().equals(f.getFriendId())).findFirst();
-            //之前没加入过的new一个
+            Optional<GroupMember> optional = members.stream()
+                    .filter(member -> member.getUserId().equals(f.getFriendId())).findFirst();
+            // 之前没加入过的new一个
             GroupMember member = optional.orElseGet(GroupMember::new);
             member.setGroupId(group.getId());
             member.setUserId(f.getFriendId());
@@ -121,18 +120,18 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             member.setRole(GroupRole.MEMBER.code());
             return member;
         }).toList();
-        //存库
-        if(!newMemberList.isEmpty()){
+        // 存库
+        if (!newMemberList.isEmpty()) {
             groupMemberService.saveOrUpdateBatch(newMemberList);
         }
-        //给每个被邀请的friend发送消息
-        for(GroupMember member : newMemberList){
+        // 给每个被邀请的friend发送消息
+        for (GroupMember member : newMemberList) {
             GroupVO groupVO = convertToVO(group, member);
             sendAddGroupMessage(groupVO, List.of(member.getUserId()), false);
         }
         // 给群成员推送进入群聊消息
         List<Long> userIds = groupMemberService.findUserIdsByGroupId(vo.getGroupId());
-        String memberNames =newMemberList.stream().map(GroupMember::getShowNickname).collect(Collectors.joining(","));
+        String memberNames = newMemberList.stream().map(GroupMember::getShowNickname).collect(Collectors.joining(","));
         String content = String.format("'%s'邀请'%s'加入了群聊", session.getNickname(), memberNames);
         sendTipMessage(vo.getGroupId(), userIds, content, true);
         log.info("邀请进入群聊，群聊id:{},群聊名称:{},被邀请用户id:{}", group.getId(), group.getName(), vo.getFriendIds());
@@ -140,27 +139,29 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     /**
      * 给群成员发送群聊的提示
-     * @param groupId 群id
-     * @param recvIds 需要接收的id
-     * @param content 内容
+     * 
+     * @param groupId   群id
+     * @param recvIds   需要接收的id
+     * @param content   内容
      * @param sendToAll 是否发送给全部
      */
-    private void sendTipMessage(@NotNull(message = "群id不可为空") Long groupId, List<Long> recvIds, String content, boolean sendToAll) {
+    private void sendTipMessage(@NotNull(message = "群id不可为空") Long groupId, List<Long> recvIds, String content,
+            boolean sendToAll) {
         UserSession session = SessionContext.getSession();
-        //入库
+        // 入库
         GroupMessage groupMessage = new GroupMessage();
         groupMessage.setSendId(session.getUserId());
         groupMessage.setRecvIds(sendToAll ? "" : CommaTextUtils.asText(recvIds));
         groupMessage.setGroupId(groupId);
         groupMessage.setContent(content);
         groupMessage.setType(MessageType.TIP_TEXT.code());
-        groupMessage.setStatus(MessageStatus.UNSEND.code());
+        groupMessage.setStatus(MessageStatus.SENDED.code());
         groupMessage.setSendTime(new Date());
         groupMessage.setSendNickname(session.getNickname());
         groupMessageMapper.insert(groupMessage);
-        //组织VO
+        // 组织VO
         GroupMessageVO groupMessageVO = BeanUtils.copyProperties(groupMessage, GroupMessageVO.class);
-        //组装IMMsg
+        // 组装IMMsg
         IMGroupMessage<GroupMessageVO> imGroupMessage = new IMGroupMessage<>();
         imGroupMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         if (CollUtil.isEmpty(recvIds)) {
@@ -179,7 +180,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     /**
      * 将group和member合并成GroupVO用于通知前端
      */
-    private GroupVO convertToVO(Group group,GroupMember member){
+    private GroupVO convertToVO(Group group, GroupMember member) {
         GroupVO vo = BeanUtils.copyProperties(group, GroupVO.class);
         vo.setRemarkGroupName(member.getRemarkGroupName());
         vo.setRemarkNickname(member.getRemarkNickname());
@@ -194,24 +195,24 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     public GroupVO modifyGroup(GroupVO vo) {
         UserSession session = SessionContext.getSession();
-        //拿到group并校验
+        // 拿到group并校验
         Group group = getAndCheckById(vo.getId());
-        //校验是否成员
+        // 校验是否成员
         GroupMember groupMember = groupMemberService.findByGroupAndUserId(vo.getId(), session.getUserId());
-        if(groupMember == null || groupMember.getQuit()) {
+        if (groupMember == null || groupMember.getQuit()) {
             throw new GlobalException("您不是群聊的成员");
         }
-        //群成员可以更改群内昵称和群备注
+        // 群成员可以更改群内昵称和群备注
         groupMember.setRemarkNickname(vo.getRemarkNickname());
         groupMember.setRemarkGroupName(vo.getRemarkGroupName());
-        //群主和管理员可以更改群聊基本信息
-        if(groupMember.getRole().equals(GroupRole.ADMIN.code())
-            || groupMember.getRole().equals(GroupRole.OWNER.code())){
+        // 群主和管理员可以更改群聊基本信息
+        if (groupMember.getRole().equals(GroupRole.ADMIN.code())
+                || groupMember.getRole().equals(GroupRole.OWNER.code())) {
             group = BeanUtils.copyProperties(vo, Group.class);
             updateById(group);
         }
-        log.info("修改群聊:userId:{},群聊id:{},群聊名称:{}",groupMember.getUserId(), group.getId(), group.getName());
-        return convertToVO(group,groupMember);
+        log.info("修改群聊:userId:{},群聊id:{},群聊名称:{}", groupMember.getUserId(), group.getId(), group.getName());
+        return convertToVO(group, groupMember);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -223,12 +224,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (!group.getOwnerId().equals(session.getUserId())) {
             throw new GlobalException("只有群主才有权限解除群聊");
         }
-        //群聊Id
+        // 群聊Id
         List<Long> userIds = groupMemberService.findUserIdsByGroupId(groupId);
-        //逻辑解散
+        // 逻辑解散
         group.setDissolve(true);
         updateById(group);
-        //移除群成员
+        // 移除群成员
         groupMemberService.removeByGroupId(groupId);
         // 清理已读缓存
         String key = StrUtil.join(":", RedisKey.IM_GROUP_READED_POSITION, groupId);
@@ -236,8 +237,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         // 推送解散群聊提示
         String content = String.format("'%s'解散了群聊", session.getNickname());
         sendTipMessage(groupId, userIds, content, true);
-        sendDelGroupMessage(groupId,userIds,false);
-        log.info("删除群聊，群主id:{},群聊id:{},群聊名称:{}", group.getOwnerId(),group.getId(), group.getName());
+        sendDelGroupMessage(groupId, userIds, false);
+        log.info("删除群聊，群主id:{},群聊id:{},群聊名称:{}", group.getOwnerId(), group.getId(), group.getName());
     }
 
     @Override
@@ -257,11 +258,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     public List<GroupVO> findGroups() {
         UserSession session = SessionContext.getSession();
-        //查询自己加的所有群
+        // 查询自己加的所有群
         List<GroupMember> groupMemberList = groupMemberService.findByUserId(session.getUserId());
         // 一个月内退的群可能存在退群前的离线消息,一并返回作为前端缓存
         groupMemberList.addAll(groupMemberService.findQuitInMonth(session.getUserId()));
-        if(groupMemberList.isEmpty()){
+        if (groupMemberList.isEmpty()) {
             return new LinkedList<>();
         }
         // 拉取群列表
@@ -269,7 +270,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         LambdaQueryWrapper<Group> in = Wrappers.lambdaQuery(Group.class)
                 .in(Group::getId, groupIds);
         List<Group> groups = list(in);
-        //转为VO
+        // 转为VO
         return groups.stream().map(group -> {
             GroupMember groupMember = groupMemberList
                     .stream()
@@ -302,14 +303,14 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         List<GroupMember> members = groupMemberService.findByGroupId(groupId);
         List<Long> userIds = members.stream().map(GroupMember::getUserId).toList();
         List<Long> onlineUserIds = imClient.getOnlineUser(userIds);
-        //返回VO，在线的排前面
+        // 返回VO，在线的排前面
         return members.stream().map(m -> {
             GroupMemberVO vo = BeanUtils.copyProperties(m, GroupMemberVO.class);
             vo.setShowNickname(m.getShowNickname());
             vo.setShowGroupName(StrUtil.blankToDefault(m.getRemarkGroupName(), group.getName()));
             vo.setOnline(onlineUserIds.contains(m.getUserId()));
             return vo;
-        }).sorted((m1,m2) -> m2.getOnline().compareTo(m1.getOnline())).toList();
+        }).sorted((m1, m2) -> m2.getOnline().compareTo(m1.getOnline())).toList();
     }
 
     @Override
@@ -341,12 +342,41 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     public void kickFromGroup(Long groupId, Long userId) {
         UserSession session = SessionContext.getSession();
         Group group = this.getAndCheckById(groupId);
-        if (!group.getOwnerId().equals(session.getUserId())) {
-            throw new GlobalException("非管理员没有权限踢人");
+
+        // 获取操作者的群成员信息
+        GroupMember operatorMember = groupMemberService.findByGroupAndUserId(groupId, session.getUserId());
+        if (operatorMember == null || operatorMember.getQuit()) {
+            throw new GlobalException("您不在群聊中");
         }
+
+        // 校验操作者权限：只有群主和管理员才能踢人
+        boolean isOwner = group.getOwnerId().equals(session.getUserId());
+        boolean isAdmin = GroupRole.ADMIN.code().equals(operatorMember.getRole());
+        if (!isOwner && !isAdmin) {
+            throw new GlobalException("只有群主和管理员才有权限踢人");
+        }
+
+        // 不能移除自己
         if (userId.equals(session.getUserId())) {
             throw new GlobalException("不能移除自己");
         }
+
+        // 获取被踢者的群成员信息
+        GroupMember targetMember = groupMemberService.findByGroupAndUserId(groupId, userId);
+        if (targetMember == null || targetMember.getQuit()) {
+            throw new GlobalException("该用户不在群聊中");
+        }
+
+        // 校验被踢者权限：不能踢群主；管理员不能踢管理员，群主可以踢管理员
+        boolean targetIsOwner = group.getOwnerId().equals(userId);
+        boolean targetIsAdmin = GroupRole.ADMIN.code().equals(targetMember.getRole());
+        if (targetIsOwner) {
+            throw new GlobalException("不能移除群主");
+        }
+        if (targetIsAdmin && !isOwner) {
+            throw new GlobalException("只有群主才能移除管理员");
+        }
+
         // 删除群聊成员
         groupMemberService.removeByGroupAndUserId(groupId, userId);
         // 清理已读缓存
@@ -361,11 +391,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     /**
      * 发送添加群组信息
+     * 
      * @param groupVo
      * @param recvIds
      * @param sendToSelf
      */
-    private void sendAddGroupMessage(GroupVO groupVo,List<Long> recvIds, Boolean sendToSelf) {
+    private void sendAddGroupMessage(GroupVO groupVo, List<Long> recvIds, Boolean sendToSelf) {
         UserSession session = SessionContext.getSession();
         GroupMessageVO msgInfo = new GroupMessageVO();
         msgInfo.setSendId(session.getUserId());
@@ -374,7 +405,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         msgInfo.setType(MessageType.GROUP_NEW.code());
         msgInfo.setContent(JSON.toJSONString(groupVo));
         IMGroupMessage<GroupMessageVO> imGroupMsg = new IMGroupMessage<>();
-        imGroupMsg.setSender(new IMUserInfo(session.getUserId(),session.getTerminal()));
+        imGroupMsg.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         imGroupMsg.setRecvIds(recvIds);
         imGroupMsg.setSendToSelf(sendToSelf);
         imGroupMsg.setData(msgInfo);
@@ -384,6 +415,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     /**
      * 发送删除群组信息
+     * 
      * @param groupId
      * @param recvIds
      * @param sendToSelf
@@ -396,15 +428,51 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         msgInfo.setSendTime(new Date());
         msgInfo.setType(MessageType.GROUP_DEL.code());
         IMGroupMessage<GroupMessageVO> imGroupMsg = new IMGroupMessage<>();
-        imGroupMsg.setSender(new IMUserInfo(session.getUserId(),session.getTerminal()));
+        imGroupMsg.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         imGroupMsg.setRecvIds(recvIds);
         imGroupMsg.setSendToSelf(sendToSelf);
         imGroupMsg.setData(msgInfo);
         imGroupMsg.setIsSendBack(false);
         imClient.sendGroupMessage(imGroupMsg);
     }
+
+    @Override
+    public void setAdmin(Long groupId, Long userId, Boolean isAdmin) {
+        UserSession session = SessionContext.getSession();
+        Group group = this.getAndCheckById(groupId);
+
+        // 只有群主可以设置管理员
+        if (!group.getOwnerId().equals(session.getUserId())) {
+            throw new GlobalException("只有群主才能设置管理员");
+        }
+
+        // 不能对自己操作
+        if (userId.equals(session.getUserId())) {
+            throw new GlobalException("不能对自己进行此操作");
+        }
+
+        // 获取目标成员信息
+        GroupMember targetMember = groupMemberService.findByGroupAndUserId(groupId, userId);
+        if (targetMember == null || targetMember.getQuit()) {
+            throw new GlobalException("该用户不在群聊中");
+        }
+
+        // 不能对群主操作
+        if (group.getOwnerId().equals(userId)) {
+            throw new GlobalException("不能对群主进行此操作");
+        }
+
+        // 设置角色
+        Integer newRole = isAdmin ? GroupRole.ADMIN.code() : GroupRole.MEMBER.code();
+        targetMember.setRole(newRole);
+        groupMemberService.updateById(targetMember);
+
+        // 推送提示消息
+        List<Long> userIds = groupMemberService.findUserIdsByGroupId(groupId);
+        String action = isAdmin ? "设置" : "取消";
+        String content = String.format("'%s'已被%s为管理员", targetMember.getShowNickname(), action);
+        sendTipMessage(groupId, userIds, content, true);
+
+        log.info("{}管理员，群聊id:{},用户id:{}", action, groupId, userId);
+    }
 }
-
-
-
-

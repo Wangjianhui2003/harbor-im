@@ -25,6 +25,9 @@ public class GroupMemberVO {
     @Schema(description = "是否在线")
     private Boolean online;
 
+    @Schema(description = "群成员角色 0-群主 1-管理员 2-普通成员")
+    private Integer role;
+
     @Schema(description = "群名显示名称")
     private String showGroupName;
 
