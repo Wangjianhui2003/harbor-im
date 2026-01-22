@@ -1,15 +1,12 @@
 package com.jianhui.project.harbor.server.netty.processor;
 
-import cn.hutool.core.util.StrUtil;
 import com.jianhui.project.harbor.common.constant.IMMQConstant;
-import com.jianhui.project.harbor.common.constant.IMRedisKey;
 import com.jianhui.project.harbor.common.enums.IMCmdType;
 import com.jianhui.project.harbor.common.enums.IMSendCode;
 import com.jianhui.project.harbor.common.model.IMRecvInfo;
 import com.jianhui.project.harbor.common.model.IMSendInfo;
 import com.jianhui.project.harbor.common.model.IMSendResult;
 import com.jianhui.project.harbor.common.model.IMUserInfo;
-import com.jianhui.project.harbor.common.mq.RedisMQTemplate;
 import com.jianhui.project.harbor.server.netty.UserChannelCxtMap;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.RequiredArgsConstructor;
