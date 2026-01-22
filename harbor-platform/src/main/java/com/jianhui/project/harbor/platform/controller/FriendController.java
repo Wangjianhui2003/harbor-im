@@ -30,7 +30,7 @@ public class FriendController {
     @RepeatSubmit
     @PostMapping("/add")
     @Operation(summary = "添加好友", description = "双方建立好友关系")
-    public Result addFriend(@NotNull(message = "好友id不可为空") @RequestParam Long friendId) {
+    public Result<Void> addFriend(@NotNull(message = "好友id不可为空") @RequestParam Long friendId) {
         friendService.addFriend(friendId);
         return Results.success();
     }
@@ -44,8 +44,16 @@ public class FriendController {
 
     @DeleteMapping("/delete/{friendId}")
     @Operation(summary = "删除好友", description = "解除好友关系")
-    public Result delFriend(@NotNull(message = "好友id不可为空") @PathVariable("friendId") Long friendId) {
+    public Result<Void> delFriend(@NotNull(message = "好友id不可为空") @PathVariable("friendId") Long friendId) {
         friendService.delFriend(friendId);
         return Results.success();
     }
+
+    @PostMapping("/updateFriendNickName")
+    @Operation(summary = "改变好友备注名", description = "改变好友备注名")
+    public Result<Void> editFriendRemarkName(@RequestBody FriendRespDTO friendRespDTO) {
+        friendService.editFriendRemarkName(friendRespDTO);
+        return Results.success();
+    }
+
 }

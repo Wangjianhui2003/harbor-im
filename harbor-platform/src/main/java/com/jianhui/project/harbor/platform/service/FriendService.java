@@ -70,4 +70,5 @@ public interface FriendService extends IService<Friend> {
      */
     void bindFriend(Long userId, Long friendId);
 
+    void editFriendRemarkName(FriendRespDTO friendRespDTO);
 }

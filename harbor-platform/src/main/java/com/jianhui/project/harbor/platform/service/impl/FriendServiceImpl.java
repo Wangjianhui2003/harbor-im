@@ -247,6 +247,15 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         sendMessage.setData(messageInfo);
         imClient.sendPrivateMessage(sendMessage);
     }
+
+    @Override
+    public void editFriendRemarkName(FriendRespDTO friendRespDTO) {
+        long userId = SessionContext.getSession().getUserId();
+        int i = friendMapper.updateFriendNicknameByUserIdAndFriendId(friendRespDTO.getFriendNickname(), userId, friendRespDTO.getId());
+        if (i != 1) {
+            throw new GlobalException("更新好友昵称失败");
+        }
+    }
 }
 
 
