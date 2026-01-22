@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 @Slf4j
 @Component
-public class LoginProcessor extends AbstractMsgProcessor<IMLoginInfo>{
+public class LoginProcessor extends AbstractMsgProcessor<IMLoginInfo> {
 
     private final RedisMQTemplate redisMQTemplate;
     @Value("${jwt.accessToken.secret}")
@@ -38,47 +38,48 @@ public class LoginProcessor extends AbstractMsgProcessor<IMLoginInfo>{
 
     @Override
     public void process(ChannelHandlerContext ctx, IMLoginInfo loginInfo) {
-        //校验jwt
-        if(!JwtUtil.checkSign(loginInfo.getAccessToken(),accessTokenSecret)){
+        // 校验jwt
+        if (!JwtUtil.checkSign(loginInfo.getAccessToken(), accessTokenSecret)) {
             ctx.channel().close();
-            log.warn("用户token校验不通过，强制下线,token:{}",loginInfo.getAccessToken());
+            log.warn("用户token校验不通过，强制下线,token:{}", loginInfo.getAccessToken());
             return;
         }
-        //获取用户信息
+        // 获取用户信息
         String info = JwtUtil.getInfo(loginInfo.getAccessToken());
         IMSessionInfo sessionInfo = JSON.parseObject(info, IMSessionInfo.class);
         Long userId = sessionInfo.getUserId();
         Integer terminal = sessionInfo.getTerminal();
-        log.info("用户websocket登录成功，userId:{},ServerId:{}",userId,IMServerGroup.serverId);
+        log.info("用户websocket登录成功，userId:{},ServerId:{}", userId, IMServerGroup.serverId);
 
         ChannelHandlerContext context = UserChannelCxtMap.getChannelCtx(userId, terminal);
-        //已经有相同userid + terminal的channel存在，强制下线之前登录的用户
-        if(context != null && ctx.channel().id().equals(context.channel().id())){
+        // 已经有相同userid + terminal的channel存在，强制下线之前登录的用户
+        if (context != null && !ctx.channel().id().equals(context.channel().id())) {
             IMSendInfo<Object> sendInfo = new IMSendInfo<>();
             sendInfo.setCmd(IMCmdType.FORCE_LOGUT.code());
-            //发送信息到前端,前端强制下线
+            // 发送信息到前端,前端强制下线
             sendInfo.setData("您已在其他地方登录，将被强制下线");
             context.channel().writeAndFlush(sendInfo);
-            log.info("异地登录，强制下线,userId:{},terminal:{}",userId,terminal);
+            log.info("异地登录，强制下线,userId:{},terminal:{}", userId, terminal);
         }
 
-        //保存当前登录的channel context
-        UserChannelCxtMap.addChannelCxt(userId,terminal,ctx);
-        //保存用户id到channel
+        // 保存当前登录的channel context
+        UserChannelCxtMap.addChannelCxt(userId, terminal, ctx);
+        // 保存用户id到channel
         AttributeKey<Long> userIdAttr = AttributeKey.valueOf(ChannelAttrKey.USER_ID);
         ctx.channel().attr(userIdAttr).set(userId);
-        //保存终端类型到channel
+        // 保存终端类型到channel
         AttributeKey<Integer> terminalAttr = AttributeKey.valueOf(ChannelAttrKey.TERMINAL_TYPE);
         ctx.channel().attr(terminalAttr).set(terminal);
-        //保存心跳次数到channel
+        // 保存心跳次数到channel
         AttributeKey<Long> heartBeatAttr = AttributeKey.valueOf(ChannelAttrKey.HEARTBEAT_TIMES);
         ctx.channel().attr(heartBeatAttr).set(0L);
 
-        //保存用户对应server_id到redis
-        String key = String.join(":", IMRedisKey.IM_USER_SERVER_ID,userId.toString(), terminal.toString());
-        redisMQTemplate.opsForValue().set(key, IMServerGroup.serverId, IMConstant.ONLINE_TIMEOUT_SECOND, TimeUnit.SECONDS);
+        // 保存用户对应server_id到redis
+        String key = String.join(":", IMRedisKey.IM_USER_SERVER_ID, userId.toString(), terminal.toString());
+        redisMQTemplate.opsForValue().set(key, IMServerGroup.serverId, IMConstant.ONLINE_TIMEOUT_SECOND,
+                TimeUnit.SECONDS);
 
-        //ws传送信息
+        // ws传送信息
         IMSendInfo<Object> sendInfo = new IMSendInfo<>();
         sendInfo.setCmd(IMCmdType.LOGIN.code());
         ctx.channel().writeAndFlush(sendInfo);
@@ -86,7 +87,7 @@ public class LoginProcessor extends AbstractMsgProcessor<IMLoginInfo>{
 
     @Override
     public IMLoginInfo transForm(Object o) {
-        HashMap map = (HashMap)o;
-        return BeanUtil.fillBeanWithMap(map, new IMLoginInfo(),false);
+        HashMap map = (HashMap) o;
+        return BeanUtil.fillBeanWithMap(map, new IMLoginInfo(), false);
     }
 }
