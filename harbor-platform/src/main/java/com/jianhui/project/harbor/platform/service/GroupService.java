@@ -1,10 +1,10 @@
 package com.jianhui.project.harbor.platform.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.jianhui.project.harbor.platform.entity.Group;
-import com.jianhui.project.harbor.platform.pojo.vo.GroupInviteVO;
-import com.jianhui.project.harbor.platform.pojo.vo.GroupMemberVO;
-import com.jianhui.project.harbor.platform.pojo.vo.GroupVO;
+import com.jianhui.project.harbor.platform.dao.entity.Group;
+import com.jianhui.project.harbor.platform.dto.response.GroupInviteRespDTO;
+import com.jianhui.project.harbor.platform.dto.response.GroupMemberRespDTO;
+import com.jianhui.project.harbor.platform.dto.response.GroupRespDTO;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ public interface GroupService extends IService<Group> {
      * @param vo 群聊信息
      * @return 群聊信息
      **/
-    GroupVO createGroup(GroupVO vo);
+    GroupRespDTO createGroup(GroupRespDTO vo);
 
     /**
      * 修改群聊信息
@@ -24,7 +24,7 @@ public interface GroupService extends IService<Group> {
      * @param vo 群聊信息
      * @return 群聊信息
      **/
-    GroupVO modifyGroup(GroupVO vo);
+    GroupRespDTO modifyGroup(GroupRespDTO vo);
 
     /**
      * 删除群聊
@@ -53,14 +53,14 @@ public interface GroupService extends IService<Group> {
      *
      * @return 群聊信息列表
      **/
-    List<GroupVO> findGroups();
+    List<GroupRespDTO> findGroups();
 
     /**
      * 邀请好友进群
      *
      * @param vo 群id、好友id列表
      **/
-    void invite(GroupInviteVO vo);
+    void invite(GroupInviteRespDTO vo);
 
     /**
      * 根据id查找群聊，并进行缓存
@@ -77,7 +77,7 @@ public interface GroupService extends IService<Group> {
      * @param groupId 群聊id
      * @return 群聊vo
      */
-    GroupVO findById(Long groupId);
+    GroupRespDTO findById(Long groupId);
 
     /**
      * 查询群成员
@@ -85,10 +85,26 @@ public interface GroupService extends IService<Group> {
      * @param groupId 群聊id
      * @return List<GroupMemberVO>
      **/
-    List<GroupMemberVO> findGroupMembers(Long groupId);
+    List<GroupMemberRespDTO> findGroupMembers(Long groupId);
 
     /**
      * 用id查询群组(专用于查询加入)
      */
-    GroupVO searchById(Long groupId);
+    GroupRespDTO searchById(Long groupId);
+
+    /**
+     * 获取当前用户管理的群组ID列表（群主或管理员）
+     *
+     * @return 群组ID列表
+     */
+    List<Long> getManagedGroupIds();
+
+    /**
+     * 设置或移除群管理员
+     *
+     * @param groupId 群聊id
+     * @param userId  用户id
+     * @param isAdmin 是否设为管理员
+     */
+    void setGroupAdmin(Long groupId, Long userId, Boolean isAdmin);
 }

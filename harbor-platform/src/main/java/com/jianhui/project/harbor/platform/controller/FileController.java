@@ -1,6 +1,7 @@
 package com.jianhui.project.harbor.platform.controller;
 
-import com.jianhui.project.harbor.platform.pojo.vo.UploadImageVO;
+import com.jianhui.project.harbor.platform.dto.response.UploadImageRespDTO;
+import com.jianhui.project.harbor.platform.dto.response.UploadVideoRespDTO;
 import com.jianhui.project.harbor.platform.result.Result;
 import com.jianhui.project.harbor.platform.result.Results;
 import com.jianhui.project.harbor.platform.service.FileService;
@@ -24,7 +25,7 @@ public class FileController {
 
     @Operation(summary = "上传图片", description = "上传图片,上传后返回原图和缩略图的url")
     @PostMapping("/image/upload")
-    public Result<UploadImageVO> uploadImage(@RequestParam("file") MultipartFile file) {
+    public Result<UploadImageRespDTO> uploadImage(@RequestParam("file") MultipartFile file) {
         return Results.success(fileService.uploadImage(file));
     }
 
@@ -32,7 +33,14 @@ public class FileController {
     @Operation(summary = "上传文件", description = "上传文件，上传后返回文件url")
     @PostMapping("/file/upload")
     public Result<String> uploadFile(@RequestParam("file") MultipartFile file) {
-        return Results.success(fileService.uploadFile(file), "");
+        return Results.success(fileService.uploadFile(file));
+    }
+
+    @CrossOrigin
+    @Operation(summary = "上传视频", description = "上传视频，上传后返回视频url和时长")
+    @PostMapping("/video/upload")
+    public Result<UploadVideoRespDTO> uploadVideo(@RequestParam("file") MultipartFile file) {
+        return Results.success(fileService.uploadVideo(file));
     }
 
 }

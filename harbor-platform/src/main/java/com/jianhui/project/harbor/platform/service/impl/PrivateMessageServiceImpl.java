@@ -6,13 +6,13 @@ import com.jianhui.project.harbor.common.constant.IMConstant;
 import com.jianhui.project.harbor.common.enums.IMTerminalType;
 import com.jianhui.project.harbor.common.model.IMPrivateMessage;
 import com.jianhui.project.harbor.common.model.IMUserInfo;
-import com.jianhui.project.harbor.platform.entity.PrivateMessage;
+import com.jianhui.project.harbor.platform.dao.entity.PrivateMessage;
+import com.jianhui.project.harbor.platform.dao.mapper.PrivateMessageMapper;
+import com.jianhui.project.harbor.platform.dto.request.PrivateMessageDTO;
+import com.jianhui.project.harbor.platform.dto.response.PrivateMessageRespDTO;
 import com.jianhui.project.harbor.platform.enums.MessageStatus;
 import com.jianhui.project.harbor.platform.enums.MessageType;
 import com.jianhui.project.harbor.platform.exception.GlobalException;
-import com.jianhui.project.harbor.platform.mapper.PrivateMessageMapper;
-import com.jianhui.project.harbor.platform.pojo.dto.PrivateMessageDTO;
-import com.jianhui.project.harbor.platform.pojo.vo.PrivateMessageVO;
 import com.jianhui.project.harbor.platform.service.FriendService;
 import com.jianhui.project.harbor.platform.service.PrivateMessageService;
 import com.jianhui.project.harbor.platform.session.SessionContext;
@@ -37,7 +37,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
     private final PrivateMessageMapper privateMessageMapper;
 
     @Override
-    public PrivateMessageVO sendMessage(PrivateMessageDTO dto) {
+    public PrivateMessageRespDTO sendMessage(PrivateMessageDTO dto) {
         UserSession session = SessionContext.getSession();
         Boolean isFriend = friendService.isFriend(session.getUserId(), dto.getRecvId());
         if (Boolean.FALSE.equals(isFriend)) {
@@ -46,11 +46,11 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         //保存
         PrivateMessage msg = BeanUtils.copyProperties(dto, PrivateMessage.class);
         msg.setSendId(session.getUserId());
-        msg.setStatus(MessageStatus.UNSEND.code());
+        msg.setStatus(MessageStatus.UNSENT.code());
         msg.setSendTime(new Date());
         save(msg);
-        PrivateMessageVO msgVO = BeanUtils.copyProperties(msg, PrivateMessageVO.class);
-        IMPrivateMessage<PrivateMessageVO> imMsg = new IMPrivateMessage<>();
+        PrivateMessageRespDTO msgVO = BeanUtils.copyProperties(msg, PrivateMessageRespDTO.class);
+        IMPrivateMessage<PrivateMessageRespDTO> imMsg = new IMPrivateMessage<>();
         imMsg.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         imMsg.setRecvId(msgVO.getRecvId());
         imMsg.setSendToSelf(true);
@@ -62,7 +62,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
     }
 
     @Override
-    public List<PrivateMessageVO> findHistoryMessage(Long friendId, Long page, Long size) {
+    public List<PrivateMessageRespDTO> findHistoryMessage(Long friendId, Long page, Long size) {
         page = page > 0 ? page : 1;
         size = size > 0 ? size : 10;
         Long userId = SessionContext.getSession().getUserId();
@@ -70,8 +70,8 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         //查询
         List<PrivateMessage> msgList = privateMessageMapper.pageHistoryMsg(userId, friendId, offset, size,MessageStatus.RECALL.code());
         //转为VO
-        List<PrivateMessageVO> msgVOList = msgList.stream()
-                .map(m -> BeanUtils.copyProperties(m, PrivateMessageVO.class)).toList();
+        List<PrivateMessageRespDTO> msgVOList = msgList.stream()
+                .map(m -> BeanUtils.copyProperties(m, PrivateMessageRespDTO.class)).toList();
         log.info("拉取聊天记录，用户id:{},好友id:{}，数量:{}", userId, friendId,msgVOList.size());
         return msgVOList;
     }
@@ -87,8 +87,8 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         List<PrivateMessage> msgList = privateMessageMapper.getOfflineMsg(session.getUserId(),minId,minDate,MessageStatus.RECALL.code());
         // 推送
         for(PrivateMessage msg : msgList) {
-            PrivateMessageVO msgVO = BeanUtils.copyProperties(msg, PrivateMessageVO.class);
-            IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
+            PrivateMessageRespDTO msgVO = BeanUtils.copyProperties(msg, PrivateMessageRespDTO.class);
+            IMPrivateMessage<PrivateMessageRespDTO> sendMessage = new IMPrivateMessage<>();
             sendMessage.setSender(new IMUserInfo(msg.getSendId(), IMTerminalType.WEB.code()));
             sendMessage.setRecvId(session.getUserId());
             sendMessage.setRecvTerminals(List.of(session.getTerminal()));
@@ -103,7 +103,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
 
     @Transactional
     @Override
-    public PrivateMessageVO recallMessage(Long id) {
+    public PrivateMessageRespDTO recallMessage(Long id) {
         UserSession session = SessionContext.getSession();
         PrivateMessage msg = getById(id);
         if (msg == null) {
@@ -121,15 +121,15 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         // 生成一条撤回消息
         PrivateMessage recallMsg = new PrivateMessage();
         recallMsg.setSendId(session.getUserId());
-        recallMsg.setStatus(MessageStatus.UNSEND.code());
+        recallMsg.setStatus(MessageStatus.UNSENT.code());
         recallMsg.setSendTime(new Date());
         recallMsg.setRecvId(msg.getRecvId());
         recallMsg.setType(MessageType.RECALL.code());
         recallMsg.setContent(id.toString());
         save(recallMsg);
         // 推送消息
-        PrivateMessageVO msgInfo = BeanUtils.copyProperties(recallMsg, PrivateMessageVO.class);
-        IMPrivateMessage<PrivateMessageVO> imMsg = new IMPrivateMessage<>();
+        PrivateMessageRespDTO msgInfo = BeanUtils.copyProperties(recallMsg, PrivateMessageRespDTO.class);
+        IMPrivateMessage<PrivateMessageRespDTO> imMsg = new IMPrivateMessage<>();
         imMsg.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         imMsg.setRecvId(msgInfo.getRecvId());
         imMsg.setData(msgInfo);
@@ -143,18 +143,18 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
     public void readedMessage(Long friendId) {
         UserSession session = SessionContext.getSession();
         // 推送消息给自己，清空会话列表上的已读数量
-        PrivateMessageVO msgInfo = new PrivateMessageVO();
+        PrivateMessageRespDTO msgInfo = new PrivateMessageRespDTO();
         msgInfo.setType(MessageType.READED.code());
         msgInfo.setSendId(session.getUserId());
         msgInfo.setRecvId(friendId);
-        IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
+        IMPrivateMessage<PrivateMessageRespDTO> sendMessage = new IMPrivateMessage<>();
         sendMessage.setData(msgInfo);
         sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         sendMessage.setSendToSelf(true);
         sendMessage.setIsSendBack(false);
         imClient.sendPrivateMessage(sendMessage);
         // 推送回执消息给对方，更新已读状态
-        msgInfo = new PrivateMessageVO();
+        msgInfo = new PrivateMessageRespDTO();
         msgInfo.setType(MessageType.RECEIPT.code());
         msgInfo.setSendId(session.getUserId());
         msgInfo.setRecvId(friendId);
@@ -169,15 +169,15 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         privateMessageMapper.updateStatusToReaded(
                 session.getUserId(),
                 friendId,
-                MessageStatus.SENDED.code(),
-                MessageStatus.READED.code());
+                MessageStatus.SENT.code(),
+                MessageStatus.READ.code());
         log.info("消息已读，接收方id:{},发送方id:{}", session.getUserId(), friendId);
     }
 
     @Override
     public Long getMaxReadedId(Long friendId) {
         UserSession session = SessionContext.getSession();
-        Long maxId = privateMessageMapper.getMaxReadedMsgId(session.getUserId(),friendId,MessageStatus.READED.code());
+        Long maxId = privateMessageMapper.getMaxReadedMsgId(session.getUserId(), friendId, MessageStatus.READ.code());
         if(maxId == null) {
             return -1L;
         }
@@ -191,11 +191,11 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
     private void sendLoadingMessage(Boolean isLoading) {
         log.info("私聊加载信号发送:{}", isLoading);
         UserSession session = SessionContext.getSession();
-        PrivateMessageVO msgInfo = new PrivateMessageVO();
+        PrivateMessageRespDTO msgInfo = new PrivateMessageRespDTO();
         msgInfo.setType(MessageType.LOADING.code());
         //加载标识
         msgInfo.setContent(isLoading.toString());
-        IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
+        IMPrivateMessage<PrivateMessageRespDTO> sendMessage = new IMPrivateMessage<>();
         sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         sendMessage.setRecvId(session.getUserId());
         sendMessage.setRecvTerminals(List.of(session.getTerminal()));

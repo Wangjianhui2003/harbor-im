@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.jianhui.project.harbor.platform.mapper.PrivateMessageMapper">
+<mapper namespace="com.jianhui.project.harbor.platform.dao.mapper.PrivateMessageMapper">
 
-    <resultMap id="BaseResultMap" type="com.jianhui.project.harbor.platform.entity.PrivateMessage">
+    <resultMap id="BaseResultMap" type="com.jianhui.project.harbor.platform.dao.entity.PrivateMessage">
             <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="sendId" column="send_id" jdbcType="BIGINT"/>
             <result property="recvId" column="recv_id" jdbcType="BIGINT"/>
@@ -20,7 +20,7 @@
         send_time
     </sql>
 
-    <select id="pageHistoryMsg" resultType="com.jianhui.project.harbor.platform.entity.PrivateMessage">
+    <select id="pageHistoryMsg" resultType="com.jianhui.project.harbor.platform.dao.entity.PrivateMessage">
         select * from t_private_message
         where (send_id = #{userId} and recv_id = #{friendId}) or (send_id = #{friendId} and recv_id = #{userId})
         and status != #{recallStateCode}
@@ -28,7 +28,7 @@
         limit #{offset},#{size}
     </select>
 
-    <select id="getOfflineMsg" resultType="com.jianhui.project.harbor.platform.entity.PrivateMessage">
+    <select id="getOfflineMsg" resultType="com.jianhui.project.harbor.platform.dao.entity.PrivateMessage">
         select * from t_private_message
         where id &gt; #{minId}
         and (send_id = #{userId} or recv_id = #{userId})

@@ -8,19 +8,22 @@ public enum MessageStatus {
     /**
      * 文件
      */
-    UNSEND(0, "未送达"),
+    UNSENT(0, "未送达"),
+
     /**
-     * 文件
+     * 已发送`
      */
-    SENDED(1, "送达"),
+    SENT(1, "送达"),
+
     /**
      * 撤回
      */
     RECALL(2, "撤回"),
+
     /**
      * 已读
      */
-    READED(3, "已读");
+    READ(3, "已读");
 
     private final Integer code;
 

@@ -104,7 +104,6 @@ public class MinioUtil {
             return null;
         }
         return objectName;
-
     }
 
     /**

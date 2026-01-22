@@ -2,8 +2,8 @@ package com.jianhui.project.harbor.platform.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jianhui.project.harbor.platform.constant.RedisKey;
-import com.jianhui.project.harbor.platform.entity.GroupMember;
-import com.jianhui.project.harbor.platform.mapper.GroupMemberMapper;
+import com.jianhui.project.harbor.platform.dao.entity.GroupMember;
+import com.jianhui.project.harbor.platform.dao.mapper.GroupMemberMapper;
 import com.jianhui.project.harbor.platform.service.GroupMemberService;
 import com.jianhui.project.harbor.platform.util.DateTimeUtils;
 import lombok.RequiredArgsConstructor;

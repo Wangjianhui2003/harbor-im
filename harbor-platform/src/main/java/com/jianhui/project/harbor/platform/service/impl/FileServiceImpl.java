@@ -3,10 +3,11 @@ package com.jianhui.project.harbor.platform.service.impl;
 
 import com.jianhui.project.harbor.platform.config.props.MinioProperties;
 import com.jianhui.project.harbor.platform.constant.Constant;
+import com.jianhui.project.harbor.platform.dto.response.UploadImageRespDTO;
+import com.jianhui.project.harbor.platform.dto.response.UploadVideoRespDTO;
 import com.jianhui.project.harbor.platform.enums.FileType;
 import com.jianhui.project.harbor.platform.enums.ResultCode;
 import com.jianhui.project.harbor.platform.exception.GlobalException;
-import com.jianhui.project.harbor.platform.pojo.vo.UploadImageVO;
 import com.jianhui.project.harbor.platform.service.FileService;
 import com.jianhui.project.harbor.platform.session.SessionContext;
 import com.jianhui.project.harbor.platform.util.FileUtil;
@@ -75,7 +76,7 @@ public class FileServiceImpl implements FileService {
      * 上传图片
      */
     @Override
-    public UploadImageVO uploadImage(MultipartFile file) {
+    public UploadImageRespDTO uploadImage(MultipartFile file) {
         try{
             Long userId = SessionContext.getSession().getUserId();
             // 大小校验
@@ -87,7 +88,7 @@ public class FileServiceImpl implements FileService {
                 throw new GlobalException(ResultCode.PROGRAM_ERROR, "图片格式不正确");
             }
             // 上传原图
-            UploadImageVO vo = new UploadImageVO();
+            UploadImageRespDTO vo = new UploadImageRespDTO();
             String fileName = minioUtil.upload(minioProps.getBucketName(), minioProps.getImagePath(), file);
             if (StringUtils.isEmpty(fileName)) {
                 throw new GlobalException(ResultCode.PROGRAM_ERROR, "图片上传失败");
@@ -131,4 +132,44 @@ public class FileServiceImpl implements FileService {
         url += fileName;
         return url;
     }
+
+    /**
+     * 上传视频
+     */
+    @Override
+    public UploadVideoRespDTO uploadVideo(MultipartFile file) {
+        try {
+            Long userId = SessionContext.getSession().getUserId();
+            // 大小校验
+            if (file.getSize() > Constant.MAX_VIDEO_SIZE) {
+                throw new GlobalException(ResultCode.PROGRAM_ERROR,
+                        "视频不能超过" + Constant.MAX_VIDEO_SIZE / 1024 / 1024 + "MB");
+            }
+            // 视频格式校验
+            if (!FileUtil.isVideo(file.getOriginalFilename())) {
+                throw new GlobalException(ResultCode.PROGRAM_ERROR, "视频格式不正确");
+            }
+            // 上传视频
+            String fileName = minioUtil.upload(
+                    minioProps.getBucketName(),
+                    minioProps.getVideoPath(),
+                    file
+            );
+            if (StringUtils.isEmpty(fileName)) {
+                throw new GlobalException(ResultCode.PROGRAM_ERROR, "视频上传失败");
+            }
+
+            UploadVideoRespDTO vo = new UploadVideoRespDTO();
+            vo.setUrl(generUrl(FileType.VIDEO, fileName));
+            vo.setCoverUrl(""); // 封面需前端自行处理或后续扩展
+            vo.setDuration(0L); // 时长需额外工具提取，暂返回0
+
+            log.info("上传视频成功，用户id:{}, url:{}", userId, vo.getUrl());
+            return vo;
+        } catch (Exception e) {
+            log.error("上传视频失败，{}", e.getMessage(), e);
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "视频上传失败");
+        }
+    }
 }
+

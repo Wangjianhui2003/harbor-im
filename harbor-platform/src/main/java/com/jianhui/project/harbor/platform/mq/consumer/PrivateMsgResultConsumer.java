@@ -7,9 +7,9 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.jianhui.project.harbor.common.constant.IMMQConstant;
 import com.jianhui.project.harbor.common.enums.IMSendCode;
 import com.jianhui.project.harbor.common.model.IMSendResult;
-import com.jianhui.project.harbor.platform.entity.PrivateMessage;
+import com.jianhui.project.harbor.platform.dao.entity.PrivateMessage;
+import com.jianhui.project.harbor.platform.dto.response.PrivateMessageRespDTO;
 import com.jianhui.project.harbor.platform.enums.MessageStatus;
-import com.jianhui.project.harbor.platform.pojo.vo.PrivateMessageVO;
 import com.jianhui.project.harbor.platform.service.PrivateMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +59,7 @@ public class PrivateMsgResultConsumer implements ApplicationRunner {
                     String string = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(body)).toString();
                     IMSendResult imSendResult = JSON.parseObject(string, IMSendResult.class);
                     JSONObject jsonObject = (JSONObject)imSendResult.getData();
-                    PrivateMessageVO msgVO = jsonObject.toJavaObject(PrivateMessageVO.class);
+                    PrivateMessageRespDTO msgVO = jsonObject.toJavaObject(PrivateMessageRespDTO.class);
                     if (imSendResult.getCode().equals(IMSendCode.SUCCESS.code()) && msgVO.getId() != null){
                         messageIds.add(msgVO.getId());
                         log.info("消息送达，消息id:{}，发送者:{},接收者:{},终端:{}",
@@ -73,8 +73,8 @@ public class PrivateMsgResultConsumer implements ApplicationRunner {
                 if(CollUtil.isNotEmpty(messageIds)){
                     UpdateWrapper<PrivateMessage> updateWrapper = new UpdateWrapper<>();
                     updateWrapper.lambda().in(PrivateMessage::getId, messageIds)
-                            .eq(PrivateMessage::getStatus, MessageStatus.UNSEND.code())
-                            .set(PrivateMessage::getStatus, MessageStatus.SENDED.code());
+                            .eq(PrivateMessage::getStatus, MessageStatus.UNSENT.code())
+                            .set(PrivateMessage::getStatus, MessageStatus.SENT.code());
                     privateMessageService.update(updateWrapper);
                 }
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;

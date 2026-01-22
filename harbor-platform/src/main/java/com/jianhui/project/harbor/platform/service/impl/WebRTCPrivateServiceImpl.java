@@ -5,12 +5,12 @@ import com.jianhui.project.harbor.common.constant.IMConstant;
 import com.jianhui.project.harbor.common.model.IMPrivateMessage;
 import com.jianhui.project.harbor.common.model.IMUserInfo;
 import com.jianhui.project.harbor.platform.constant.RedisKey;
-import com.jianhui.project.harbor.platform.entity.PrivateMessage;
+import com.jianhui.project.harbor.platform.dao.entity.PrivateMessage;
+import com.jianhui.project.harbor.platform.dto.response.PrivateMessageRespDTO;
 import com.jianhui.project.harbor.platform.enums.MessageStatus;
 import com.jianhui.project.harbor.platform.enums.MessageType;
 import com.jianhui.project.harbor.platform.enums.WebRTCMode;
 import com.jianhui.project.harbor.platform.exception.GlobalException;
-import com.jianhui.project.harbor.platform.pojo.vo.PrivateMessageVO;
 import com.jianhui.project.harbor.platform.service.PrivateMessageService;
 import com.jianhui.project.harbor.platform.service.WebRTCPrivateService;
 import com.jianhui.project.harbor.platform.session.SessionContext;
@@ -50,12 +50,12 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         webRTCPrivateSession.setMode(mode);
         //校验
         if (!imClient.isOnline(uid)){
-            sendActMessage(webRTCPrivateSession,MessageStatus.UNSEND,"未接通(未在线)");
+            sendActMessage(webRTCPrivateSession, MessageStatus.UNSENT, "未接通(未在线)");
             log.info("RTC通话对方不在线:uid:{}", uid);
             throw new GlobalException("用户未上线");
         }
         if (userStateUtils.isBusy(uid)){
-            sendActMessage(webRTCPrivateSession,MessageStatus.UNSEND,"未接通(忙线)");
+            sendActMessage(webRTCPrivateSession, MessageStatus.UNSENT, "未接通(忙线)");
             log.info("忙线中:uid:{}", uid);
             throw new GlobalException("用户忙线:" + uid);
         }
@@ -68,13 +68,13 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         userStateUtils.setBusy(session.getUserId());
 
         //给对方所有设备发offer消息
-        PrivateMessageVO msgVO = new PrivateMessageVO();
+        PrivateMessageRespDTO msgVO = new PrivateMessageRespDTO();
         MessageType messageType = mode.equals(WebRTCMode.VIDEO.getValue()) ? MessageType.RTC_CALL_VIDEO : MessageType.RTC_CALL_VOICE;
         msgVO.setSendId(session.getUserId());
         msgVO.setRecvId(uid);
         msgVO.setContent(offer);
         msgVO.setType(messageType.code());
-        IMPrivateMessage<PrivateMessageVO> imMsg = new IMPrivateMessage<>();
+        IMPrivateMessage<PrivateMessageRespDTO> imMsg = new IMPrivateMessage<>();
         imMsg.setSender(new IMUserInfo(session.getUserId(),session.getTerminal()));
         imMsg.setRecvId(uid);
         imMsg.setSendToSelf(false);
@@ -94,13 +94,13 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         redisTemplate.opsForValue().set(key, webrtcSession,IMConstant.RTC_PRIVATE_SESSION_TIMEOUT, TimeUnit.SECONDS);
 
         // 向发起人推送接受通话信令(answer)
-        PrivateMessageVO msgVO = new PrivateMessageVO();
+        PrivateMessageRespDTO msgVO = new PrivateMessageRespDTO();
         msgVO.setSendId(session.getUserId());
         msgVO.setRecvId(uid);
         msgVO.setContent(answer);
         msgVO.setType(MessageType.RTC_ACCEPT.code());
 
-        IMPrivateMessage<PrivateMessageVO> imMsg = new IMPrivateMessage<>();
+        IMPrivateMessage<PrivateMessageRespDTO> imMsg = new IMPrivateMessage<>();
         imMsg.setSender(new IMUserInfo(session.getUserId(),session.getTerminal()));
         imMsg.setRecvId(uid);
         //告诉自己其他终端已接收
@@ -123,12 +123,12 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         userStateUtils.setFree(uid);
         userStateUtils.setFree(session.getUserId());
         //发消息
-        PrivateMessageVO messageInfo = new PrivateMessageVO();
+        PrivateMessageRespDTO messageInfo = new PrivateMessageRespDTO();
         messageInfo.setType(MessageType.RTC_REJECT.code());
         messageInfo.setRecvId(uid);
         messageInfo.setSendId(session.getUserId());
 
-        IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
+        IMPrivateMessage<PrivateMessageRespDTO> sendMessage = new IMPrivateMessage<>();
         sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         sendMessage.setRecvId(uid);
         // 告知其他终端已经拒绝会话,中止呼叫
@@ -138,7 +138,7 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         sendMessage.setData(messageInfo);
         imClient.sendPrivateMessage(sendMessage);
         //发送通话信息
-        sendActMessage(webrtcSession,MessageStatus.UNSEND,"已拒绝");
+        sendActMessage(webrtcSession, MessageStatus.UNSENT, "已拒绝");
     }
 
     @Override
@@ -152,12 +152,12 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         userStateUtils.setFree(uid);
         userStateUtils.setFree(session.getUserId());
         // 向对方所有终端推送取消通话信令
-        PrivateMessageVO msgVO = new PrivateMessageVO();
+        PrivateMessageRespDTO msgVO = new PrivateMessageRespDTO();
         msgVO.setSendId(session.getUserId());
         msgVO.setRecvId(uid);
         msgVO.setType(MessageType.RTC_CANCEL.code());
 
-        IMPrivateMessage<PrivateMessageVO> imMsg = new IMPrivateMessage<>();
+        IMPrivateMessage<PrivateMessageRespDTO> imMsg = new IMPrivateMessage<>();
         imMsg.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         imMsg.setRecvId(uid);
         imMsg.setSendToSelf(false);
@@ -166,7 +166,7 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         // 通知对方取消会话
         imClient.sendPrivateMessage(imMsg);
         // 生成通话消息
-        sendActMessage(webrtcSession, MessageStatus.UNSEND, "已取消通话");
+        sendActMessage(webrtcSession, MessageStatus.UNSENT, "已取消通话");
     }
 
     @Override
@@ -180,14 +180,14 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         userStateUtils.setFree(uid);
         userStateUtils.setFree(session.getUserId());
         // 向发起方推送通话失败信令
-        PrivateMessageVO messageInfo = new PrivateMessageVO();
+        PrivateMessageRespDTO messageInfo = new PrivateMessageRespDTO();
         messageInfo.setSendId(session.getUserId());
         messageInfo.setRecvId(uid);
         messageInfo.setType(MessageType.RTC_FAILED.code());
         messageInfo.setContent(reason);
 
         // 通知对方取消会话
-        IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
+        IMPrivateMessage<PrivateMessageRespDTO> sendMessage = new IMPrivateMessage<>();
         sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         sendMessage.setRecvId(uid);
         sendMessage.setSendToSelf(false);
@@ -196,7 +196,7 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         sendMessage.setData(messageInfo);
         imClient.sendPrivateMessage(sendMessage);
 
-        sendActMessage(webrtcSession, MessageStatus.READED, "未接通(通话失败)");
+        sendActMessage(webrtcSession, MessageStatus.READ, "未接通(通话失败)");
     }
 
     @Override
@@ -210,12 +210,12 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         userStateUtils.setFree(uid);
         userStateUtils.setFree(session.getUserId());
         // 向对方推送挂断通话信令
-        PrivateMessageVO messageInfo = new PrivateMessageVO();
+        PrivateMessageRespDTO messageInfo = new PrivateMessageRespDTO();
         messageInfo.setSendId(session.getUserId());
         messageInfo.setRecvId(uid);
         messageInfo.setType(MessageType.RTC_HANGUP.code());
 
-        IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
+        IMPrivateMessage<PrivateMessageRespDTO> sendMessage = new IMPrivateMessage<>();
         sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         sendMessage.setRecvId(uid);
         sendMessage.setSendToSelf(false);
@@ -225,7 +225,7 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         sendMessage.setData(messageInfo);
         imClient.sendPrivateMessage(sendMessage);
 
-        sendActMessage(webrtcSession, MessageStatus.READED, "通话时长 " + chatTimeText(webrtcSession));
+        sendActMessage(webrtcSession, MessageStatus.READ, "通话时长 " + chatTimeText(webrtcSession));
     }
 
     @Override
@@ -234,13 +234,13 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         // 查询webrtc会话
         WebRTCPrivateSession webrtcSession = getWebrtcSession(session.getUserId(), uid);
         // 向发起方推送同步candidate信令
-        PrivateMessageVO messageInfo = new PrivateMessageVO();
+        PrivateMessageRespDTO messageInfo = new PrivateMessageRespDTO();
         messageInfo.setSendId(session.getUserId());
         messageInfo.setRecvId(uid);
         messageInfo.setType(MessageType.RTC_CANDIDATE.code());
         messageInfo.setContent(candidate);
 
-        IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
+        IMPrivateMessage<PrivateMessageRespDTO> sendMessage = new IMPrivateMessage<>();
         sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         sendMessage.setRecvId(uid);
         Integer terminal = getTerminalType(uid, webrtcSession);
@@ -279,8 +279,8 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         privateMessage.setType(messageType.code());
         privateMessageService.save(privateMessage);
 
-        PrivateMessageVO msgVO = BeanUtils.copyProperties(privateMessage, PrivateMessageVO.class);
-        IMPrivateMessage<PrivateMessageVO> imMsg = new IMPrivateMessage<>();
+        PrivateMessageRespDTO msgVO = BeanUtils.copyProperties(privateMessage, PrivateMessageRespDTO.class);
+        IMPrivateMessage<PrivateMessageRespDTO> imMsg = new IMPrivateMessage<>();
         //推给发送方
         imMsg.setSender(new IMUserInfo(rtcSession.getCallerId(),rtcSession.getCallerTerminal()));
         imMsg.setRecvId(rtcSession.getCallerId());

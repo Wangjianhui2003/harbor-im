@@ -1,7 +1,7 @@
 package com.jianhui.project.harbor.platform.controller;
 
-import com.jianhui.project.harbor.platform.pojo.dto.PrivateMessageDTO;
-import com.jianhui.project.harbor.platform.pojo.vo.PrivateMessageVO;
+import com.jianhui.project.harbor.platform.dto.request.PrivateMessageDTO;
+import com.jianhui.project.harbor.platform.dto.response.PrivateMessageRespDTO;
 import com.jianhui.project.harbor.platform.result.Result;
 import com.jianhui.project.harbor.platform.result.Results;
 import com.jianhui.project.harbor.platform.service.PrivateMessageService;
@@ -24,13 +24,13 @@ public class PrivateMsgController {
 
     @PostMapping("/send")
     @Operation(summary = "发送消息", description = "发送私聊消息")
-    public Result<PrivateMessageVO> sendMessage(@Valid @RequestBody PrivateMessageDTO dto) {
+    public Result<PrivateMessageRespDTO> sendMessage(@Valid @RequestBody PrivateMessageDTO dto) {
         return Results.success(privateMessageService.sendMessage(dto));
     }
 
     @DeleteMapping("/recall/{id}")
     @Operation(summary = "撤回消息", description = "撤回私聊消息")
-    public Result<PrivateMessageVO> recallMessage(@NotNull(message = "消息id不能为空") @PathVariable Long id) {
+    public Result<PrivateMessageRespDTO> recallMessage(@NotNull(message = "消息id不能为空") @PathVariable Long id) {
         return Results.success(privateMessageService.recallMessage(id));
     }
 
@@ -56,7 +56,7 @@ public class PrivateMsgController {
 
     @GetMapping("/history")
     @Operation(summary = "查询聊天记录", description = "查询聊天记录")
-    public Result<List<PrivateMessageVO>> historyMessage(
+    public Result<List<PrivateMessageRespDTO>> historyMessage(
             @NotNull(message = "好友id不能为空") @RequestParam Long friendId,
             @NotNull(message = "页码不能为空") @RequestParam Long page,
             @NotNull(message = "size不能为空") @RequestParam Long size) {

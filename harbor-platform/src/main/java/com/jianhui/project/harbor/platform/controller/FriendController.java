@@ -1,7 +1,7 @@
 package com.jianhui.project.harbor.platform.controller;
 
 import com.jianhui.project.harbor.platform.annotation.RepeatSubmit;
-import com.jianhui.project.harbor.platform.pojo.vo.FriendVO;
+import com.jianhui.project.harbor.platform.dto.response.FriendRespDTO;
 import com.jianhui.project.harbor.platform.result.Result;
 import com.jianhui.project.harbor.platform.result.Results;
 import com.jianhui.project.harbor.platform.service.FriendService;
@@ -23,7 +23,7 @@ public class FriendController {
 
     @GetMapping("/list")
     @Operation(summary = "好友列表", description = "获取好友列表")
-    public Result<List<FriendVO>> findFriends() {
+    public Result<List<FriendRespDTO>> findFriends() {
         return Results.success(friendService.findFriends());
     }
 
@@ -37,7 +37,7 @@ public class FriendController {
 
     @GetMapping("/find/{friendId}")
     @Operation(summary = "查找好友信息", description = "查找好友信息")
-    public Result<FriendVO> findFriend(@NotNull(message = "好友id不可为空") @PathVariable("friendId") Long friendId) {
+    public Result<FriendRespDTO> findFriend(@NotNull(message = "好友id不可为空") @PathVariable("friendId") Long friendId) {
         return Results.success(friendService.findFriendInfo(friendId));
     }
 

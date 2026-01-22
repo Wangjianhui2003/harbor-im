@@ -1,8 +1,8 @@
 package com.jianhui.project.harbor.platform.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.jianhui.project.harbor.platform.entity.Friend;
-import com.jianhui.project.harbor.platform.pojo.vo.FriendVO;
+import com.jianhui.project.harbor.platform.dao.entity.Friend;
+import com.jianhui.project.harbor.platform.dto.response.FriendRespDTO;
 
 import java.util.List;
 
@@ -37,7 +37,7 @@ public interface FriendService extends IService<Friend> {
      *
      * @return 好友列表
      */
-    List<FriendVO> findFriends();
+    List<FriendRespDTO> findFriends();
 
     /**
      * 添加好友，互相建立好友关系
@@ -59,7 +59,7 @@ public interface FriendService extends IService<Friend> {
      * @param friendId 好友的用户id
      * @return 好友信息
      */
-    FriendVO findFriendInfo(Long friendId);
+    FriendRespDTO findFriendInfo(Long friendId);
 
     /**
      * 绑定好友关系

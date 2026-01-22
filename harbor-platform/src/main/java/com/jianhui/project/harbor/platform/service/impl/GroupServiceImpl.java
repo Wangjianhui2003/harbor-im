@@ -12,17 +12,17 @@ import com.jianhui.project.harbor.common.model.IMUserInfo;
 import com.jianhui.project.harbor.common.util.CommaTextUtils;
 import com.jianhui.project.harbor.platform.constant.Constant;
 import com.jianhui.project.harbor.platform.constant.RedisKey;
-import com.jianhui.project.harbor.platform.entity.*;
+import com.jianhui.project.harbor.platform.dao.entity.*;
+import com.jianhui.project.harbor.platform.dao.mapper.GroupMapper;
+import com.jianhui.project.harbor.platform.dao.mapper.GroupMessageMapper;
+import com.jianhui.project.harbor.platform.dto.response.GroupInviteRespDTO;
+import com.jianhui.project.harbor.platform.dto.response.GroupMemberRespDTO;
+import com.jianhui.project.harbor.platform.dto.response.GroupMessageRespDTO;
+import com.jianhui.project.harbor.platform.dto.response.GroupRespDTO;
 import com.jianhui.project.harbor.platform.enums.GroupRole;
 import com.jianhui.project.harbor.platform.enums.MessageStatus;
 import com.jianhui.project.harbor.platform.enums.MessageType;
 import com.jianhui.project.harbor.platform.exception.GlobalException;
-import com.jianhui.project.harbor.platform.mapper.GroupMapper;
-import com.jianhui.project.harbor.platform.mapper.GroupMessageMapper;
-import com.jianhui.project.harbor.platform.pojo.vo.GroupInviteVO;
-import com.jianhui.project.harbor.platform.pojo.vo.GroupMemberVO;
-import com.jianhui.project.harbor.platform.pojo.vo.GroupMessageVO;
-import com.jianhui.project.harbor.platform.pojo.vo.GroupVO;
 import com.jianhui.project.harbor.platform.service.FriendService;
 import com.jianhui.project.harbor.platform.service.GroupMemberService;
 import com.jianhui.project.harbor.platform.service.GroupService;
@@ -59,7 +59,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     private final StringRedisTemplate redisTemplate;
 
     @Override
-    public GroupVO createGroup(GroupVO vo) {
+    public GroupRespDTO createGroup(GroupRespDTO vo) {
         // 查用户
         UserSession session = SessionContext.getSession();
         User user = userService.getById(session.getUserId());
@@ -77,16 +77,16 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         member.setRemarkGroupName(vo.getRemarkGroupName());
         member.setRole(GroupRole.OWNER.code());
         groupMemberService.save(member);
-        GroupVO groupVo = findById(group.getId());
+        GroupRespDTO groupRespDTO = findById(group.getId());
         // 推送同步消息给自己的其他终端
-        sendAddGroupMessage(groupVo, Lists.newArrayList(), true);
+        sendAddGroupMessage(groupRespDTO, Lists.newArrayList(), true);
         // 返回
         log.info("创建群聊，群聊id:{},群聊名称:{}", group.getId(), group.getName());
-        return groupVo;
+        return groupRespDTO;
     }
 
     @Override
-    public void invite(GroupInviteVO vo) {
+    public void invite(GroupInviteRespDTO vo) {
         UserSession session = SessionContext.getSession();
         //拿到group并检查
         Group group = getAndCheckById(vo.getGroupId());
@@ -127,8 +127,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         }
         //给每个被邀请的friend发送消息
         for(GroupMember member : newMemberList){
-            GroupVO groupVO = convertToVO(group, member);
-            sendAddGroupMessage(groupVO, List.of(member.getUserId()), false);
+            GroupRespDTO groupRespDTO = convertToVO(group, member);
+            sendAddGroupMessage(groupRespDTO, List.of(member.getUserId()), false);
         }
         // 给群成员推送进入群聊消息
         List<Long> userIds = groupMemberService.findUserIdsByGroupId(vo.getGroupId());
@@ -154,14 +154,14 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         groupMessage.setGroupId(groupId);
         groupMessage.setContent(content);
         groupMessage.setType(MessageType.TIP_TEXT.code());
-        groupMessage.setStatus(MessageStatus.UNSEND.code());
+        groupMessage.setStatus(MessageStatus.UNSENT.code());
         groupMessage.setSendTime(new Date());
         groupMessage.setSendNickname(session.getNickname());
         groupMessageMapper.insert(groupMessage);
         //组织VO
-        GroupMessageVO groupMessageVO = BeanUtils.copyProperties(groupMessage, GroupMessageVO.class);
+        GroupMessageRespDTO groupMessageRespDTO = BeanUtils.copyProperties(groupMessage, GroupMessageRespDTO.class);
         //组装IMMsg
-        IMGroupMessage<GroupMessageVO> imGroupMessage = new IMGroupMessage<>();
+        IMGroupMessage<GroupMessageRespDTO> imGroupMessage = new IMGroupMessage<>();
         imGroupMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         if (CollUtil.isEmpty(recvIds)) {
             // 为空表示向全体发送
@@ -170,7 +170,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         } else {
             imGroupMessage.setRecvIds(recvIds);
         }
-        imGroupMessage.setData(groupMessageVO);
+        imGroupMessage.setData(groupMessageRespDTO);
         imGroupMessage.setIsSendBack(false);
         imGroupMessage.setSendToSelf(false);
         imClient.sendGroupMessage(imGroupMessage);
@@ -179,8 +179,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     /**
      * 将group和member合并成GroupVO用于通知前端
      */
-    private GroupVO convertToVO(Group group,GroupMember member){
-        GroupVO vo = BeanUtils.copyProperties(group, GroupVO.class);
+    private GroupRespDTO convertToVO(Group group, GroupMember member) {
+        GroupRespDTO vo = BeanUtils.copyProperties(group, GroupRespDTO.class);
         vo.setRemarkGroupName(member.getRemarkGroupName());
         vo.setRemarkNickname(member.getRemarkNickname());
         vo.setShowNickname(member.getShowNickname());
@@ -192,7 +192,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @CacheEvict(key = "#vo.getId()")
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public GroupVO modifyGroup(GroupVO vo) {
+    public GroupRespDTO modifyGroup(GroupRespDTO vo) {
         UserSession session = SessionContext.getSession();
         //拿到group并校验
         Group group = getAndCheckById(vo.getId());
@@ -241,7 +241,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     }
 
     @Override
-    public GroupVO findById(Long groupId) {
+    public GroupRespDTO findById(Long groupId) {
         UserSession session = SessionContext.getSession();
         Group group = getById(groupId);
         if (group == null) {
@@ -255,7 +255,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     }
 
     @Override
-    public List<GroupVO> findGroups() {
+    public List<GroupRespDTO> findGroups() {
         UserSession session = SessionContext.getSession();
         //查询自己加的所有群
         List<GroupMember> groupMemberList = groupMemberService.findByUserId(session.getUserId());
@@ -297,14 +297,14 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     }
 
     @Override
-    public List<GroupMemberVO> findGroupMembers(Long groupId) {
+    public List<GroupMemberRespDTO> findGroupMembers(Long groupId) {
         Group group = getAndCheckById(groupId);
         List<GroupMember> members = groupMemberService.findByGroupId(groupId);
         List<Long> userIds = members.stream().map(GroupMember::getUserId).toList();
         List<Long> onlineUserIds = imClient.getOnlineUser(userIds);
         //返回VO，在线的排前面
         return members.stream().map(m -> {
-            GroupMemberVO vo = BeanUtils.copyProperties(m, GroupMemberVO.class);
+            GroupMemberRespDTO vo = BeanUtils.copyProperties(m, GroupMemberRespDTO.class);
             vo.setShowNickname(m.getShowNickname());
             vo.setShowGroupName(StrUtil.blankToDefault(m.getRemarkGroupName(), group.getName()));
             vo.setOnline(onlineUserIds.contains(m.getUserId()));
@@ -313,9 +313,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     }
 
     @Override
-    public GroupVO searchById(Long groupId) {
+    public GroupRespDTO searchById(Long groupId) {
         Group group = getById(groupId);
-        return BeanUtils.copyProperties(group, GroupVO.class);
+        return BeanUtils.copyProperties(group, GroupRespDTO.class);
     }
 
     @Override
@@ -361,19 +361,19 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     /**
      * 发送添加群组信息
-     * @param groupVo
+     * @param groupRespDTO
      * @param recvIds
      * @param sendToSelf
      */
-    private void sendAddGroupMessage(GroupVO groupVo,List<Long> recvIds, Boolean sendToSelf) {
+    private void sendAddGroupMessage(GroupRespDTO groupRespDTO, List<Long> recvIds, Boolean sendToSelf) {
         UserSession session = SessionContext.getSession();
-        GroupMessageVO msgInfo = new GroupMessageVO();
+        GroupMessageRespDTO msgInfo = new GroupMessageRespDTO();
         msgInfo.setSendId(session.getUserId());
-        msgInfo.setGroupId(groupVo.getId());
+        msgInfo.setGroupId(groupRespDTO.getId());
         msgInfo.setSendTime(new Date());
         msgInfo.setType(MessageType.GROUP_NEW.code());
-        msgInfo.setContent(JSON.toJSONString(groupVo));
-        IMGroupMessage<GroupMessageVO> imGroupMsg = new IMGroupMessage<>();
+        msgInfo.setContent(JSON.toJSONString(groupRespDTO));
+        IMGroupMessage<GroupMessageRespDTO> imGroupMsg = new IMGroupMessage<>();
         imGroupMsg.setSender(new IMUserInfo(session.getUserId(),session.getTerminal()));
         imGroupMsg.setRecvIds(recvIds);
         imGroupMsg.setSendToSelf(sendToSelf);
@@ -390,18 +390,65 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
      */
     private void sendDelGroupMessage(Long groupId, List<Long> recvIds, Boolean sendToSelf) {
         UserSession session = SessionContext.getSession();
-        GroupMessageVO msgInfo = new GroupMessageVO();
+        GroupMessageRespDTO msgInfo = new GroupMessageRespDTO();
         msgInfo.setSendId(session.getUserId());
         msgInfo.setGroupId(groupId);
         msgInfo.setSendTime(new Date());
         msgInfo.setType(MessageType.GROUP_DEL.code());
-        IMGroupMessage<GroupMessageVO> imGroupMsg = new IMGroupMessage<>();
+        IMGroupMessage<GroupMessageRespDTO> imGroupMsg = new IMGroupMessage<>();
         imGroupMsg.setSender(new IMUserInfo(session.getUserId(),session.getTerminal()));
         imGroupMsg.setRecvIds(recvIds);
         imGroupMsg.setSendToSelf(sendToSelf);
         imGroupMsg.setData(msgInfo);
         imGroupMsg.setIsSendBack(false);
         imClient.sendGroupMessage(imGroupMsg);
+    }
+
+    @Override
+    public List<Long> getManagedGroupIds() {
+        Long userId = SessionContext.getSession().getUserId();
+        // 查询当前用户加入的所有群组
+        List<GroupMember> members = groupMemberService.findByUserId(userId);
+        // 过滤出群主或管理员的群组ID
+        return members.stream()
+                .filter(m -> !m.getQuit())
+                .filter(m -> GroupRole.OWNER.code().equals(m.getRole())
+                        || GroupRole.ADMIN.code().equals(m.getRole()))
+                .map(GroupMember::getGroupId)
+                .toList();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void setGroupAdmin(Long groupId, Long userId, Boolean isAdmin) {
+        UserSession session = SessionContext.getSession();
+        Group group = getAndCheckById(groupId);
+
+        // 只有群主可以设置管理员
+        if (!group.getOwnerId().equals(session.getUserId())) {
+            throw new GlobalException("只有群主可以设置管理员");
+        }
+
+        // 不能设置自己
+        if (userId.equals(session.getUserId())) {
+            throw new GlobalException("不能设置自己为管理员");
+        }
+
+        // 查找目标成员
+        GroupMember member = groupMemberService.findByGroupAndUserId(groupId, userId);
+        if (member == null || member.getQuit()) {
+            throw new GlobalException("该用户不在群聊中");
+        }
+
+        // 设置角色
+        if (isAdmin) {
+            member.setRole(GroupRole.ADMIN.code());
+            log.info("设置管理员，群聊id:{}, 用户id:{}", groupId, userId);
+        } else {
+            member.setRole(GroupRole.MEMBER.code());
+            log.info("移除管理员，群聊id:{}, 用户id:{}", groupId, userId);
+        }
+        groupMemberService.updateById(member);
     }
 }
 

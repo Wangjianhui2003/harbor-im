@@ -8,18 +8,18 @@ import com.jianhui.project.harbor.client.IMClient;
 import com.jianhui.project.harbor.common.enums.IMTerminalType;
 import com.jianhui.project.harbor.common.util.JwtUtil;
 import com.jianhui.project.harbor.platform.config.props.JwtProperties;
-import com.jianhui.project.harbor.platform.entity.User;
+import com.jianhui.project.harbor.platform.dao.entity.User;
+import com.jianhui.project.harbor.platform.dao.mapper.FriendMapper;
+import com.jianhui.project.harbor.platform.dao.mapper.GroupMapper;
+import com.jianhui.project.harbor.platform.dao.mapper.UserMapper;
+import com.jianhui.project.harbor.platform.dto.request.LoginReqDTO;
+import com.jianhui.project.harbor.platform.dto.request.ModifyPwdDTO;
+import com.jianhui.project.harbor.platform.dto.request.RegisterReqDTO;
+import com.jianhui.project.harbor.platform.dto.response.LoginRespDTO;
+import com.jianhui.project.harbor.platform.dto.response.OnlineTerminalRespDTO;
+import com.jianhui.project.harbor.platform.dto.response.UserRespDTO;
 import com.jianhui.project.harbor.platform.enums.ResultCode;
 import com.jianhui.project.harbor.platform.exception.GlobalException;
-import com.jianhui.project.harbor.platform.mapper.FriendMapper;
-import com.jianhui.project.harbor.platform.mapper.GroupMapper;
-import com.jianhui.project.harbor.platform.mapper.UserMapper;
-import com.jianhui.project.harbor.platform.pojo.dto.ModifyPwdDTO;
-import com.jianhui.project.harbor.platform.pojo.req.LoginReq;
-import com.jianhui.project.harbor.platform.pojo.req.RegisterReq;
-import com.jianhui.project.harbor.platform.pojo.resp.LoginResp;
-import com.jianhui.project.harbor.platform.pojo.vo.OnlineTerminalVO;
-import com.jianhui.project.harbor.platform.pojo.vo.UserVO;
 import com.jianhui.project.harbor.platform.service.UserService;
 import com.jianhui.project.harbor.platform.session.SessionContext;
 import com.jianhui.project.harbor.platform.session.UserSession;
@@ -51,40 +51,40 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final IMClient imClient;
 
     @Override
-    public void register(RegisterReq registerReq) {
+    public void register(RegisterReqDTO registerReqDTO) {
         try {
             //验证码
             String captcha = redisTemplate.opsForValue().
-                    get(CHECK_CODE_PREFIX + registerReq.getCaptchaKey());
-            if (!registerReq.getCaptcha().equalsIgnoreCase(captcha)) {
+                    get(CHECK_CODE_PREFIX + registerReqDTO.getCaptchaKey());
+            if (!registerReqDTO.getCaptcha().equalsIgnoreCase(captcha)) {
                 throw new GlobalException("注册验证码错误");
             }
             //username是否已经被注册
-            User user = userMapper.getByUsername(registerReq.getUsername());
+            User user = userMapper.getByUsername(registerReqDTO.getUsername());
             if (user != null) {
                 throw new GlobalException(ResultCode.USERNAME_ALREADY_REGISTER);
             }
-            user = BeanUtils.copyProperties(registerReq, User.class);
+            user = BeanUtils.copyProperties(registerReqDTO, User.class);
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             this.save(user);
-            log.info("注册用户，用户id:{},用户名:{},昵称:{}", user.getId(), registerReq.getUsername(), registerReq.getNickname());
+            log.info("注册用户，用户id:{},用户名:{},昵称:{}", user.getId(), registerReqDTO.getUsername(), registerReqDTO.getNickname());
         } finally {
             //删除验证码,防止猜验证码
-            redisTemplate.delete(CHECK_CODE_PREFIX + registerReq.getCaptchaKey());
+            redisTemplate.delete(CHECK_CODE_PREFIX + registerReqDTO.getCaptchaKey());
         }
     }
 
     @Override
-    public LoginResp login(LoginReq loginReq) {
+    public LoginRespDTO login(LoginReqDTO loginReqDTO) {
         try {
             // 校验验证码
             String captcha = redisTemplate.opsForValue().
-                    get(CHECK_CODE_PREFIX + loginReq.getCaptchaKey());
-            if (!loginReq.getCaptcha().equalsIgnoreCase(captcha)) {
+                    get(CHECK_CODE_PREFIX + loginReqDTO.getCaptchaKey());
+            if (!loginReqDTO.getCaptcha().equalsIgnoreCase(captcha)) {
                 throw new GlobalException("注册验证码错误");
             }
             // 查询用户
-            User user = userMapper.getByUsername(loginReq.getUsername());
+            User user = userMapper.getByUsername(loginReqDTO.getUsername());
             if (Objects.isNull(user)) {
                 throw new GlobalException("用户不存在");
             }
@@ -94,13 +94,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 throw new GlobalException(tip);
             }
             // 校验密码
-            if (!passwordEncoder.matches(loginReq.getPassword(), user.getPassword())) {
+            if (!passwordEncoder.matches(loginReqDTO.getPassword(), user.getPassword())) {
                 throw new GlobalException(ResultCode.PASSWOR_ERROR);
             }
             // 生成token
             UserSession session = BeanUtils.copyProperties(user, UserSession.class);
             session.setUserId(user.getId());
-            session.setTerminal(loginReq.getTerminal());
+            session.setTerminal(loginReqDTO.getTerminal());
             String strJson = JSON.toJSONString(session);
 
             String accessToken = JwtUtil.sign(user.getId(), strJson, jwtProperties.getAccessTokenExpireIn(),
@@ -108,19 +108,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             String refreshToken = JwtUtil.sign(user.getId(), strJson, jwtProperties.getRefreshTokenExpireIn(),
                     jwtProperties.getRefreshTokenSecret());
 
-            return LoginResp.builder()
+            return LoginRespDTO.builder()
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .accessTokenExpiresIn(jwtProperties.getAccessTokenExpireIn())
                     .refreshTokenExpiresIn(jwtProperties.getRefreshTokenExpireIn()).build();
         } finally {
             //删除验证码,防止猜验证码
-            redisTemplate.delete(CHECK_CODE_PREFIX + loginReq.getCaptchaKey());
+            redisTemplate.delete(CHECK_CODE_PREFIX + loginReqDTO.getCaptchaKey());
         }
     }
 
     @Override
-    public LoginResp refreshToken(String refreshToken) {
+    public LoginRespDTO refreshToken(String refreshToken) {
         //验证 token
         if (!JwtUtil.checkSign(refreshToken, jwtProperties.getRefreshTokenSecret())) {
             throw new GlobalException("您的登录信息已过期，请重新登录");
@@ -140,62 +140,62 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 JwtUtil.sign(userId, strJson, jwtProperties.getAccessTokenExpireIn(), jwtProperties.getAccessTokenSecret());
         String newRefreshToken = JwtUtil.sign(userId, strJson, jwtProperties.getRefreshTokenExpireIn(),
                 jwtProperties.getRefreshTokenSecret());
-        LoginResp loginResp= LoginResp.builder().build();
-        loginResp.setAccessToken(accessToken);
-        loginResp.setAccessTokenExpiresIn(jwtProperties.getAccessTokenExpireIn());
-        loginResp.setRefreshToken(newRefreshToken);
-        loginResp.setRefreshTokenExpiresIn(jwtProperties.getRefreshTokenExpireIn());
-        return loginResp;
+        LoginRespDTO loginRespDTO = LoginRespDTO.builder().build();
+        loginRespDTO.setAccessToken(accessToken);
+        loginRespDTO.setAccessTokenExpiresIn(jwtProperties.getAccessTokenExpireIn());
+        loginRespDTO.setRefreshToken(newRefreshToken);
+        loginRespDTO.setRefreshTokenExpiresIn(jwtProperties.getRefreshTokenExpireIn());
+        return loginRespDTO;
     }
 
     @Override
-    public List<OnlineTerminalVO> getOnlineTerminals(String userIds) {
+    public List<OnlineTerminalRespDTO> getOnlineTerminals(String userIds) {
         List<Long> ids = Arrays.stream(userIds.split(",")).map(Long::parseLong).collect(Collectors.toList());
         Map<Long, List<IMTerminalType>> terminalMap = imClient.getOnlineTerminal(ids);
         // 组装vo
-        List<OnlineTerminalVO> vos = new LinkedList<>();
+        List<OnlineTerminalRespDTO> vos = new LinkedList<>();
         terminalMap.forEach((userId, types) -> {
             List<Integer> terminals = types.stream().map(IMTerminalType::code).collect(Collectors.toList());
-            vos.add(new OnlineTerminalVO(userId, terminals));
+            vos.add(new OnlineTerminalRespDTO(userId, terminals));
         });
         return vos;
     }
 
     @Override
-    public UserVO findUserById(Long id) {
+    public UserRespDTO findUserById(Long id) {
         User user = this.getById(id);
         if (Objects.isNull(user)) {
             throw new GlobalException("用户不存在");
         }
-        UserVO userVO = BeanUtils.copyProperties(user, UserVO.class);
-        userVO.setOnline(imClient.isOnline(id));
-        return userVO;
+        UserRespDTO userRespDTO = BeanUtils.copyProperties(user, UserRespDTO.class);
+        userRespDTO.setOnline(imClient.isOnline(id));
+        return userRespDTO;
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void updateUserInfo(UserVO userVO) {
+    public void updateUserInfo(UserRespDTO userRespDTO) {
         UserSession session = SessionContext.getSession();
-        if (!session.getUserId().equals(userVO.getId())) {
+        if (!session.getUserId().equals(userRespDTO.getId())) {
             throw new GlobalException("不能修改其他用户信息");
         }
-        User user = this.getById(userVO.getId());
+        User user = this.getById(userRespDTO.getId());
         if (Objects.isNull(user)) {
             throw new GlobalException("用户不存在");
         }
         //修改群聊和好友的昵称和头像
-        if (!user.getNickname().equals(userVO.getNickname())
-                || !user.getHeadImageThumb().equals(userVO.getHeadImageThumb())) {
-            friendMapper.updateFriendNicknameAndThumb(userVO.getId(), userVO.getNickname(),userVO.getHeadImageThumb());
-            groupMapper.updateMemberNicknameAndThumb(userVO.getId(), userVO.getNickname(), userVO.getHeadImageThumb());
+        if (!user.getNickname().equals(userRespDTO.getNickname())
+                || !user.getHeadImageThumb().equals(userRespDTO.getHeadImageThumb())) {
+            friendMapper.updateFriendNicknameAndThumb(userRespDTO.getId(), userRespDTO.getNickname(), userRespDTO.getHeadImageThumb());
+            groupMapper.updateMemberNicknameAndThumb(userRespDTO.getId(), userRespDTO.getNickname(), userRespDTO.getHeadImageThumb());
         }
-        BeanUtils.copyProperties(userVO, user);
+        BeanUtils.copyProperties(userRespDTO, user);
         this.updateById(user);
         log.info("用户信息更新，用户:{}}", user);
     }
 
     @Override
-    public List<UserVO> findUserByName(String name) {
+    public List<UserRespDTO> findUserByName(String name) {
         LambdaQueryWrapper<User> queryWrapper = Wrappers.lambdaQuery();
         queryWrapper.like(User::getUsername, name).or().like(User::getUsername, name).last("limit 20");
         List<User> users = this.list(queryWrapper);
@@ -203,9 +203,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         List<Long> onlineUserIds = imClient.getOnlineUser(userIds);
         //TODO:获取在线用户
         return users.stream().map(u -> {
-            UserVO userVO = BeanUtils.copyProperties(u, UserVO.class);
-            userVO.setOnline(onlineUserIds.contains(u.getId()));
-            return userVO;
+            UserRespDTO userRespDTO = BeanUtils.copyProperties(u, UserRespDTO.class);
+            userRespDTO.setOnline(onlineUserIds.contains(u.getId()));
+            return userRespDTO;
         }).collect(Collectors.toList());
     }
 

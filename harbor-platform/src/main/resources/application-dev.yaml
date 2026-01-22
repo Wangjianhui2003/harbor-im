@@ -11,8 +11,8 @@ spring:
       password: Sm9sVXBOYJjI030b5tz0trjpzvZzRhtZmEbv0uOImcD1wEDOPfeaqNU4PxHob/Wp
 
 minio:
-  endpoint: http://www.jianhui03.cn:9002 #内网地址
-  domain: http://www.jianhui03.cn:9002 #外网访问地址
+  endpoint: http://www.jianhui03.cn:9002 #服务间访问
+  domain: https://www.jianhui03.cn #应用访问
   accessKey: minioadmin
   secretKey: minioadmin
   bucketName: harbor-im

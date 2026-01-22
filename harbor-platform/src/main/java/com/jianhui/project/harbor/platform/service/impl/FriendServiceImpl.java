@@ -9,17 +9,17 @@ import com.jianhui.project.harbor.common.enums.IMTerminalType;
 import com.jianhui.project.harbor.common.model.IMPrivateMessage;
 import com.jianhui.project.harbor.common.model.IMUserInfo;
 import com.jianhui.project.harbor.platform.constant.RedisKey;
-import com.jianhui.project.harbor.platform.entity.Friend;
-import com.jianhui.project.harbor.platform.entity.PrivateMessage;
-import com.jianhui.project.harbor.platform.entity.User;
+import com.jianhui.project.harbor.platform.dao.entity.Friend;
+import com.jianhui.project.harbor.platform.dao.entity.PrivateMessage;
+import com.jianhui.project.harbor.platform.dao.entity.User;
+import com.jianhui.project.harbor.platform.dao.mapper.FriendMapper;
+import com.jianhui.project.harbor.platform.dao.mapper.PrivateMessageMapper;
+import com.jianhui.project.harbor.platform.dao.mapper.UserMapper;
+import com.jianhui.project.harbor.platform.dto.response.FriendRespDTO;
+import com.jianhui.project.harbor.platform.dto.response.PrivateMessageRespDTO;
 import com.jianhui.project.harbor.platform.enums.MessageStatus;
 import com.jianhui.project.harbor.platform.enums.MessageType;
 import com.jianhui.project.harbor.platform.exception.GlobalException;
-import com.jianhui.project.harbor.platform.mapper.FriendMapper;
-import com.jianhui.project.harbor.platform.mapper.PrivateMessageMapper;
-import com.jianhui.project.harbor.platform.mapper.UserMapper;
-import com.jianhui.project.harbor.platform.pojo.vo.FriendVO;
-import com.jianhui.project.harbor.platform.pojo.vo.PrivateMessageVO;
 import com.jianhui.project.harbor.platform.service.FriendService;
 import com.jianhui.project.harbor.platform.session.SessionContext;
 import com.jianhui.project.harbor.platform.session.UserSession;
@@ -57,7 +57,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
     }
 
     @Override
-    public List<FriendVO> findFriends() {
+    public List<FriendRespDTO> findFriends() {
         List<Friend> allFriends = findAllFriends();
         return allFriends.stream().map(this::convertToFriendVO).toList();
     }
@@ -83,7 +83,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
     }
 
     @Override
-    public FriendVO findFriendInfo(Long friendId) {
+    public FriendRespDTO findFriendInfo(Long friendId) {
         UserSession session = SessionContext.getSession();
         Friend friend = friendMapper.getByUserIdAndFriendId(session.getUserId(), friendId);
         if (friend == null) {
@@ -95,14 +95,14 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
     /**
      * 将Friend对象转换为FriendVO
      */
-    private FriendVO convertToFriendVO(Friend friend) {
-        FriendVO friendVO = new FriendVO();
+    private FriendRespDTO convertToFriendVO(Friend friend) {
+        FriendRespDTO friendRespDTO = new FriendRespDTO();
         //将friendId作为FriendVO的id
-        friendVO.setId(friend.getFriendId());
-        friendVO.setFriendNickname(friend.getFriendNickname());
-        friendVO.setDeleted(friend.getDeleted());
-        friendVO.setHeadImage(friend.getFriendHeadImage());
-        return friendVO;
+        friendRespDTO.setId(friend.getFriendId());
+        friendRespDTO.setFriendNickname(friend.getFriendNickname());
+        friendRespDTO.setDeleted(friend.getDeleted());
+        friendRespDTO.setHeadImage(friend.getFriendHeadImage());
+        return friendRespDTO;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -160,14 +160,14 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
 
     private void sendAddFriendMessage(Long userId, Long friendId, Friend friend) {
         // 推送好友添加信息
-        PrivateMessageVO msgInfo = new PrivateMessageVO();
+        PrivateMessageRespDTO msgInfo = new PrivateMessageRespDTO();
         msgInfo.setSendId(friendId); //TODO:这样反过来有点反逻辑，需要测试
         msgInfo.setRecvId(userId);
         msgInfo.setSendTime(new Date());
         msgInfo.setType(MessageType.FRIEND_NEW.code());
-        FriendVO vo = convertToFriendVO(friend);
+        FriendRespDTO vo = convertToFriendVO(friend);
         msgInfo.setContent(JSON.toJSONString(vo));
-        IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
+        IMPrivateMessage<PrivateMessageRespDTO> sendMessage = new IMPrivateMessage<>();
         sendMessage.setSender(new IMUserInfo(friendId, IMTerminalType.UNKNOW.code()));
         sendMessage.setRecvId(userId);
         sendMessage.setData(msgInfo);
@@ -183,12 +183,12 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
      */
     private void sendDelFriendMessage(Long userId, Long friendId) {
         // 推送好友状态信息
-        PrivateMessageVO msgInfo = new PrivateMessageVO();
+        PrivateMessageRespDTO msgInfo = new PrivateMessageRespDTO();
         msgInfo.setSendId(friendId);
         msgInfo.setRecvId(userId);
         msgInfo.setSendTime(new Date());
         msgInfo.setType(MessageType.FRIEND_DEL.code());
-        IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
+        IMPrivateMessage<PrivateMessageRespDTO> sendMessage = new IMPrivateMessage<>();
         sendMessage.setSender(new IMUserInfo(friendId, IMTerminalType.UNKNOW.code()));
         sendMessage.setRecvId(userId);
         sendMessage.setData(msgInfo);
@@ -206,14 +206,14 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         PrivateMessage msg = new PrivateMessage();
         msg.setSendId(session.getUserId());
         msg.setRecvId(friendId);
-        msg.setStatus(MessageStatus.UNSEND.code());
+        msg.setStatus(MessageStatus.UNSENT.code());
         msg.setType(MessageType.TIP_TEXT.code());
         msg.setSendTime(new Date());
         msg.setContent("你们已成为好友，现在可以开始聊天了");
         privateMessageMapper.insert(msg);
         //推送到好友
-        PrivateMessageVO msgVO = BeanUtils.copyProperties(msg, PrivateMessageVO.class);
-        IMPrivateMessage<PrivateMessageVO> imMsg = new IMPrivateMessage<>();
+        PrivateMessageRespDTO msgVO = BeanUtils.copyProperties(msg, PrivateMessageRespDTO.class);
+        IMPrivateMessage<PrivateMessageRespDTO> imMsg = new IMPrivateMessage<>();
         imMsg.setData(msgVO);
         imMsg.setSender(new IMUserInfo(session.getUserId(),session.getTerminal()));
         imMsg.setRecvId(friendId);
@@ -236,12 +236,12 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         msg.setRecvId(friendId);
         msg.setSendTime(new Date());
         msg.setType(MessageType.TIP_TEXT.code());
-        msg.setStatus(MessageStatus.UNSEND.code());
+        msg.setStatus(MessageStatus.UNSENT.code());
         msg.setContent("你们的好友关系已被解除");
         privateMessageMapper.insert(msg);
         // 推送
-        PrivateMessageVO messageInfo = BeanUtils.copyProperties(msg, PrivateMessageVO.class);
-        IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
+        PrivateMessageRespDTO messageInfo = BeanUtils.copyProperties(msg, PrivateMessageRespDTO.class);
+        IMPrivateMessage<PrivateMessageRespDTO> sendMessage = new IMPrivateMessage<>();
         sendMessage.setSender(new IMUserInfo(friendId, IMTerminalType.UNKNOW.code()));
         sendMessage.setRecvId(friendId);
         sendMessage.setData(messageInfo);

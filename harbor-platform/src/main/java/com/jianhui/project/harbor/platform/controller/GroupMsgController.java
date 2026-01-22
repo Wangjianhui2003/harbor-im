@@ -1,7 +1,7 @@
 package com.jianhui.project.harbor.platform.controller;
 
-import com.jianhui.project.harbor.platform.pojo.dto.GroupMessageDTO;
-import com.jianhui.project.harbor.platform.pojo.vo.GroupMessageVO;
+import com.jianhui.project.harbor.platform.dto.request.GroupMessageDTO;
+import com.jianhui.project.harbor.platform.dto.response.GroupMessageRespDTO;
 import com.jianhui.project.harbor.platform.result.Result;
 import com.jianhui.project.harbor.platform.result.Results;
 import com.jianhui.project.harbor.platform.service.GroupMessageService;
@@ -24,13 +24,13 @@ public class GroupMsgController {
 
     @PostMapping("/send")
     @Operation(summary = "发送群聊消息", description = "发送群聊消息")
-    public Result<GroupMessageVO> sendMessage(@Valid @RequestBody GroupMessageDTO dto) {
+    public Result<GroupMessageRespDTO> sendMessage(@Valid @RequestBody GroupMessageDTO dto) {
         return Results.success(groupMessageService.sendMessage(dto));
     }
 
     @DeleteMapping("/recall/{id}")
     @Operation(summary = "撤回消息", description = "撤回群聊消息")
-    public Result<GroupMessageVO> recallMessage(@NotNull(message = "消息id不能为空") @PathVariable Long id) {
+    public Result<GroupMessageRespDTO> recallMessage(@NotNull(message = "消息id不能为空") @PathVariable Long id) {
         return Results.success(groupMessageService.recallMessage(id));
     }
 
@@ -57,9 +57,9 @@ public class GroupMsgController {
 
     @GetMapping("/history")
     @Operation(summary = "查询聊天记录", description = "查询聊天记录")
-    public Result<List<GroupMessageVO>> recallMessage(@NotNull(message = "群聊id不能为空") @RequestParam Long groupId,
-                                                      @NotNull(message = "页码不能为空") @RequestParam Long page,
-                                                      @NotNull(message = "size不能为空") @RequestParam Long size) {
+    public Result<List<GroupMessageRespDTO>> recallMessage(@NotNull(message = "群聊id不能为空") @RequestParam Long groupId,
+                                                           @NotNull(message = "页码不能为空") @RequestParam Long page,
+                                                           @NotNull(message = "size不能为空") @RequestParam Long size) {
         return Results.success(groupMessageService.findHistoryMessage(groupId, page, size));
     }
 }

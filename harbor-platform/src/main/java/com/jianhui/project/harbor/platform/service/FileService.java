@@ -1,6 +1,7 @@
 package com.jianhui.project.harbor.platform.service;
 
-import com.jianhui.project.harbor.platform.pojo.vo.UploadImageVO;
+import com.jianhui.project.harbor.platform.dto.response.UploadImageRespDTO;
+import com.jianhui.project.harbor.platform.dto.response.UploadVideoRespDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -8,8 +9,10 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public interface FileService {
 
-    UploadImageVO uploadImage(MultipartFile file);
+    UploadImageRespDTO uploadImage(MultipartFile file);
 
     String uploadFile(MultipartFile file);
+
+    UploadVideoRespDTO uploadVideo(MultipartFile file);
 
 }

@@ -1,9 +1,9 @@
 package com.jianhui.project.harbor.platform.controller;
 
 import com.jianhui.project.harbor.platform.annotation.RepeatSubmit;
-import com.jianhui.project.harbor.platform.pojo.vo.GroupInviteVO;
-import com.jianhui.project.harbor.platform.pojo.vo.GroupMemberVO;
-import com.jianhui.project.harbor.platform.pojo.vo.GroupVO;
+import com.jianhui.project.harbor.platform.dto.response.GroupInviteRespDTO;
+import com.jianhui.project.harbor.platform.dto.response.GroupMemberRespDTO;
+import com.jianhui.project.harbor.platform.dto.response.GroupRespDTO;
 import com.jianhui.project.harbor.platform.result.Result;
 import com.jianhui.project.harbor.platform.result.Results;
 import com.jianhui.project.harbor.platform.service.GroupService;
@@ -27,14 +27,14 @@ public class GroupController {
     @RepeatSubmit
     @Operation(summary = "创建群聊", description = "创建群聊")
     @PostMapping("/create")
-    public Result<GroupVO> createGroup(@Valid @RequestBody GroupVO vo) {
+    public Result<GroupRespDTO> createGroup(@Valid @RequestBody GroupRespDTO vo) {
         return Results.success(groupService.createGroup(vo));
     }
 
     @RepeatSubmit
     @Operation(summary = "修改群聊信息", description = "修改群聊信息")
     @PutMapping("/modify")
-    public Result<GroupVO> modifyGroup(@Valid @RequestBody GroupVO vo) {
+    public Result<GroupRespDTO> modifyGroup(@Valid @RequestBody GroupRespDTO vo) {
         return Results.success(groupService.modifyGroup(vo));
     }
 
@@ -49,27 +49,27 @@ public class GroupController {
 
     @Operation(summary = "查询群聊", description = "查询单个群聊信息")
     @GetMapping("/find/{groupId}")
-    public Result<GroupVO> findGroup(@NotNull(message = "群聊id不能为空") @PathVariable Long groupId) {
+    public Result<GroupRespDTO> findGroup(@NotNull(message = "群聊id不能为空") @PathVariable Long groupId) {
         return Results.success(groupService.findById(groupId));
     }
 
     @Operation(summary = "查询群聊列表", description = "查询群聊列表")
     @GetMapping("/list")
-    public Result<List<GroupVO>> findGroups() {
+    public Result<List<GroupRespDTO>> findGroups() {
         return Results.success(groupService.findGroups());
     }
 
     @RepeatSubmit
     @Operation(summary = "邀请进群", description = "邀请好友进群")
     @PostMapping("/invite")
-    public Result invite(@Valid @RequestBody GroupInviteVO vo) {
+    public Result invite(@Valid @RequestBody GroupInviteRespDTO vo) {
         groupService.invite(vo);
         return Results.success();
     }
 
     @Operation(summary = "查询群聊成员", description = "查询群聊成员")
     @GetMapping("/members/{groupId}")
-    public Result<List<GroupMemberVO>> findGroupMembers(
+    public Result<List<GroupMemberRespDTO>> findGroupMembers(
         @NotNull(message = "群聊id不能为空") @PathVariable Long groupId) {
         return Results.success(groupService.findGroupMembers(groupId));
     }
@@ -94,9 +94,26 @@ public class GroupController {
     @RepeatSubmit
     @Operation(summary = "搜索群聊", description = "通过id搜索群聊(用于加入)")
     @GetMapping("/search")
-    public Result<GroupVO> searchGroups(@RequestParam(required = true) Long groupId) {
-        GroupVO groupVO = groupService.searchById(groupId);
-        return Results.success(groupVO);
+    public Result<GroupRespDTO> searchGroups(@RequestParam(required = true) Long groupId) {
+        GroupRespDTO groupRespDTO = groupService.searchById(groupId);
+        return Results.success(groupRespDTO);
+    }
+
+    @Operation(summary = "获取管理的群组", description = "获取当前用户管理的群组ID列表（群主或管理员）")
+    @GetMapping("/managed")
+    public Result<List<Long>> getManagedGroupIds() {
+        return Results.success(groupService.getManagedGroupIds());
+    }
+
+    @RepeatSubmit
+    @Operation(summary = "设置管理员", description = "设置或移除群管理员")
+    @PutMapping("/admin/{groupId}")
+    public Result<Void> setGroupAdmin(
+            @NotNull(message = "群聊id不能为空") @PathVariable Long groupId,
+            @NotNull(message = "用户id不能为空") @RequestParam Long userId,
+            @NotNull(message = "是否管理员不能为空") @RequestParam Boolean isAdmin) {
+        groupService.setGroupAdmin(groupId, userId, isAdmin);
+        return Results.success();
     }
 }
 

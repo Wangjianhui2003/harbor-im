@@ -15,15 +15,15 @@ import com.jianhui.project.harbor.common.model.IMUserInfo;
 import com.jianhui.project.harbor.common.util.CommaTextUtils;
 import com.jianhui.project.harbor.platform.constant.Constant;
 import com.jianhui.project.harbor.platform.constant.RedisKey;
-import com.jianhui.project.harbor.platform.entity.Group;
-import com.jianhui.project.harbor.platform.entity.GroupMember;
-import com.jianhui.project.harbor.platform.entity.GroupMessage;
+import com.jianhui.project.harbor.platform.dao.entity.Group;
+import com.jianhui.project.harbor.platform.dao.entity.GroupMember;
+import com.jianhui.project.harbor.platform.dao.entity.GroupMessage;
+import com.jianhui.project.harbor.platform.dao.mapper.GroupMessageMapper;
+import com.jianhui.project.harbor.platform.dto.request.GroupMessageDTO;
+import com.jianhui.project.harbor.platform.dto.response.GroupMessageRespDTO;
 import com.jianhui.project.harbor.platform.enums.MessageStatus;
 import com.jianhui.project.harbor.platform.enums.MessageType;
 import com.jianhui.project.harbor.platform.exception.GlobalException;
-import com.jianhui.project.harbor.platform.mapper.GroupMessageMapper;
-import com.jianhui.project.harbor.platform.pojo.dto.GroupMessageDTO;
-import com.jianhui.project.harbor.platform.pojo.vo.GroupMessageVO;
 import com.jianhui.project.harbor.platform.service.GroupMemberService;
 import com.jianhui.project.harbor.platform.service.GroupMessageService;
 import com.jianhui.project.harbor.platform.service.GroupService;
@@ -53,7 +53,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
     private final GroupMessageMapper groupMessageMapper;
 
     @Override
-    public GroupMessageVO sendMessage(GroupMessageDTO dto) {
+    public GroupMessageRespDTO sendMessage(GroupMessageDTO dto) {
         UserSession session = SessionContext.getSession();
         Group group = groupService.getAndCheckById(dto.getGroupId());
         // 是否在群聊里面
@@ -79,9 +79,9 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         groupMessage.setContent(dto.getContent());
         save(groupMessage);
         // 群发
-        GroupMessageVO msgVO = BeanUtils.copyProperties(groupMessage, GroupMessageVO.class);
+        GroupMessageRespDTO msgVO = BeanUtils.copyProperties(groupMessage, GroupMessageRespDTO.class);
         msgVO.setAtUserIds(dto.getAtUserIds());
-        IMGroupMessage<GroupMessageVO> imMsg = new IMGroupMessage<>();
+        IMGroupMessage<GroupMessageRespDTO> imMsg = new IMGroupMessage<>();
         imMsg.setSender(new IMUserInfo(session.getUserId(),session.getTerminal()));
         imMsg.setRecvIds(userIds);
         imMsg.setData(msgVO);
@@ -92,7 +92,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
 
     @Transactional
     @Override
-    public GroupMessageVO recallMessage(Long id) {
+    public GroupMessageRespDTO recallMessage(Long id) {
         UserSession session = SessionContext.getSession();
         GroupMessage msg = getById(id);
         if (Objects.isNull(msg)) {
@@ -115,7 +115,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         // 生成一条撤回消息
         GroupMessage recallMsg = new GroupMessage();
         recallMsg.setSendId(session.getUserId());
-        recallMsg.setStatus(MessageStatus.UNSEND.code());
+        recallMsg.setStatus(MessageStatus.UNSENT.code());
         recallMsg.setType(MessageType.RECALL.code());
         recallMsg.setGroupId(msg.getGroupId());
         recallMsg.setSendTime(new Date());
@@ -124,8 +124,8 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         save(recallMsg);
         // 群发
         List<Long> userIds = groupMemberService.findUserIdsByGroupId(msg.getGroupId());
-        GroupMessageVO msgInfo = BeanUtils.copyProperties(recallMsg, GroupMessageVO.class);
-        IMGroupMessage<GroupMessageVO> sendMessage = new IMGroupMessage<>();
+        GroupMessageRespDTO msgInfo = BeanUtils.copyProperties(recallMsg, GroupMessageRespDTO.class);
+        IMGroupMessage<GroupMessageRespDTO> sendMessage = new IMGroupMessage<>();
         sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         sendMessage.setRecvIds(userIds);
         sendMessage.setData(msgInfo);
@@ -195,12 +195,12 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
                     continue;
                 }
                 // 组装vo
-                GroupMessageVO vo = BeanUtils.copyProperties(m, GroupMessageVO.class);
+                GroupMessageRespDTO vo = BeanUtils.copyProperties(m, GroupMessageRespDTO.class);
                 // 被@用户列表
                 List<String> atIds = CommaTextUtils.asList(m.getAtUserIds());
                 vo.setAtUserIds(atIds.stream().map(Long::parseLong).collect(Collectors.toList()));
                 // 填充状态,可能在其他客户端读过了
-                vo.setStatus(readedMaxId >= m.getId() ? MessageStatus.READED.code() : MessageStatus.UNSEND.code());
+                vo.setStatus(readedMaxId >= m.getId() ? MessageStatus.READ.code() : MessageStatus.SENT.code());
                 // 针对回执消息填充已读人数
                 if(m.getReceipt()){
                     if(Objects.isNull(maxIdMap)) {
@@ -210,7 +210,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
                     vo.setReadedCount(count);
                 }
                 // 推送
-                IMGroupMessage<GroupMessageVO> sendMessage = new IMGroupMessage<>();
+                IMGroupMessage<GroupMessageRespDTO> sendMessage = new IMGroupMessage<>();
                 sendMessage.setSender(new IMUserInfo(m.getSendId(), IMTerminalType.WEB.code()));
                 sendMessage.setRecvIds(Arrays.asList(session.getUserId()));
                 sendMessage.setRecvTerminals(Arrays.asList(session.getTerminal()));
@@ -235,12 +235,12 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
             return;
         }
         // 推送消息给自己的其他终端,同步清空会话列表中的未读数量
-        GroupMessageVO msgInfo = new GroupMessageVO();
+        GroupMessageRespDTO msgInfo = new GroupMessageRespDTO();
         msgInfo.setType(MessageType.READED.code());
         msgInfo.setSendTime(new Date());
         msgInfo.setSendId(session.getUserId());
         msgInfo.setGroupId(groupId);
-        IMGroupMessage<GroupMessageVO> sendMessage = new IMGroupMessage<>();
+        IMGroupMessage<GroupMessageRespDTO> sendMessage = new IMGroupMessage<>();
         sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         sendMessage.setSendToSelf(true);
         sendMessage.setData(msgInfo);
@@ -263,7 +263,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
                     receiptMessage.setReceiptOk(true);
                     this.updateById(receiptMessage);
                 }
-                msgInfo = new GroupMessageVO();
+                msgInfo = new GroupMessageRespDTO();
                 msgInfo.setId(receiptMessage.getId());
                 msgInfo.setGroupId(groupId);
                 msgInfo.setReadedCount(readedCount);
@@ -301,7 +301,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
     }
 
     @Override
-    public List<GroupMessageVO> findHistoryMessage(Long groupId, Long page, Long size) {
+    public List<GroupMessageRespDTO> findHistoryMessage(Long groupId, Long page, Long size) {
         page = page > 0 ? page : 1;
         size = size > 0 ? size : 10;
         Long userId = SessionContext.getSession().getUserId();
@@ -313,8 +313,8 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         }
         // 查询聊天记录，只查询加入群聊时间之后的消息
         List<GroupMessage> messages = groupMessageMapper.findHistoryMsg(groupId,member.getCreatedTime(),MessageStatus.RECALL.code(),offset,size);
-        List<GroupMessageVO> msgVOs =
-                messages.stream().map(m -> BeanUtils.copyProperties(m, GroupMessageVO.class)).toList();
+        List<GroupMessageRespDTO> msgVOs =
+                messages.stream().map(m -> BeanUtils.copyProperties(m, GroupMessageRespDTO.class)).toList();
         log.info("拉取群聊记录，用户id:{},群聊id:{}，数量:{}", userId, groupId,msgVOs.size());
         return msgVOs;
     }
@@ -341,7 +341,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
     private void sendLoadingMessage(Boolean isLoadding){
         log.info("拉取user:{}群聊消息状态:{}",SessionContext.getSession().getUserId(),isLoadding);
         UserSession session = SessionContext.getSession();
-        GroupMessageVO msgInfo = new GroupMessageVO();
+        GroupMessageRespDTO msgInfo = new GroupMessageRespDTO();
         msgInfo.setType(MessageType.LOADING.code());
         msgInfo.setContent(isLoadding.toString());
         IMGroupMessage sendMessage = new IMGroupMessage<>();

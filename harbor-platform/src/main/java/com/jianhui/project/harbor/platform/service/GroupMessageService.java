@@ -1,9 +1,9 @@
 package com.jianhui.project.harbor.platform.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.jianhui.project.harbor.platform.entity.GroupMessage;
-import com.jianhui.project.harbor.platform.pojo.dto.GroupMessageDTO;
-import com.jianhui.project.harbor.platform.pojo.vo.GroupMessageVO;
+import com.jianhui.project.harbor.platform.dao.entity.GroupMessage;
+import com.jianhui.project.harbor.platform.dto.request.GroupMessageDTO;
+import com.jianhui.project.harbor.platform.dto.response.GroupMessageRespDTO;
 
 import java.util.List;
 
@@ -15,14 +15,14 @@ public interface GroupMessageService extends IService<GroupMessage> {
      * @param dto 群聊消息
      * @return 群聊id
      */
-    GroupMessageVO sendMessage(GroupMessageDTO dto);
+    GroupMessageRespDTO sendMessage(GroupMessageDTO dto);
 
     /**
      * 撤回消息
      *
      * @param id 消息id
      */
-    GroupMessageVO recallMessage(Long id);
+    GroupMessageRespDTO recallMessage(Long id);
 
     /**
      * 拉取离线消息，只能拉取最近1个月的消息，最多拉取1000条
@@ -53,5 +53,5 @@ public interface GroupMessageService extends IService<GroupMessage> {
      * @param size    页码大小
      * @return 聊天记录列表
      */
-    List<GroupMessageVO> findHistoryMessage(Long groupId, Long page, Long size);
+    List<GroupMessageRespDTO> findHistoryMessage(Long groupId, Long page, Long size);
 }

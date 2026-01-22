@@ -11,7 +11,6 @@ public final class BeanUtils {
         ReflectionUtils.handleReflectionException(e);
     }
 
-
     /**
      * 属性拷贝
      *
@@ -32,7 +31,6 @@ public final class BeanUtils {
             return null;
         }
     }
-
 
     public static void copyProperties(Object orig, Object dest) {
         try {

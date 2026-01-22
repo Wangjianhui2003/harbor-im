@@ -1,9 +1,9 @@
 package com.jianhui.project.harbor.platform.service;
 
-import com.jianhui.project.harbor.platform.entity.PrivateMessage;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.jianhui.project.harbor.platform.pojo.dto.PrivateMessageDTO;
-import com.jianhui.project.harbor.platform.pojo.vo.PrivateMessageVO;
+import com.jianhui.project.harbor.platform.dao.entity.PrivateMessage;
+import com.jianhui.project.harbor.platform.dto.request.PrivateMessageDTO;
+import com.jianhui.project.harbor.platform.dto.response.PrivateMessageRespDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
@@ -19,12 +19,12 @@ public interface PrivateMessageService extends IService<PrivateMessage> {
     /**
      * 发送私聊消息
      */
-    PrivateMessageVO sendMessage(@Valid PrivateMessageDTO dto);
+    PrivateMessageRespDTO sendMessage(@Valid PrivateMessageDTO dto);
 
     /**
      * 撤销消息
      */
-    PrivateMessageVO recallMessage(@NotNull(message = "消息id不能为空") Long id);
+    PrivateMessageRespDTO recallMessage(@NotNull(message = "消息id不能为空") Long id);
 
     /**
      * 拉取离线消息
@@ -44,5 +44,5 @@ public interface PrivateMessageService extends IService<PrivateMessage> {
     /**
      * 查询历史消息
      */
-    List<PrivateMessageVO> findHistoryMessage(@NotNull(message = "好友id不能为空") Long friendId, @NotNull(message = "页码不能为空") Long page, @NotNull(message = "size不能为空") Long size);
+    List<PrivateMessageRespDTO> findHistoryMessage(@NotNull(message = "好友id不能为空") Long friendId, @NotNull(message = "页码不能为空") Long page, @NotNull(message = "size不能为空") Long size);
 }

@@ -8,7 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 @SpringBootApplication
-@MapperScan("com.jianhui.project.harbor.platform.mapper")
+@MapperScan("com.jianhui.project.harbor.platform.dao.mapper")
 @ComponentScan(basePackages = {"com.jianhui.project.harbor"})
 @EnableCaching
 @EnableAspectJAutoProxy(exposeProxy = true)

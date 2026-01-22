@@ -25,4 +25,9 @@ public final class Constant {
      */
     public static final Long MAX_NORMAL_GROUP_MEMBER = 500L;
 
+    /**
+     * 最大视频上传大小
+     */
+    public static final Long MAX_VIDEO_SIZE = 100 * 1024 * 1024L;
+
 }

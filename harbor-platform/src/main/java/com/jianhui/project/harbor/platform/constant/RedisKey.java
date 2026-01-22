@@ -4,7 +4,7 @@ public class RedisKey {
     /**
      * 验证码前缀
      */
-    public static final String CHECK_CODE_PREFIX = "easychat:check_code:";
+    public static final String CHECK_CODE_PREFIX = "im:check_code:";
 
     /**
      * 验证码过期时间

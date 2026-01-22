@@ -1,10 +1,10 @@
 package com.jianhui.project.harbor.platform.controller;
 
-import com.jianhui.project.harbor.platform.pojo.dto.ModifyPwdDTO;
-import com.jianhui.project.harbor.platform.pojo.req.LoginReq;
-import com.jianhui.project.harbor.platform.pojo.req.RegisterReq;
-import com.jianhui.project.harbor.platform.pojo.resp.CaptchaResp;
-import com.jianhui.project.harbor.platform.pojo.resp.LoginResp;
+import com.jianhui.project.harbor.platform.dto.request.LoginReqDTO;
+import com.jianhui.project.harbor.platform.dto.request.ModifyPwdDTO;
+import com.jianhui.project.harbor.platform.dto.request.RegisterReqDTO;
+import com.jianhui.project.harbor.platform.dto.response.CaptchaRespDTO;
+import com.jianhui.project.harbor.platform.dto.response.LoginRespDTO;
 import com.jianhui.project.harbor.platform.result.Result;
 import com.jianhui.project.harbor.platform.result.Results;
 import com.jianhui.project.harbor.platform.service.UserService;
@@ -31,7 +31,7 @@ public class LoginController {
     private final StringRedisTemplate redisTemplate;
 
     @GetMapping("/captcha")
-    public Result<CaptchaResp> checkCode() {
+    public Result<CaptchaRespDTO> checkCode() {
         // 生成验证码
         ArithmeticCaptcha captcha = new ArithmeticCaptcha(100, 42);
         String base64 = captcha.toBase64();
@@ -41,7 +41,7 @@ public class LoginController {
         // 将验证码存入redis
         redisTemplate.opsForValue().set(CHECK_CODE_PREFIX + checkCodeKey, code, Duration.ofSeconds(CHECK_CODE_EXPIRE_TIME));
         log.info("验证码key: {}, 验证码: {}", checkCodeKey, code);
-        return Results.success(CaptchaResp.builder()
+        return Results.success(CaptchaRespDTO.builder()
                 .captchaPic(base64)
                 .captchaKey(checkCodeKey)
                 .build());
@@ -49,21 +49,21 @@ public class LoginController {
 
     @PostMapping("/login")
     @Operation(summary = "用户登录", description = "用户登录")
-    public Result<LoginResp> login(@Valid @RequestBody LoginReq loginReq) {
-        LoginResp vo = userService.login(loginReq);
+    public Result<LoginRespDTO> login(@Valid @RequestBody LoginReqDTO loginReqDTO) {
+        LoginRespDTO vo = userService.login(loginReqDTO);
         return Results.success(vo);
     }
 
     @PutMapping("/refreshToken")
     @Operation(summary = "刷新token", description = "用refreshtoken换取新的token")
     public Result refreshToken(@RequestHeader("refreshToken") String refreshToken) {
-        LoginResp vo = userService.refreshToken(refreshToken);
+        LoginRespDTO vo = userService.refreshToken(refreshToken);
         return Results.success(vo);
     }
 
     @PostMapping("/register")
     @Operation(summary = "用户注册", description = "用户注册")
-    public Result register(@Valid @RequestBody RegisterReq dto) {
+    public Result register(@Valid @RequestBody RegisterReqDTO dto) {
         userService.register(dto);
         return Results.success();
     }

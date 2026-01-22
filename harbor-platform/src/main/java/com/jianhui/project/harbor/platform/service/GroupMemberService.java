@@ -1,7 +1,7 @@
 package com.jianhui.project.harbor.platform.service;
 
-import com.jianhui.project.harbor.platform.entity.GroupMember;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.jianhui.project.harbor.platform.dao.entity.GroupMember;
 
 import java.util.List;
 
