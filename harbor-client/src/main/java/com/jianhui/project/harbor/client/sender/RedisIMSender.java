@@ -17,9 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-/**
- * 基于redis作为中间件的sender
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
