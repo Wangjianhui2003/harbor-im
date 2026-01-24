@@ -25,7 +25,7 @@ public class RedisMQConfig {
     }
 
     @Bean
-    public FastJsonRedisSerializer fastJsonRedisSerializer(){
+    public FastJsonRedisSerializer fastJsonRedisSerializer() {
         return new FastJsonRedisSerializer<>(Object.class);
     }
 

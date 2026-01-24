@@ -17,7 +17,7 @@ public final class ThreadPoolExecutorFactory {
      * IO 密集型：核心线程数 = CPU核数 * 2
      */
     private static final int CORE_POOL_SIZE =
-        Math.min(ThreadPoolExecutorFactory.MAX_IMUM_POOL_SIZE, Runtime.getRuntime().availableProcessors() * 2);
+            Math.min(ThreadPoolExecutorFactory.MAX_IMUM_POOL_SIZE, Runtime.getRuntime().availableProcessors() * 2);
     /**
      * maximumPoolSize - 池中允许的最大线程数(采用LinkedBlockingQueue时没有作用)。
      */

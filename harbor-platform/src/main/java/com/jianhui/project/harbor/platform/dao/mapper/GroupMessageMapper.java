@@ -13,7 +13,7 @@ public interface GroupMessageMapper extends BaseMapper<GroupMessage> {
      */
     Long findLastByGroupId(Long groupId);
 
-    List<GroupMessage> findUnreadReceiptMsg(Long groupId,Object oldMaxReadedId, Long maxMsgId, Integer recallCode, boolean isReceipt);
+    List<GroupMessage> findUnreadReceiptMsg(Long groupId, Object oldMaxReadedId, Long maxMsgId, Integer recallCode, boolean isReceipt);
 
     List<GroupMessage> findHistoryMsg(Long groupId, Date createdTime, Integer recallCode, long offset, Long size);
 }

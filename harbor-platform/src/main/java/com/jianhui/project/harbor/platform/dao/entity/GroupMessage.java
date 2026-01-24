@@ -9,9 +9,10 @@ import java.util.Date;
 
 /**
  * 群消息
+ *
  * @TableName t_group_message
  */
-@TableName(value ="t_group_message")
+@TableName(value = "t_group_message")
 @Data
 public class GroupMessage {
     /**
@@ -66,7 +67,7 @@ public class GroupMessage {
     private Integer type;
 
     /**
-     * 状态 0:未发出  2:撤回 
+     * 状态 0:未发出  2:撤回
      */
     private Integer status;
 

@@ -33,7 +33,7 @@ public enum IMCmdType {
     /**
      * 系统消息
      */
-    SYSTEM_MESSAGE(5,"系统消息");
+    SYSTEM_MESSAGE(5, "系统消息");
 
 
     private final Integer code;

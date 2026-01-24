@@ -10,9 +10,10 @@ import java.util.Date;
 
 /**
  * 群成员
+ *
  * @TableName t_group_member
  */
-@TableName(value ="t_group_member")
+@TableName(value = "t_group_member")
 @Data
 public class GroupMember {
     /**

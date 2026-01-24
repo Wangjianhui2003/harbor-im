@@ -13,8 +13,8 @@ public enum GroupRole {
     GroupRole(Integer code) {
         this.code = code;
     }
-    
-    public Integer code(){
+
+    public Integer code() {
         return code;
     }
 }

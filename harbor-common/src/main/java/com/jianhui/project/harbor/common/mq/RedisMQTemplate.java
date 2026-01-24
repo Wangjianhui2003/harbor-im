@@ -6,7 +6,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 
 import java.util.Properties;
 
-public class RedisMQTemplate extends RedisTemplate<String,Object> {
+public class RedisMQTemplate extends RedisTemplate<String, Object> {
 
     private String version = "";
 
@@ -18,7 +18,7 @@ public class RedisMQTemplate extends RedisTemplate<String,Object> {
             RedisConnection connection = RedisConnectionUtils.getConnection(getConnectionFactory());
             Properties properties = connection.info();
             version = properties.getProperty("redis_version");
-            RedisConnectionUtils.releaseConnection(connection,getConnectionFactory());
+            RedisConnectionUtils.releaseConnection(connection, getConnectionFactory());
         }
         return version;
     }

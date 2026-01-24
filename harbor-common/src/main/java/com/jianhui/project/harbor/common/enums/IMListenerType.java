@@ -22,7 +22,6 @@ public enum IMListenerType {
     SYSTEM_MESSAGE(3, "群聊消息");
 
 
-
     private final Integer code;
 
     private final String desc;

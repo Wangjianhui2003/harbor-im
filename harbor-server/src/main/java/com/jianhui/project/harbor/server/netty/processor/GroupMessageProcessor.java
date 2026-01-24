@@ -1,14 +1,12 @@
 package com.jianhui.project.harbor.server.netty.processor;
 
 import com.jianhui.project.harbor.common.constant.IMMQConstant;
-import com.jianhui.project.harbor.common.constant.IMRedisKey;
 import com.jianhui.project.harbor.common.enums.IMCmdType;
 import com.jianhui.project.harbor.common.enums.IMSendCode;
 import com.jianhui.project.harbor.common.model.IMRecvInfo;
 import com.jianhui.project.harbor.common.model.IMSendInfo;
 import com.jianhui.project.harbor.common.model.IMSendResult;
 import com.jianhui.project.harbor.common.model.IMUserInfo;
-import com.jianhui.project.harbor.common.mq.RedisMQTemplate;
 import com.jianhui.project.harbor.server.netty.UserChannelCxtMap;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.RequiredArgsConstructor;
@@ -45,12 +43,12 @@ public class GroupMessageProcessor extends AbstractMsgProcessor<IMRecvInfo> {
                     ChannelCtx.writeAndFlush(sendInfo);
                     sendResult(recvInfo, IMSendCode.SUCCESS);
                 } else {
-                    log.error("未找到接收者channel,接收者:{},内容:{}",receiver.getId(),recvInfo.getData());
-                    sendResult(recvInfo,IMSendCode.NOT_FIND_CHANNEL);
+                    log.error("未找到接收者channel,接收者:{},内容:{}", receiver.getId(), recvInfo.getData());
+                    sendResult(recvInfo, IMSendCode.NOT_FIND_CHANNEL);
                 }
             } catch (Exception e) {
-                sendResult(recvInfo,IMSendCode.UNKONW_ERROR);
-                log.error("发送异常，,接收者:{}，内容:{}",receiver.getId(), recvInfo.getData(), e);
+                sendResult(recvInfo, IMSendCode.UNKONW_ERROR);
+                log.error("发送异常，,接收者:{}，内容:{}", receiver.getId(), recvInfo.getData(), e);
             }
         }
     }
@@ -64,17 +62,17 @@ public class GroupMessageProcessor extends AbstractMsgProcessor<IMRecvInfo> {
         asyncSendToMQ(IMMQConstant.GROUP_RESULT_TOPIC_PREFIX + recvInfo.getServiceName(), sendResult);
     }
 
-    private void asyncSendToMQ(String topic,IMSendResult<Object> imSendResult) {
-        rocketMQTemplate.asyncSend(topic,imSendResult, new SendCallback() {
+    private void asyncSendToMQ(String topic, IMSendResult<Object> imSendResult) {
+        rocketMQTemplate.asyncSend(topic, imSendResult, new SendCallback() {
             @Override
             public void onSuccess(SendResult sendResult) {
-                log.info("消息发送结果回推成功:msg,{}",imSendResult.getData());
+                log.info("消息发送结果回推成功:msg,{}", imSendResult.getData());
             }
 
             @Override
             public void onException(Throwable throwable) {
                 throw new RuntimeException(throwable);
             }
-        },5000);
+        }, 5000);
     }
 }

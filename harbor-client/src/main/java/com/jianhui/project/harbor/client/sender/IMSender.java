@@ -31,7 +31,7 @@ public interface IMSender {
     /**
      * 获取在线的userId和对应的所有终端
      */
-    Map<Long,List<IMTerminalType>> getOnlineTerminal(List<Long> userIds);
+    Map<Long, List<IMTerminalType>> getOnlineTerminal(List<Long> userIds);
 
     /**
      * 该id用户是否在线

@@ -6,10 +6,10 @@ import com.jianhui.project.harbor.platform.dao.entity.GroupMember;
 import java.util.List;
 
 /**
-* @author wjh2
-* @description 针对表【t_group_member(群成员)】的数据库操作Service
-* @createDate 2025-05-04 18:24:57
-*/
+ * @author wjh2
+ * @description 针对表【t_group_member(群成员)】的数据库操作Service
+ * @createDate 2025-05-04 18:24:57
+ */
 public interface GroupMemberService extends IService<GroupMember> {
 
     /**
@@ -44,7 +44,6 @@ public interface GroupMemberService extends IService<GroupMember> {
      * @return 群聊成员列表
      */
     List<GroupMember> findByGroupId(Long groupId);
-
 
 
     /**
@@ -83,8 +82,8 @@ public interface GroupMemberService extends IService<GroupMember> {
      * 用户用户是否在群中
      *
      * @param groupId 群聊id
-     * @param userIds  用户id
+     * @param userIds 用户id
      */
-    Boolean isInGroup(Long groupId,List<Long> userIds);
+    Boolean isInGroup(Long groupId, List<Long> userIds);
 
 }

@@ -9,9 +9,10 @@ import java.util.Date;
 
 /**
  * 群
+ *
  * @TableName t_group
  */
-@TableName(value ="t_group")
+@TableName(value = "t_group")
 @Data
 public class Group {
     /**

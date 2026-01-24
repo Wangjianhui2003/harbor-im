@@ -9,9 +9,10 @@ import java.util.Date;
 
 /**
  * 好友
+ *
  * @TableName t_friend
  */
-@TableName(value ="t_friend")
+@TableName(value = "t_friend")
 @Data
 public class Friend {
     /**

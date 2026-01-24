@@ -30,12 +30,12 @@ public class WebRTCPrivateSession {
     private Integer acceptorTerminal;
 
     /**
-     *  通话模式
+     * 通话模式
      */
     private String mode;
 
     /**
      * 开始聊天时间戳
      */
-    private Long  chatTimeStamp;
+    private Long chatTimeStamp;
 }

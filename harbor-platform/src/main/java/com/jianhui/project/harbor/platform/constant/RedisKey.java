@@ -12,7 +12,7 @@ public class RedisKey {
     public static final long CHECK_CODE_EXPIRE_TIME = 5 * 60;
 
     /**
-     *  前缀，后接用户id，redis里有值说明该用户忙线
+     * 前缀，后接用户id，redis里有值说明该用户忙线
      */
     public static final String IM_USER_BUSY = "im:user:busy";
     /**
@@ -50,7 +50,7 @@ public class RedisKey {
     /**
      * 缓存群聊信息
      */
-    public static final String IM_CACHE_GROUP =  "im:cache:group";
+    public static final String IM_CACHE_GROUP = "im:cache:group";
     /**
      * 缓存群聊成员id
      */

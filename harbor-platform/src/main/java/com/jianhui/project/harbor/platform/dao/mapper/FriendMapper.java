@@ -5,7 +5,6 @@ import com.jianhui.project.harbor.platform.dao.entity.Friend;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -27,8 +26,8 @@ public interface FriendMapper extends BaseMapper<Friend> {
     /**
      * 更改好友昵称
      *
-     * @param remark 备注
-     * @param userId 使用者id
+     * @param remark   备注
+     * @param userId   使用者id
      * @param friendId 好友id
      * @return
      */
@@ -36,6 +35,7 @@ public interface FriendMapper extends BaseMapper<Friend> {
 
     /**
      * 更新好友表里自己的昵称和头像
+     *
      * @param friendNickname
      * @param friendHeadImage
      * @param friendId

@@ -73,10 +73,10 @@ public class IMChannelHandler extends SimpleChannelInboundHandler<IMSendInfo> {
      */
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if(evt instanceof IdleStateEvent){
+        if (evt instanceof IdleStateEvent) {
             IdleState state = ((IdleStateEvent) evt).state();
             //是未读闲置事件
-            if(state == IdleState.READER_IDLE){
+            if (state == IdleState.READER_IDLE) {
                 // 在规定时间内没有收到客户端的上行数据, 主动断开连接
                 AttributeKey<Long> attr = AttributeKey.valueOf("USER_ID");
                 Long userId = ctx.channel().attr(attr).get();
@@ -85,8 +85,8 @@ public class IMChannelHandler extends SimpleChannelInboundHandler<IMSendInfo> {
                 log.info("心跳超时，即将断开连接,用户id:{},终端类型:{} ", userId, terminal);
                 ctx.channel().close();
             }
-        }else {
-            super.userEventTriggered(ctx,evt);
+        } else {
+            super.userEventTriggered(ctx, evt);
         }
     }
 }

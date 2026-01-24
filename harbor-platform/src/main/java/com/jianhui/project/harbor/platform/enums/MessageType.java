@@ -29,17 +29,17 @@ public enum MessageType {
     READED(11, "已读"),
     RECEIPT(12, "消息已读回执"),
 
-    TIP_TIME(20,"时间提示"),
-    TIP_TEXT(21,"文字提示"),
+    TIP_TIME(20, "时间提示"),
+    TIP_TEXT(21, "文字提示"),
 
-    LOADING(30,"加载中标记"),
+    LOADING(30, "加载中标记"),
 
-    ACT_RT_VOICE(40,"语音通话"),
-    ACT_RT_VIDEO(41,"视频通话"),
+    ACT_RT_VOICE(40, "语音通话"),
+    ACT_RT_VIDEO(41, "视频通话"),
 
-    USER_BANNED(50,"用户封禁"),
-    GROUP_BANNED(51,"群聊封禁"),
-    GROUP_UNBAN(52,"群聊解封"),
+    USER_BANNED(50, "用户封禁"),
+    GROUP_BANNED(51, "群聊封禁"),
+    GROUP_UNBAN(52, "群聊解封"),
 
     FRIEND_NEW(80, "新增好友"),
     FRIEND_DEL(81, "删除好友"),
@@ -56,18 +56,18 @@ public enum MessageType {
     RTC_HANGUP(106, "挂断"),
     RTC_CANDIDATE(107, "同步candidate"),
 
-    RTC_GROUP_SETUP(200,"发起群视频通话"),
-    RTC_GROUP_ACCEPT(201,"接受通话呼叫"),
-    RTC_GROUP_REJECT(202,"拒绝通话呼叫"),
-    RTC_GROUP_FAILED(203,"拒绝通话呼叫"),
-    RTC_GROUP_CANCEL(204,"取消通话呼叫"),
-    RTC_GROUP_QUIT(205,"退出通话"),
-    RTC_GROUP_INVITE(206,"邀请进入通话"),
-    RTC_GROUP_JOIN(207,"主动进入通话"),
-    RTC_GROUP_OFFER(208,"推送offer信息"),
-    RTC_GROUP_ANSWER(209,"推送answer信息"),
-    RTC_GROUP_CANDIDATE(210,"同步candidate"),
-    RTC_GROUP_DEVICE(211,"设备操作"),
+    RTC_GROUP_SETUP(200, "发起群视频通话"),
+    RTC_GROUP_ACCEPT(201, "接受通话呼叫"),
+    RTC_GROUP_REJECT(202, "拒绝通话呼叫"),
+    RTC_GROUP_FAILED(203, "拒绝通话呼叫"),
+    RTC_GROUP_CANCEL(204, "取消通话呼叫"),
+    RTC_GROUP_QUIT(205, "退出通话"),
+    RTC_GROUP_INVITE(206, "邀请进入通话"),
+    RTC_GROUP_JOIN(207, "主动进入通话"),
+    RTC_GROUP_OFFER(208, "推送offer信息"),
+    RTC_GROUP_ANSWER(209, "推送answer信息"),
+    RTC_GROUP_CANDIDATE(210, "同步candidate"),
+    RTC_GROUP_DEVICE(211, "设备操作"),
     ;
 
     private final Integer code;

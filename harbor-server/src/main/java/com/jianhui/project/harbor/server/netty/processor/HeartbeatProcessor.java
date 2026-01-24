@@ -35,24 +35,24 @@ public class HeartbeatProcessor extends AbstractMsgProcessor<IMHeartbeatInfo> {
         Long l = ctx.channel().attr(heartBeatTimes).get();
         ctx.channel().attr(heartBeatTimes).set(++l);
         // 每10次心跳延迟redis过期时间
-        if(l % 10 == 0){
+        if (l % 10 == 0) {
             AttributeKey<Long> userIdAttr = AttributeKey.valueOf(ChannelAttrKey.USER_ID);
             Long userId = ctx.channel().attr(userIdAttr).get();
             AttributeKey<Integer> terminalAttr = AttributeKey.valueOf(ChannelAttrKey.TERMINAL_TYPE);
             Integer terminal = ctx.channel().attr(terminalAttr).get();
 
-            String key = String.join(":",IMRedisKey.IM_USER_SERVER_ID, userId.toString(), terminal.toString());
-            redisMQTemplate.expire(key,IMConstant.ONLINE_TIMEOUT_SECOND, TimeUnit.SECONDS);
+            String key = String.join(":", IMRedisKey.IM_USER_SERVER_ID, userId.toString(), terminal.toString());
+            redisMQTemplate.expire(key, IMConstant.ONLINE_TIMEOUT_SECOND, TimeUnit.SECONDS);
         }
         // 记录心跳
         AttributeKey<Long> userIdAttr = AttributeKey.valueOf(ChannelAttrKey.USER_ID);
         Long userId = ctx.channel().attr(userIdAttr).get();
-        log.debug("心跳,userId:{},channel id:{}",userId,ctx.channel().id().asLongText());
+        log.debug("心跳,userId:{},channel id:{}", userId, ctx.channel().id().asLongText());
     }
 
     @Override
     public IMHeartbeatInfo transForm(Object o) {
         HashMap map = (HashMap) o;
-        return BeanUtil.fillBeanWithMap(map, new IMHeartbeatInfo(),false);
+        return BeanUtil.fillBeanWithMap(map, new IMHeartbeatInfo(), false);
     }
 }

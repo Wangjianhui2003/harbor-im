@@ -48,7 +48,6 @@ public class RedisConfig extends CachingConfigurerSupport {
     }
 
 
-
     @Bean
     public CacheManager cacheManager() {
         // 设置redis缓存管理器

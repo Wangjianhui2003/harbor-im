@@ -36,7 +36,7 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
     private final IMClient imClient;
     private final PrivateMessageService privateMessageService;
     private final UserStateUtils userStateUtils;
-    private final RedisTemplate<String,Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public void call(Long uid, String mode, String offer) {
@@ -49,19 +49,19 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         webRTCPrivateSession.setAcceptorId(uid);
         webRTCPrivateSession.setMode(mode);
         //校验
-        if (!imClient.isOnline(uid)){
+        if (!imClient.isOnline(uid)) {
             sendActMessage(webRTCPrivateSession, MessageStatus.UNSENT, "未接通(未在线)");
             log.info("RTC通话对方不在线:uid:{}", uid);
             throw new GlobalException("用户未上线");
         }
-        if (userStateUtils.isBusy(uid)){
+        if (userStateUtils.isBusy(uid)) {
             sendActMessage(webRTCPrivateSession, MessageStatus.UNSENT, "未接通(忙线)");
             log.info("忙线中:uid:{}", uid);
             throw new GlobalException("用户忙线:" + uid);
         }
         //存rtc session
         String key = getWebRTCSessionKey(session.getUserId(), uid);
-        redisTemplate.opsForValue().set(key,webRTCPrivateSession, IMConstant.RTC_PRIVATE_SESSION_TIMEOUT,TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(key, webRTCPrivateSession, IMConstant.RTC_PRIVATE_SESSION_TIMEOUT, TimeUnit.SECONDS);
 
         //设置用户忙线状态
         userStateUtils.setBusy(uid);
@@ -75,7 +75,7 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         msgVO.setContent(offer);
         msgVO.setType(messageType.code());
         IMPrivateMessage<PrivateMessageRespDTO> imMsg = new IMPrivateMessage<>();
-        imMsg.setSender(new IMUserInfo(session.getUserId(),session.getTerminal()));
+        imMsg.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         imMsg.setRecvId(uid);
         imMsg.setSendToSelf(false);
         imMsg.setIsSendBack(false);
@@ -91,7 +91,7 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         webrtcSession.setAcceptorTerminal(session.getTerminal());
         webrtcSession.setChatTimeStamp(System.currentTimeMillis());
         String key = getWebRTCSessionKey(session.getUserId(), uid);
-        redisTemplate.opsForValue().set(key, webrtcSession,IMConstant.RTC_PRIVATE_SESSION_TIMEOUT, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(key, webrtcSession, IMConstant.RTC_PRIVATE_SESSION_TIMEOUT, TimeUnit.SECONDS);
 
         // 向发起人推送接受通话信令(answer)
         PrivateMessageRespDTO msgVO = new PrivateMessageRespDTO();
@@ -101,7 +101,7 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         msgVO.setType(MessageType.RTC_ACCEPT.code());
 
         IMPrivateMessage<PrivateMessageRespDTO> imMsg = new IMPrivateMessage<>();
-        imMsg.setSender(new IMUserInfo(session.getUserId(),session.getTerminal()));
+        imMsg.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         imMsg.setRecvId(uid);
         //告诉自己其他终端已接收
         imMsg.setSendToSelf(true);
@@ -263,9 +263,10 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
 
     /**
      * 给双方发送通话消息
+     *
      * @param rtcSession 会话
-     * @param status 信息状态 （有时候可以直接设置为已读）
-     * @param content 内容
+     * @param status     信息状态 （有时候可以直接设置为已读）
+     * @param content    内容
      */
     private void sendActMessage(WebRTCPrivateSession rtcSession, MessageStatus status, String content) {
         //判断通话类型
@@ -282,7 +283,7 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         PrivateMessageRespDTO msgVO = BeanUtils.copyProperties(privateMessage, PrivateMessageRespDTO.class);
         IMPrivateMessage<PrivateMessageRespDTO> imMsg = new IMPrivateMessage<>();
         //推给发送方
-        imMsg.setSender(new IMUserInfo(rtcSession.getCallerId(),rtcSession.getCallerTerminal()));
+        imMsg.setSender(new IMUserInfo(rtcSession.getCallerId(), rtcSession.getCallerTerminal()));
         imMsg.setRecvId(rtcSession.getCallerId());
         imMsg.setIsSendBack(true);
         imMsg.setSendToSelf(false);
@@ -337,8 +338,8 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
      */
     private String chatTimeText(WebRTCPrivateSession rtcSession) {
         long chatTime = (System.currentTimeMillis() - rtcSession.getChatTimeStamp()) / 1000;
-        int min = Math.abs((int)chatTime / 60);
-        int sec = Math.abs((int)chatTime % 60);
+        int min = Math.abs((int) chatTime / 60);
+        int sec = Math.abs((int) chatTime % 60);
         String strTime = min < 10 ? "0" : "";
         strTime += min;
         strTime += ":";

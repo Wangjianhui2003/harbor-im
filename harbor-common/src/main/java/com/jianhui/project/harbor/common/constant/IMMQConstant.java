@@ -28,9 +28,9 @@ public class IMMQConstant {
     /**
      * 消息发送结果消费者组,后接appName
      */
-    public static final String GROUP_RESULT_MSG_CONSUMER_PREFIX =  "im_group-msg-result-consumer-group_";
+    public static final String GROUP_RESULT_MSG_CONSUMER_PREFIX = "im_group-msg-result-consumer-group_";
 
-    public static final String PRIVATE_RESULT_MSG_CONSUMER_PREFIX =  "im_private-msg-result-consumer-group_";
+    public static final String PRIVATE_RESULT_MSG_CONSUMER_PREFIX = "im_private-msg-result-consumer-group_";
 
     public static final String PRIVATE_MSG_CONSUMER_GROUP = "im_private-msg-consumer-group_";
 

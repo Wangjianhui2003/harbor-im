@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.TreeSet;
 
-class Student{
+class Student {
     public String name;
     public String sex;
 

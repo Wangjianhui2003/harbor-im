@@ -21,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, GroupMember>
-    implements GroupMemberService{
+        implements GroupMemberService {
 
     private final GroupMemberMapper groupMemberMapper;
 
@@ -45,12 +45,12 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
 
     @Override
     public GroupMember findByGroupAndUserId(Long groupId, Long userId) {
-        return groupMemberMapper.getOneByGroupIdAndUserId(groupId,userId);
+        return groupMemberMapper.getOneByGroupIdAndUserId(groupId, userId);
     }
 
     @Override
     public List<GroupMember> findByUserId(Long userId) {
-        return groupMemberMapper.getByUserIdAndQuit(userId,false);
+        return groupMemberMapper.getByUserIdAndQuit(userId, false);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         Date date = new Date();
         //一个月前
         DateTimeUtils.addMonths(date, -1);
-        return groupMemberMapper.findByUserIdAndQuitAndQuitTimeAfter(userId,true,date);
+        return groupMemberMapper.findByUserIdAndQuitAndQuitTimeAfter(userId, true, date);
     }
 
     @Override
@@ -69,21 +69,21 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
     @Cacheable(key = "#groupId")
     @Override
     public List<Long> findUserIdsByGroupId(Long groupId) {
-        return groupMemberMapper.findUserIdByGroupIdAndQuit(groupId,false);
+        return groupMemberMapper.findUserIdByGroupIdAndQuit(groupId, false);
     }
 
     @CacheEvict(key = "#groupId")
     @Override
     public void removeByGroupId(Long groupId) {
-        int num = groupMemberMapper.updateQuitAndQuitTimeByGroupId(true,new Date(),groupId);
-        log.debug("从群移除(逻辑):groupId:{},群成员数量:{}",groupId,num);
+        int num = groupMemberMapper.updateQuitAndQuitTimeByGroupId(true, new Date(), groupId);
+        log.debug("从群移除(逻辑):groupId:{},群成员数量:{}", groupId, num);
     }
 
     @CacheEvict(key = "#groupId")
     @Override
     public void removeByGroupAndUserId(Long groupId, Long userId) {
-        groupMemberMapper.updateQuitAndQuitTimeByGroupIdAndUserId(true,new Date(),groupId,userId);
-        log.debug("逻辑移除群成员:groupId:{},userId:{}",groupId,userId);
+        groupMemberMapper.updateQuitAndQuitTimeByGroupIdAndUserId(true, new Date(), groupId, userId);
+        log.debug("逻辑移除群成员:groupId:{},userId:{}", groupId, userId);
     }
 
     @Override

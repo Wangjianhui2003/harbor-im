@@ -29,7 +29,7 @@ public interface GroupMessageService extends IService<GroupMessage> {
      *
      * @param minId 消息起始id
      */
-    void  pullOfflineMessage(Long minId);
+    void pullOfflineMessage(Long minId);
 
     /**
      * 消息已读,同步其他终端，清空未读数量
@@ -40,11 +40,13 @@ public interface GroupMessageService extends IService<GroupMessage> {
 
     /**
      * 查询群里消息已读用户id列表
-     * @param groupId 群里id
+     *
+     * @param groupId   群里id
      * @param messageId 消息id
      * @return 已读用户id集合
      */
-    List<Long> findReadedUsers(Long groupId,Long messageId);
+    List<Long> findReadedUsers(Long groupId, Long messageId);
+
     /**
      * 拉取历史聊天记录
      *

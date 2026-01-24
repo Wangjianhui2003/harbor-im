@@ -5,24 +5,24 @@
 <mapper namespace="com.jianhui.project.harbor.platform.dao.mapper.UserMapper">
 
     <resultMap id="BaseResultMap" type="com.jianhui.project.harbor.platform.dao.entity.User">
-            <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="username" column="username" jdbcType="VARCHAR"/>
-            <result property="nickname" column="nickname" jdbcType="VARCHAR"/>
-            <result property="headImage" column="head_image" jdbcType="VARCHAR"/>
-            <result property="headImageThumb" column="head_image_thumb" jdbcType="VARCHAR"/>
-            <result property="password" column="password" jdbcType="VARCHAR"/>
-            <result property="email" column="email" jdbcType="VARCHAR"/>
-            <result property="phoneNumber" column="phone_number" jdbcType="VARCHAR"/>
-            <result property="sex" column="sex" jdbcType="TINYINT"/>
-            <result property="isBanned" column="is_banned" jdbcType="TINYINT"/>
-            <result property="reason" column="reason" jdbcType="VARCHAR"/>
-            <result property="type" column="type" jdbcType="SMALLINT"/>
-            <result property="addType" column="add_type" jdbcType="TINYINT"/>
-            <result property="signature" column="signature" jdbcType="VARCHAR"/>
-            <result property="lastLoginTime" column="last_login_time" jdbcType="TIMESTAMP"/>
-            <result property="region" column="region" jdbcType="VARCHAR"/>
-            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
-            <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="username" column="username" jdbcType="VARCHAR"/>
+        <result property="nickname" column="nickname" jdbcType="VARCHAR"/>
+        <result property="headImage" column="head_image" jdbcType="VARCHAR"/>
+        <result property="headImageThumb" column="head_image_thumb" jdbcType="VARCHAR"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="phoneNumber" column="phone_number" jdbcType="VARCHAR"/>
+        <result property="sex" column="sex" jdbcType="TINYINT"/>
+        <result property="isBanned" column="is_banned" jdbcType="TINYINT"/>
+        <result property="reason" column="reason" jdbcType="VARCHAR"/>
+        <result property="type" column="type" jdbcType="SMALLINT"/>
+        <result property="addType" column="add_type" jdbcType="TINYINT"/>
+        <result property="signature" column="signature" jdbcType="VARCHAR"/>
+        <result property="lastLoginTime" column="last_login_time" jdbcType="TIMESTAMP"/>
+        <result property="region" column="region" jdbcType="VARCHAR"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Base_Column_List">

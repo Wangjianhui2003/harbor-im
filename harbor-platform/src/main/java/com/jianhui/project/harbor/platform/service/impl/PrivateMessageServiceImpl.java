@@ -68,11 +68,11 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         Long userId = SessionContext.getSession().getUserId();
         long offset = (page - 1) * size;
         //查询
-        List<PrivateMessage> msgList = privateMessageMapper.pageHistoryMsg(userId, friendId, offset, size,MessageStatus.RECALL.code());
+        List<PrivateMessage> msgList = privateMessageMapper.pageHistoryMsg(userId, friendId, offset, size, MessageStatus.RECALL.code());
         //转为VO
         List<PrivateMessageRespDTO> msgVOList = msgList.stream()
                 .map(m -> BeanUtils.copyProperties(m, PrivateMessageRespDTO.class)).toList();
-        log.info("拉取聊天记录，用户id:{},好友id:{}，数量:{}", userId, friendId,msgVOList.size());
+        log.info("拉取聊天记录，用户id:{},好友id:{}，数量:{}", userId, friendId, msgVOList.size());
         return msgVOList;
     }
 
@@ -84,9 +84,9 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         int months = session.getTerminal().equals(IMTerminalType.APP.code()) ? 1 : 3;
         Date minDate = DateUtils.addMonths(new Date(), -months);
         // 查询
-        List<PrivateMessage> msgList = privateMessageMapper.getOfflineMsg(session.getUserId(),minId,minDate,MessageStatus.RECALL.code());
+        List<PrivateMessage> msgList = privateMessageMapper.getOfflineMsg(session.getUserId(), minId, minDate, MessageStatus.RECALL.code());
         // 推送
-        for(PrivateMessage msg : msgList) {
+        for (PrivateMessage msg : msgList) {
             PrivateMessageRespDTO msgVO = BeanUtils.copyProperties(msg, PrivateMessageRespDTO.class);
             IMPrivateMessage<PrivateMessageRespDTO> sendMessage = new IMPrivateMessage<>();
             sendMessage.setSender(new IMUserInfo(msg.getSendId(), IMTerminalType.WEB.code()));
@@ -98,7 +98,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
             imClient.sendPrivateMessage(sendMessage);
         }
         sendLoadingMessage(false);
-        log.info("拉取私聊消息，用户id:{},数量:{}", session.getUserId(),msgList.size());
+        log.info("拉取私聊消息，用户id:{},数量:{}", session.getUserId(), msgList.size());
     }
 
     @Transactional
@@ -112,7 +112,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         if (!msg.getSendId().equals(session.getUserId())) {
             throw new GlobalException("这条消息不是由您发送,无法撤回");
         }
-        if(System.currentTimeMillis() - msg.getSendTime().getTime() > IMConstant.ALLOW_RECALL_SECOND * 1000){
+        if (System.currentTimeMillis() - msg.getSendTime().getTime() > IMConstant.ALLOW_RECALL_SECOND * 1000) {
             throw new GlobalException("消息已发送超过5分钟，无法撤回");
         }
         // 修改消息状态
@@ -178,7 +178,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
     public Long getMaxReadedId(Long friendId) {
         UserSession session = SessionContext.getSession();
         Long maxId = privateMessageMapper.getMaxReadedMsgId(session.getUserId(), friendId, MessageStatus.READ.code());
-        if(maxId == null) {
+        if (maxId == null) {
             return -1L;
         }
         return maxId;

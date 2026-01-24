@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
         if (e instanceof GlobalException) {
             GlobalException ex = (GlobalException) e;
             // token过期是正常情况,不打印
-            if(!ex.getCode().equals(ResultCode.INVALID_TOKEN.getCode())){
+            if (!ex.getCode().equals(ResultCode.INVALID_TOKEN.getCode())) {
                 log.error("全局异常捕获:msg:{},log:{},{}", ex.getMessage(), e);
             }
             return Results.error(ex.getCode(), ex.getMessage());

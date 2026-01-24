@@ -8,8 +8,8 @@ import com.jianhui.project.harbor.server.util.SpringContextHolder;
  */
 public class ProcessorFactory {
 
-    public static AbstractMsgProcessor getProcessor(IMCmdType cmd){
-        return switch(cmd){
+    public static AbstractMsgProcessor getProcessor(IMCmdType cmd) {
+        return switch (cmd) {
             case LOGIN -> SpringContextHolder.getBean("loginProcessor");
             case HEARTBEAT -> SpringContextHolder.getBean("heartbeatProcessor");
             case PRIVATE_MESSAGE -> SpringContextHolder.getBean("privateMessageProcessor");

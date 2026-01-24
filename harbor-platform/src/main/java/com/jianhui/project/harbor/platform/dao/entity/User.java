@@ -9,9 +9,10 @@ import java.util.Date;
 
 /**
  * 用户
+ *
  * @TableName t_user
  */
-@TableName(value ="t_user")
+@TableName(value = "t_user")
 @Data
 public class User {
     /**

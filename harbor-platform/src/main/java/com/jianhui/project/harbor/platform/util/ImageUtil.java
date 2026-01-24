@@ -22,6 +22,7 @@ public final class ImageUtil {
 
     /**
      * 根据指定大小压缩图片
+     *
      * @param imageBytes  源图片字节数组
      * @param desFileSize 指定图片大小，单位kb
      * @return 压缩质量后的图片字节数组
@@ -52,6 +53,7 @@ public final class ImageUtil {
 
     /**
      * 自动调节精度(经验数值)
+     *
      * @param size 源图片大小
      * @return 图片压缩质量比
      */

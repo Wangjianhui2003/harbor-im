@@ -4,7 +4,7 @@ import java.lang.annotation.*;
 import java.util.concurrent.TimeUnit;
 
 /**
- *  防止表单重复提交注解
+ * 防止表单重复提交注解
  */
 @Inherited
 @Target(ElementType.METHOD)

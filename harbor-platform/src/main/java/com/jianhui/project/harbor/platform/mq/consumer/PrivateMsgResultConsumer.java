@@ -58,9 +58,9 @@ public class PrivateMsgResultConsumer implements ApplicationRunner {
                     byte[] body = msg.getBody();
                     String string = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(body)).toString();
                     IMSendResult imSendResult = JSON.parseObject(string, IMSendResult.class);
-                    JSONObject jsonObject = (JSONObject)imSendResult.getData();
+                    JSONObject jsonObject = (JSONObject) imSendResult.getData();
                     PrivateMessageRespDTO msgVO = jsonObject.toJavaObject(PrivateMessageRespDTO.class);
-                    if (imSendResult.getCode().equals(IMSendCode.SUCCESS.code()) && msgVO.getId() != null){
+                    if (imSendResult.getCode().equals(IMSendCode.SUCCESS.code()) && msgVO.getId() != null) {
                         messageIds.add(msgVO.getId());
                         log.info("消息送达，消息id:{}，发送者:{},接收者:{},终端:{}",
                                 msgVO.getId(),
@@ -70,7 +70,7 @@ public class PrivateMsgResultConsumer implements ApplicationRunner {
                     }
                 }
                 //
-                if(CollUtil.isNotEmpty(messageIds)){
+                if (CollUtil.isNotEmpty(messageIds)) {
                     UpdateWrapper<PrivateMessage> updateWrapper = new UpdateWrapper<>();
                     updateWrapper.lambda().in(PrivateMessage::getId, messageIds)
                             .eq(PrivateMessage::getStatus, MessageStatus.UNSENT.code())

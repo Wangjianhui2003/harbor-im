@@ -23,7 +23,7 @@ public class IMServerGroup implements CommandLineRunner {
 
     private final List<IMServer> imServers;
 
-    private final ApplicationEventPublisher  publisher;
+    private final ApplicationEventPublisher publisher;
 
     public boolean isReady() {
         for (IMServer imServer : imServers) {
@@ -38,7 +38,7 @@ public class IMServerGroup implements CommandLineRunner {
     public void run(String... args) throws Exception {
         String key = IMRedisKey.IM_MAX_SERVER_ID;
         //为当前ServerGroup的id赋值
-        serverId = redisMQTemplate.opsForValue().increment(key,1);
+        serverId = redisMQTemplate.opsForValue().increment(key, 1);
         for (IMServer imServer : imServers) {
             imServer.start();
         }
@@ -46,8 +46,8 @@ public class IMServerGroup implements CommandLineRunner {
     }
 
     @PreDestroy
-    public void destory(){
-        log.info("IMServerGroup:{} destroy",serverId);
+    public void destory() {
+        log.info("IMServerGroup:{} destroy", serverId);
         for (IMServer imServer : imServers) {
             imServer.stop();
         }

@@ -88,7 +88,7 @@ public class RedisIMSender implements IMSender {
                     recvInfo.setIsSendBack(message.getIsSendBack());
                     recvInfo.setReceivers(List.of(new IMUserInfo(message.getRecvId(), terminal)));
                     recvInfo.setData(message.getData());
-                    asyncSendToMQ(IMMQConstant.PRIVATE_MSG_TOPIC_PREFIX + serverId,recvInfo);
+                    asyncSendToMQ(IMMQConstant.PRIVATE_MSG_TOPIC_PREFIX + serverId, recvInfo);
                 } else {
                     //离线用户
                     IMSendResult result = new IMSendResult();
@@ -109,8 +109,8 @@ public class RedisIMSender implements IMSender {
                     continue;
                 }
                 String key = String.join(":", IMRedisKey.IM_USER_SERVER_ID, sender.getId().toString(), sender.getTerminal().toString());
-                Integer serverId = (Integer)redisMQTemplate.opsForValue().get(key);
-                if(serverId != null){
+                Integer serverId = (Integer) redisMQTemplate.opsForValue().get(key);
+                if (serverId != null) {
                     IMRecvInfo recvInfo = new IMRecvInfo();
                     // 自己的消息不需要回推消息发送结果
                     recvInfo.setIsSendBack(false);
@@ -119,11 +119,11 @@ public class RedisIMSender implements IMSender {
                     recvInfo.setReceivers(Collections.singletonList(new IMUserInfo(message.getSender().getId(), terminal)));
                     recvInfo.setData(message.getData());
                     //发送
-                    asyncSendToMQ(IMMQConstant.PRIVATE_MSG_TOPIC_PREFIX + serverId,recvInfo);
+                    asyncSendToMQ(IMMQConstant.PRIVATE_MSG_TOPIC_PREFIX + serverId, recvInfo);
                 }
             }
         }
-        if(message.getIsSendBack() && !results.isEmpty()){
+        if (message.getIsSendBack() && !results.isEmpty()) {
             //TODO:multicast
         }
     }
@@ -131,25 +131,25 @@ public class RedisIMSender implements IMSender {
     @Override
     public <T> void sendGroupMessage(IMGroupMessage<T> message) {
         log.info("发送群消息:{}", message);
-        Map<String,IMUserInfo> sendMap = new HashMap<>();
+        Map<String, IMUserInfo> sendMap = new HashMap<>();
         for (Integer terminal : message.getRecvTerminals()) {
             for (Long recvId : message.getRecvIds()) {
                 String key = String.join(":", IMRedisKey.IM_USER_SERVER_ID, recvId.toString(), terminal.toString());
-                sendMap.put(key,new IMUserInfo(recvId,terminal));
+                sendMap.put(key, new IMUserInfo(recvId, terminal));
             }
         }
         //批量获取serverId
         List<Object> serverIds = redisMQTemplate.opsForValue().multiGet(sendMap.keySet());
-        Map<Integer,List<IMUserInfo>> serverMap = new HashMap<>();
+        Map<Integer, List<IMUserInfo>> serverMap = new HashMap<>();
         List<IMUserInfo> offLineUsers = new LinkedList<>();
         //按serverId分组
         int idx = 0;
         for (Map.Entry<String, IMUserInfo> entry : sendMap.entrySet()) {
-            Integer serverId = (Integer)serverIds.get(idx++);
-            if (serverId != null){
+            Integer serverId = (Integer) serverIds.get(idx++);
+            if (serverId != null) {
                 List<IMUserInfo> list = serverMap.computeIfAbsent(serverId, o -> new LinkedList<>());
                 list.add(entry.getValue());
-            }else {
+            } else {
                 // 加入离线列表
                 offLineUsers.add(entry.getValue());
             }
@@ -164,7 +164,7 @@ public class RedisIMSender implements IMSender {
             recvInfo.setServiceName(appName);
             recvInfo.setData(message.getData());
             // 推送至队列
-            asyncSendToMQ(IMMQConstant.GROUP_MSG_TOPIC_PREFIX + entry.getKey(),recvInfo);
+            asyncSendToMQ(IMMQConstant.GROUP_MSG_TOPIC_PREFIX + entry.getKey(), recvInfo);
         }
         // 推送给自己的其他终端
         if (message.getSendToSelf()) {
@@ -184,34 +184,34 @@ public class RedisIMSender implements IMSender {
                     // 自己的消息不需要回推消息结果
                     recvInfo.setIsSendBack(false);
                     recvInfo.setData(message.getData());
-                    asyncSendToMQ(IMMQConstant.GROUP_MSG_TOPIC_PREFIX + serverId,recvInfo);
+                    asyncSendToMQ(IMMQConstant.GROUP_MSG_TOPIC_PREFIX + serverId, recvInfo);
                 }
             }
         }
         // 对离线用户回复消息状态
-        if(message.getIsSendBack() && !offLineUsers.isEmpty()){
+        if (message.getIsSendBack() && !offLineUsers.isEmpty()) {
             //TODO:group offline
         }
     }
 
     @Override
     public Map<Long, List<IMTerminalType>> getOnlineTerminal(List<Long> userIds) {
-        if (CollUtil.isEmpty(userIds)){
+        if (CollUtil.isEmpty(userIds)) {
             return Collections.emptyMap();
         }
         //得到userid和所有terminal的组合
-        Map<String,IMUserInfo> userMap = new HashMap<>();
+        Map<String, IMUserInfo> userMap = new HashMap<>();
         for (Long userId : userIds) {
             for (Integer terminal : IMTerminalType.codes()) {
                 String key = String.join(":", IMRedisKey.IM_USER_SERVER_ID, userId.toString(), terminal.toString());
-                userMap.put(key,new IMUserInfo(userId,terminal));
+                userMap.put(key, new IMUserInfo(userId, terminal));
             }
         }
         List<Object> serverIds = redisMQTemplate.opsForValue().multiGet(userMap.keySet());
-        Map<Long,List<IMTerminalType>> userTerminals = new HashMap<>();
+        Map<Long, List<IMTerminalType>> userTerminals = new HashMap<>();
         int idx = 0;
         for (Map.Entry<String, IMUserInfo> entry : userMap.entrySet()) {
-            if(serverIds.get(idx++) != null){
+            if (serverIds.get(idx++) != null) {
                 // serverid有值表示用户该terminal在线
                 IMUserInfo userInfo = entry.getValue();
                 List<IMTerminalType> list = userTerminals.computeIfAbsent(userInfo.getId(), o -> new LinkedList<>());
@@ -234,10 +234,11 @@ public class RedisIMSender implements IMSender {
 
     /**
      * 发送到MQ
-     * @param topic 主题
+     *
+     * @param topic    主题
      * @param recvInfo 消息
      */
-    public void asyncSendToMQ(String topic, IMRecvInfo recvInfo){
+    public void asyncSendToMQ(String topic, IMRecvInfo recvInfo) {
         String jsonString = JSON.toJSONString(recvInfo);
         rocketMQTemplate.syncSend(topic, jsonString);
 //        rocketMQTemplate.asyncSend(topic,jsonString,new SendCallback() {

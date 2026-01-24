@@ -48,7 +48,7 @@ public class GroupMsgResultConsumer implements ApplicationRunner {
                     IMSendResult imSendResult = JSON.parseObject(string, IMSendResult.class);
                     JSONObject jsonObject = (JSONObject) imSendResult.getData();
                     GroupMessageRespDTO vo = jsonObject.toJavaObject(GroupMessageRespDTO.class);
-                    if (imSendResult.getCode().equals(IMSendCode.SUCCESS.code()) && vo.getId() != null){
+                    if (imSendResult.getCode().equals(IMSendCode.SUCCESS.code()) && vo.getId() != null) {
                         log.info("群聊消息送达，消息id:{}，发送者:{},接收者:{},终端:{}",
                                 vo.getId(),
                                 imSendResult.getSender().getId(),

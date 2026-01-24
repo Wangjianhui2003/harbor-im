@@ -22,7 +22,7 @@ public class MvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(authInterceptor)
                 .excludePathPatterns(
-                        "/captcha","/login", "/logout",
+                        "/captcha", "/login", "/logout",
                         "/register", "/refreshToken",
                         "/swagger/**", "/v3/api-docs/**",
                         "/swagger-resources/**", "/swagger-ui.html",

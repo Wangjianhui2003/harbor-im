@@ -3,7 +3,7 @@ package com.jianhui.project.harbor.platform.exception.errorcode;
 /**
  * 基础错误码枚举类
  */
-public enum BaseErrorCode implements IErrorCode{
+public enum BaseErrorCode implements IErrorCode {
 
     /**
      * 基础错误码

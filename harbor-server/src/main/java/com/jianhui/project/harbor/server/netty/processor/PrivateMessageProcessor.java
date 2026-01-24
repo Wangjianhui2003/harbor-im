@@ -27,7 +27,7 @@ public class PrivateMessageProcessor extends AbstractMsgProcessor<IMRecvInfo> {
     public void process(IMRecvInfo recvInfo) {
         IMUserInfo sender = recvInfo.getSender();
         IMUserInfo receiver = recvInfo.getReceivers().get(0);
-        log.info("接收到私聊消息，发送者:{},客户端:{},接收者:{}，客户端:{},内容:{}", sender.getId(),sender.getTerminal(), receiver.getId(),receiver.getTerminal(), recvInfo.getData());
+        log.info("接收到私聊消息，发送者:{},客户端:{},接收者:{}，客户端:{},内容:{}", sender.getId(), sender.getTerminal(), receiver.getId(), receiver.getTerminal(), recvInfo.getData());
         try {
             ChannelHandlerContext channelCtx = UserChannelCxtMap.getChannelCtx(receiver.getId(), receiver.getTerminal());
             if (channelCtx != null) {
@@ -60,21 +60,21 @@ public class PrivateMessageProcessor extends AbstractMsgProcessor<IMRecvInfo> {
             result.setCode(sendCode.code());
             result.setData(recvInfo.getData());
             // 推送到结果队列
-            asyncSendToMQ(IMMQConstant.PRIVATE_RESULT_TOPIC_PREFIX + recvInfo.getServiceName(),result);
+            asyncSendToMQ(IMMQConstant.PRIVATE_RESULT_TOPIC_PREFIX + recvInfo.getServiceName(), result);
         }
     }
 
-    private void asyncSendToMQ(String topic,IMSendResult<Object> imSendResult) {
-        rocketMQTemplate.asyncSend(topic,imSendResult, new SendCallback() {
+    private void asyncSendToMQ(String topic, IMSendResult<Object> imSendResult) {
+        rocketMQTemplate.asyncSend(topic, imSendResult, new SendCallback() {
             @Override
             public void onSuccess(SendResult sendResult) {
-                log.info("私聊消息发送结果回推成功:msg:{}",imSendResult.getData());
+                log.info("私聊消息发送结果回推成功:msg:{}", imSendResult.getData());
             }
 
             @Override
             public void onException(Throwable throwable) {
                 throw new RuntimeException(throwable);
             }
-        },5000);
+        }, 5000);
     }
 }

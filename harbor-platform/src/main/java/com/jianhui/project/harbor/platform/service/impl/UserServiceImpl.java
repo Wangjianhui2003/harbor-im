@@ -188,7 +188,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //修改群聊和好友的昵称和头像
         if (!Objects.equals(user.getNickname(), userRespDTO.getNickname())
                 || !Objects.equals(user.getHeadImageThumb(), userRespDTO.getHeadImageThumb())) {
-            friendMapper.updateFriendNicknameAndFriendHeadImageByFriendId(userRespDTO.getNickname(),userRespDTO.getHeadImage(),userRespDTO.getId());
+            friendMapper.updateFriendNicknameAndFriendHeadImageByFriendId(userRespDTO.getNickname(), userRespDTO.getHeadImage(), userRespDTO.getId());
             groupMemberMapper.updateUserNicknameAndHeadImageByUserId(userRespDTO.getNickname(), userRespDTO.getHeadImageThumb(), userRespDTO.getId());
         }
         BeanUtils.copyProperties(userRespDTO, user);

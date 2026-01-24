@@ -5,18 +5,18 @@
 <mapper namespace="com.jianhui.project.harbor.platform.dao.mapper.GroupMemberMapper">
 
     <resultMap id="BaseResultMap" type="com.jianhui.project.harbor.platform.dao.entity.GroupMember">
-            <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="groupId" column="group_id" jdbcType="BIGINT"/>
-            <result property="userId" column="user_id" jdbcType="BIGINT"/>
-            <result property="userNickname" column="user_nickname" jdbcType="VARCHAR"/>
-            <result property="remarkNickname" column="remark_nickname" jdbcType="VARCHAR"/>
-            <result property="role" column="role" jdbcType="TINYINT"/>
-            <result property="headImage" column="head_image" jdbcType="VARCHAR"/>
-            <result property="remarkGroupName" column="remark_group_name" jdbcType="VARCHAR"/>
-            <result property="quit" column="quit" jdbcType="TINYINT"/>
-            <result property="quitTime" column="quit_time" jdbcType="TIMESTAMP"/>
-            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
-            <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="groupId" column="group_id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="BIGINT"/>
+        <result property="userNickname" column="user_nickname" jdbcType="VARCHAR"/>
+        <result property="remarkNickname" column="remark_nickname" jdbcType="VARCHAR"/>
+        <result property="role" column="role" jdbcType="TINYINT"/>
+        <result property="headImage" column="head_image" jdbcType="VARCHAR"/>
+        <result property="remarkGroupName" column="remark_group_name" jdbcType="VARCHAR"/>
+        <result property="quit" column="quit" jdbcType="TINYINT"/>
+        <result property="quitTime" column="quit_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Base_Column_List">

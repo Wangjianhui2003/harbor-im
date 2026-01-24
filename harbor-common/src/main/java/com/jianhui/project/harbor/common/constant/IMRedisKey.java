@@ -5,11 +5,11 @@ public final class IMRedisKey {
     /**
      * im-server最大id,从0开始递增
      */
-    public static final String  IM_MAX_SERVER_ID = "im:max_server_id";
+    public static final String IM_MAX_SERVER_ID = "im:max_server_id";
     /**
      * 用户ID所连接的IM-server的ID
      */
-    public static final String  IM_USER_SERVER_ID = "im:user:server_id";
+    public static final String IM_USER_SERVER_ID = "im:user:server_id";
     /**
      * 系统消息队列
      */

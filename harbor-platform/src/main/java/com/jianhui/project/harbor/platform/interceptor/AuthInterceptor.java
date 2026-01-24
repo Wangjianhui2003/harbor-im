@@ -23,11 +23,11 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        if(!(handler instanceof HandlerMethod)){
+        if (!(handler instanceof HandlerMethod)) {
             return true;
         }
         String token = request.getHeader("accessToken");
-        if(token == null || token.isEmpty()){
+        if (token == null || token.isEmpty()) {
             log.error("未登录，url:{}", request.getRequestURI());
             throw new GlobalException(ResultCode.NO_LOGIN);
         }
@@ -35,7 +35,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         UserSession userSession = JSON.parseObject(jsonstr, UserSession.class);
 
         //验证token
-        if(!JwtUtil.checkSign(token,jwtProperties.getAccessTokenSecret())){
+        if (!JwtUtil.checkSign(token, jwtProperties.getAccessTokenSecret())) {
             log.error("token已失效，用户:{}", userSession.getUsername());
             log.error("token:{}", token);
             throw new GlobalException(ResultCode.INVALID_TOKEN);

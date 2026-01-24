@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 /**
  * 指明Listener需要监听的发送结果的消息类型
  */
-@Target({ElementType.TYPE,ElementType.FIELD})
+@Target({ElementType.TYPE, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Component
 public @interface IMListener {

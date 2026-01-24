@@ -70,7 +70,7 @@ public class GroupController {
     @Operation(summary = "查询群聊成员", description = "查询群聊成员")
     @GetMapping("/members/{groupId}")
     public Result<List<GroupMemberRespDTO>> findGroupMembers(
-        @NotNull(message = "群聊id不能为空") @PathVariable Long groupId) {
+            @NotNull(message = "群聊id不能为空") @PathVariable Long groupId) {
         return Results.success(groupService.findGroupMembers(groupId));
     }
 
@@ -86,7 +86,7 @@ public class GroupController {
     @Operation(summary = "踢出群聊", description = "将用户踢出群聊")
     @DeleteMapping("/kick/{groupId}")
     public Result kickGroup(@NotNull(message = "群聊id不能为空") @PathVariable Long groupId,
-        @NotNull(message = "用户id不能为空") @RequestParam Long userId) {
+                            @NotNull(message = "用户id不能为空") @RequestParam Long userId) {
         groupService.kickFromGroup(groupId, userId);
         return Results.success();
     }

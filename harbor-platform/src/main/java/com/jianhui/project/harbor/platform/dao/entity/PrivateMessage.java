@@ -9,9 +9,10 @@ import java.util.Date;
 
 /**
  * 私聊消息
+ *
  * @TableName t_private_message
  */
-@TableName(value ="t_private_message")
+@TableName(value = "t_private_message")
 @Data
 public class PrivateMessage {
     /**

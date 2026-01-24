@@ -72,6 +72,7 @@ public class MinioUtil {
 
     /**
      * 上传文件(multipartFile)
+     *
      * @param bucketName 存储桶名称
      * @param path       minio存储路径
      * @param file       文件

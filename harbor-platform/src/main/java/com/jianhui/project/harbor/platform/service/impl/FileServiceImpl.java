@@ -63,7 +63,7 @@ public class FileServiceImpl implements FileService {
                 minioProps.getFilePath(),
                 file
         );
-        if(StringUtils.isBlank(filename)) {
+        if (StringUtils.isBlank(filename)) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "文件上传失败");
         }
         //访问路径
@@ -77,14 +77,14 @@ public class FileServiceImpl implements FileService {
      */
     @Override
     public UploadImageRespDTO uploadImage(MultipartFile file) {
-        try{
+        try {
             Long userId = SessionContext.getSession().getUserId();
             // 大小校验
-            if(file.getSize() > Constant.MAX_IMAGE_SIZE){
+            if (file.getSize() > Constant.MAX_IMAGE_SIZE) {
                 throw new GlobalException(ResultCode.PROGRAM_ERROR, "图片不能超过" + Constant.MAX_IMAGE_SIZE / 1024 / 1024 + "MB");
             }
             // 图片格式校验
-            if(!FileUtil.isImage(file.getOriginalFilename())){
+            if (!FileUtil.isImage(file.getOriginalFilename())) {
                 throw new GlobalException(ResultCode.PROGRAM_ERROR, "图片格式不正确");
             }
             // 上传原图
@@ -95,7 +95,7 @@ public class FileServiceImpl implements FileService {
             }
             vo.setOriginUrl(generUrl(FileType.IMAGE, fileName));
             // 大于30K的文件需上传缩略图
-            if(file.getSize() > 30 * 1024){
+            if (file.getSize() > 30 * 1024) {
                 byte[] imageByte = ImageUtil.compressForScale(file.getBytes(), 30);
                 fileName = minioUtil.upload(minioProps.getBucketName(), minioProps.getImagePath(), Objects.requireNonNull(file.getOriginalFilename()), imageByte, file.getContentType());
                 if (StringUtils.isEmpty(fileName)) {
@@ -105,7 +105,7 @@ public class FileServiceImpl implements FileService {
             vo.setThumbUrl(generUrl(FileType.IMAGE, fileName));
             log.info("文件图片成功，用户id:{},origin url:{}", userId, vo.getOriginUrl());
             return vo;
-        }catch(Exception e){
+        } catch (Exception e) {
             log.error("上传图片失败，{}", e.getMessage(), e);
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "图片上传失败");
         }

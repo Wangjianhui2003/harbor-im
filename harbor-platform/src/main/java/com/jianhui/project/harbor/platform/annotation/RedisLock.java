@@ -16,7 +16,7 @@ public @interface RedisLock {
     /**
      * key的前缀,prefixKey+key就是redis的key
      */
-    String prefixKey() ;
+    String prefixKey();
 
     /**
      * spel 表达式
