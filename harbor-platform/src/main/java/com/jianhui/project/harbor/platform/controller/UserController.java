@@ -60,5 +60,6 @@ public class UserController {
     public Result<List<UserRespDTO>> findByName(@RequestParam String name) {
         return Results.success(userService.findUserByName(name));
     }
+    
 }
 

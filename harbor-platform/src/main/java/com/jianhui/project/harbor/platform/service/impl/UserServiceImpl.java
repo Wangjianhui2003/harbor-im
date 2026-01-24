@@ -11,6 +11,7 @@ import com.jianhui.project.harbor.platform.config.props.JwtProperties;
 import com.jianhui.project.harbor.platform.dao.entity.User;
 import com.jianhui.project.harbor.platform.dao.mapper.FriendMapper;
 import com.jianhui.project.harbor.platform.dao.mapper.GroupMapper;
+import com.jianhui.project.harbor.platform.dao.mapper.GroupMemberMapper;
 import com.jianhui.project.harbor.platform.dao.mapper.UserMapper;
 import com.jianhui.project.harbor.platform.dto.request.LoginReqDTO;
 import com.jianhui.project.harbor.platform.dto.request.ModifyPwdDTO;
@@ -49,6 +50,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final FriendMapper friendMapper;
     private final GroupMapper groupMapper;
     private final IMClient imClient;
+    private final GroupMemberMapper groupMemberMapper;
 
     @Override
     public void register(RegisterReqDTO registerReqDTO) {
@@ -184,10 +186,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new GlobalException("用户不存在");
         }
         //修改群聊和好友的昵称和头像
-        if (!user.getNickname().equals(userRespDTO.getNickname())
-                || !user.getHeadImageThumb().equals(userRespDTO.getHeadImageThumb())) {
-            friendMapper.updateFriendNicknameAndThumb(userRespDTO.getId(), userRespDTO.getNickname(), userRespDTO.getHeadImageThumb());
-            groupMapper.updateMemberNicknameAndThumb(userRespDTO.getId(), userRespDTO.getNickname(), userRespDTO.getHeadImageThumb());
+        if (!Objects.equals(user.getNickname(), userRespDTO.getNickname())
+                || !Objects.equals(user.getHeadImageThumb(), userRespDTO.getHeadImageThumb())) {
+            friendMapper.updateFriendNicknameAndFriendHeadImageByFriendId(userRespDTO.getNickname(),userRespDTO.getHeadImage(),userRespDTO.getId());
+            groupMemberMapper.updateUserNicknameAndHeadImageByUserId(userRespDTO.getNickname(), userRespDTO.getHeadImageThumb(), userRespDTO.getId());
         }
         BeanUtils.copyProperties(userRespDTO, user);
         this.updateById(user);

@@ -24,6 +24,8 @@ public interface GroupMemberMapper extends BaseMapper<GroupMember> {
     int updateQuitAndQuitTimeByGroupId(@Param("quit") Boolean quit, @Param("quitTime") Date quitTime, @Param("groupId") Long groupId);
 
     int updateQuitAndQuitTimeByGroupIdAndUserId(@Param("quit") Boolean quit, @Param("quitTime") Date quitTime, @Param("groupId") Long groupId, @Param("userId") Long userId);
+
+    int updateUserNicknameAndHeadImageByUserId(@Param("userNickname") String userNickname, @Param("headImage") String headImage, @Param("userId") Long userId);
 }
 
 

@@ -10,8 +10,8 @@ public class GroupMemberRespDTO {
     @Schema(description = "用户id")
     private Long userId;
 
-    @Schema(description = "群内显示名称")
-    private String showNickname;
+    @Schema(description = "用户原昵称")
+    private String userNickname;
 
     @Schema(description = "群内昵称备注")
     private String remarkNickname;

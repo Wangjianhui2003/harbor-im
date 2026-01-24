@@ -16,9 +16,11 @@ public class FriendRespDTO {
     @Schema(description = "好友昵称")
     private String friendNickname;
 
-
     @Schema(description = "好友头像")
     private String headImage;
+
+    @Schema(description = "备注名")
+    private String remark;
 
     @Schema(description = "是否已删除")
     private Boolean deleted;

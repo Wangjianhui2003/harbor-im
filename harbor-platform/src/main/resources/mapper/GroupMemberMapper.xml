@@ -89,6 +89,12 @@
         where group_id = #{groupId,jdbcType=NUMERIC}
           AND quit = #{quit,jdbcType=BOOLEAN}
     </select>
+    <update id="updateUserNicknameAndHeadImageByUserId">
+        update t_group_member
+        set user_nickname = #{userNickname,jdbcType=VARCHAR},
+            head_image    = #{headImage,jdbcType=VARCHAR}
+        where user_id = #{userId,jdbcType=NUMERIC}
+    </update>
 
 
 </mapper>

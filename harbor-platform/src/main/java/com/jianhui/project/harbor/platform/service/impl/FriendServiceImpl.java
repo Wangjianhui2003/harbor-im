@@ -99,6 +99,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         FriendRespDTO friendRespDTO = new FriendRespDTO();
         friendRespDTO.setId(friend.getFriendId());
         friendRespDTO.setFriendNickname(friend.getFriendNickname());
+        friendRespDTO.setRemark(friend.getRemark());
         friendRespDTO.setDeleted(friend.getDeleted());
         friendRespDTO.setHeadImage(friend.getFriendHeadImage());
         return friendRespDTO;

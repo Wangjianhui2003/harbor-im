@@ -305,7 +305,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         //返回VO，在线的排前面
         return members.stream().map(m -> {
             GroupMemberRespDTO vo = BeanUtils.copyProperties(m, GroupMemberRespDTO.class);
-            vo.setShowNickname(m.getShowNickname());
+            vo.setUserNickname(m.getUserNickname());
             vo.setShowGroupName(StrUtil.blankToDefault(m.getRemarkGroupName(), group.getName()));
             vo.setOnline(onlineUserIds.contains(m.getUserId()));
             return vo;

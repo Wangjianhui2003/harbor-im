@@ -5,6 +5,7 @@ import com.jianhui.project.harbor.platform.dao.entity.Friend;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -18,21 +19,31 @@ public interface FriendMapper extends BaseMapper<Friend> {
     List<Friend> findAllFriendsByUserId(Long userId);
 
     @Select("select * from t_friend where user_id = #{userId} and friend_id = #{friendId}")
-    Friend getByUserIdAndFriendId(Long userId,Long friendId);
+    Friend getByUserIdAndFriendId(Long userId, Long friendId);
 
     @Update("update t_friend set deleted = #{b} where user_id = #{userId} and friend_id = #{friendId}")
     boolean setUnbind(Long userId, Long friendId, boolean b);
 
     /**
      * 更改好友昵称
-     * @param remark
-     * @param userId
-     * @param friendId
+     *
+     * @param remark 备注
+     * @param userId 使用者id
+     * @param friendId 好友id
      * @return
      */
     int updateFriendNicknameByUserIdAndFriendId(@Param("remark") String remark, @Param("userId") Long userId, @Param("friendId") Long friendId);
-}
 
+    /**
+     * 更新好友表里自己的昵称和头像
+     * @param friendNickname
+     * @param friendHeadImage
+     * @param friendId
+     * @return
+     */
+    int updateFriendNicknameAndFriendHeadImageByFriendId(@Param("friendNickname") String friendNickname, @Param("friendHeadImage") String friendHeadImage, @Param("friendId") Long friendId);
+
+}
 
 
 

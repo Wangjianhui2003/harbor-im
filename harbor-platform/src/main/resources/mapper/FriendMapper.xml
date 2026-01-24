@@ -27,4 +27,12 @@
         where user_id = #{userId,jdbcType=NUMERIC}
           AND friend_id = #{friendId,jdbcType=NUMERIC}
     </update>
+    <update id="updateFriendNicknameAndFriendHeadImageByFriendId">
+        update t_friend
+        set friend_nickname   = #{friendNickname,jdbcType=VARCHAR},
+            friend_head_image = #{friendHeadImage,jdbcType=VARCHAR}
+        where friend_id = #{friendId,jdbcType=NUMERIC}
+    </update>
+
+
 </mapper>

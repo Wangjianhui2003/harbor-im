@@ -34,7 +34,6 @@
         <minio.version>8.5.1</minio.version>
         <redisson.version>3.21.3</redisson.version>
         <commons-lang3.version>3.8.1</commons-lang3.version>
-        <lombok.version>1.18.32</lombok.version>
         <mybatis.spring.version>3.0.3</mybatis.spring.version>
     </properties>
 
