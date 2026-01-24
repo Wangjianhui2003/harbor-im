@@ -122,7 +122,7 @@ public class RequestFriendServiceImpl extends ServiceImpl<RequestFriendMapper, R
 
         // 如果同意，则建立好友关系
         if (RequestStatus.ACCEPTED.code().equals(dto.getStatus())) {
-            friendService.addFriend(request.getReceiveUserId());
+            friendService.addFriend(request.getRequestUserId());
             log.info("同意好友请求，请求id:{}", dto.getId());
         } else {
             log.info("拒绝好友请求，请求id:{}", dto.getId());

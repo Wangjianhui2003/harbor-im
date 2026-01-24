@@ -25,7 +25,6 @@ public interface FriendMapper extends BaseMapper<Friend> {
 
     /**
      * 更改好友昵称
-     *
      * @param remark
      * @param userId
      * @param friendId

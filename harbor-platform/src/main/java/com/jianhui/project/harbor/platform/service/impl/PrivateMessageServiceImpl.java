@@ -193,6 +193,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         UserSession session = SessionContext.getSession();
         PrivateMessageRespDTO msgInfo = new PrivateMessageRespDTO();
         msgInfo.setType(MessageType.LOADING.code());
+        msgInfo.setStatus(MessageStatus.UNSENT.code());
         //加载标识
         msgInfo.setContent(isLoading.toString());
         IMPrivateMessage<PrivateMessageRespDTO> sendMessage = new IMPrivateMessage<>();

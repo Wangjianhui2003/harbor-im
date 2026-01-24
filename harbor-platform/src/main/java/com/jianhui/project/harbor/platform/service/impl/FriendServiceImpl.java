@@ -76,9 +76,9 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
     @Override
     public Boolean isFriend(Long userId1, Long userId2) {
         LambdaQueryWrapper<Friend> wrapper = Wrappers.lambdaQuery(Friend.class)
-                .eq(Friend::getUserId,userId1)
-                .eq(Friend::getFriendId,userId2)
-                .eq(Friend::getDeleted,false);
+                .eq(Friend::getUserId, userId1)
+                .eq(Friend::getFriendId, userId2)
+                .eq(Friend::getDeleted, false);
         return exists(wrapper);
     }
 
@@ -97,7 +97,6 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
      */
     private FriendRespDTO convertToFriendVO(Friend friend) {
         FriendRespDTO friendRespDTO = new FriendRespDTO();
-        //将friendId作为FriendVO的id
         friendRespDTO.setId(friend.getFriendId());
         friendRespDTO.setFriendNickname(friend.getFriendNickname());
         friendRespDTO.setDeleted(friend.getDeleted());
@@ -109,13 +108,10 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
     @Override
     public void addFriend(Long friendId) {
         long userId = SessionContext.getSession().getUserId();
-        if (friendId.equals(userId)) {
-            throw new GlobalException("不允许添加自己为好友");
-        }
         //使用代理调用，避免aop(spring cache)失效
         FriendServiceImpl proxy = (FriendServiceImpl) AopContext.currentProxy();
-        proxy.bindFriend(userId,friendId);
-        proxy.bindFriend(friendId,userId);
+        proxy.bindFriend(userId, friendId);
+        proxy.bindFriend(friendId, userId);
         sendAddTipMessage(friendId);
         log.info("添加好友，用户id:{},好友id:{}", userId, friendId);
     }
@@ -125,7 +121,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
     public void delFriend(Long friendId) {
         Long userId = SessionContext.getSession().getUserId();
         // 互相解除好友关系，走代理清理缓存
-        FriendServiceImpl proxy = (FriendServiceImpl)AopContext.currentProxy();
+        FriendServiceImpl proxy = (FriendServiceImpl) AopContext.currentProxy();
         proxy.unbindFriend(userId, friendId);
         proxy.unbindFriend(friendId, userId);
         // 推送解除好友提示
@@ -151,7 +147,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
     }
 
     @CacheEvict(key = "#userId + ':' + #friendId")
-    public void unbindFriend(Long userId,Long friendId){
+    public void unbindFriend(Long userId, Long friendId) {
         // 逻辑删除
         boolean b = friendMapper.setUnbind(userId, friendId, true);
         // 推送好友变化信息
@@ -178,6 +174,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
 
     /**
      * 发送好友删除消息
+     *
      * @param userId
      * @param friendId
      */
@@ -199,6 +196,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
 
     /**
      * 添加好友提示
+     *
      * @param friendId
      */
     private void sendAddTipMessage(Long friendId) {
@@ -215,7 +213,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         PrivateMessageRespDTO msgVO = BeanUtils.copyProperties(msg, PrivateMessageRespDTO.class);
         IMPrivateMessage<PrivateMessageRespDTO> imMsg = new IMPrivateMessage<>();
         imMsg.setData(msgVO);
-        imMsg.setSender(new IMUserInfo(session.getUserId(),session.getTerminal()));
+        imMsg.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         imMsg.setRecvId(friendId);
         imMsg.setSendToSelf(false);
         imClient.sendPrivateMessage(imMsg);
@@ -226,9 +224,10 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
 
     /**
      * 发送删除好友提示信息
+     *
      * @param friendId
      */
-    private void sendDelTipMessage(Long friendId){
+    private void sendDelTipMessage(Long friendId) {
         UserSession session = SessionContext.getSession();
         // 推送好友状态信息
         PrivateMessage msg = new PrivateMessage();
