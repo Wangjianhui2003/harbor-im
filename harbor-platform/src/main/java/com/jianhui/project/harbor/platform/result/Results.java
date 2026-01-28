@@ -31,12 +31,8 @@ public final class Results {
         return result;
     }
 
-    public static <T> Result<T> success(String messsage) {
-        Result<T> result = new Result<>();
-        result.setCode(ResultCode.SUCCESS.getCode());
-        result.setMessage(messsage);
-        return result;
-    }
+    // NOTE: Removed success(String message) method because it caused ambiguity
+    // with success(T data) when T is String, leading to data being put in message field
 
     public static <T> Result<T> error(Integer code, String messsage) {
         Result<T> result = new Result<>();
