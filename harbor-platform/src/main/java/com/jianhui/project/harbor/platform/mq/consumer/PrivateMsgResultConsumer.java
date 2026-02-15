@@ -1,8 +1,8 @@
 package com.jianhui.project.harbor.platform.mq.consumer;
 
 import cn.hutool.core.collection.CollUtil;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.jianhui.project.harbor.common.constant.IMMQConstant;
 import com.jianhui.project.harbor.common.enums.IMSendCode;

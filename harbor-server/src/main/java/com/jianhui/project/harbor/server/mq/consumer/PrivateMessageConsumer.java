@@ -1,6 +1,6 @@
 package com.jianhui.project.harbor.server.mq.consumer;
 
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.jianhui.project.harbor.common.constant.IMMQConstant;
 import com.jianhui.project.harbor.common.enums.IMCmdType;
 import com.jianhui.project.harbor.common.model.IMRecvInfo;

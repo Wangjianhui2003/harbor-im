@@ -1,7 +1,7 @@
 package com.jianhui.project.harbor.server.netty.processor;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.jianhui.project.harbor.common.constant.IMConstant;
 import com.jianhui.project.harbor.common.constant.IMRedisKey;
 import com.jianhui.project.harbor.common.enums.IMCmdType;

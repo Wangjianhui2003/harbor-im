@@ -1,6 +1,6 @@
 package com.jianhui.project.harbor.platform.interceptor;
 
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.jianhui.project.harbor.common.util.JwtUtil;
 import com.jianhui.project.harbor.platform.config.props.JwtProperties;
 import com.jianhui.project.harbor.platform.enums.ResultCode;

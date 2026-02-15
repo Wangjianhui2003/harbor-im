@@ -1,4 +1,4 @@
-package com.jianhui.project.harbor.server.netty.wbsocket.decode;
+package com.jianhui.project.harbor.server.netty.websocket.decode;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jianhui.project.harbor.common.model.IMSendInfo;

@@ -1,9 +1,9 @@
-package com.jianhui.project.harbor.server.netty.wbsocket;
+package com.jianhui.project.harbor.server.netty.websocket;
 
 import com.jianhui.project.harbor.server.netty.IMChannelHandler;
 import com.jianhui.project.harbor.server.netty.IMServer;
-import com.jianhui.project.harbor.server.netty.wbsocket.decode.MessageProtocolDecoder;
-import com.jianhui.project.harbor.server.netty.wbsocket.encode.MessageProtocolEncoder;
+import com.jianhui.project.harbor.server.netty.websocket.decode.MessageProtocolDecoder;
+import com.jianhui.project.harbor.server.netty.websocket.encode.MessageProtocolEncoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;

@@ -6,18 +6,15 @@ spring:
   application:
     name: harbor-platform
   mvc:
-    pathmatch:
-      matching-strategy: ant_path_matcher
     servlet:
       path: /api
   servlet:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
-#  threads:
-#    virtual:
-#      enabled: true
-
+  # threads:
+  #   virtual:
+  #     enabled: true
 
 mybatis-plus:
   global-config:
