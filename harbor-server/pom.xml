@@ -23,6 +23,10 @@
             <artifactId>netty-all</artifactId>
             <version>4.2.10.Final</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

@@ -47,7 +47,8 @@ public class RedisIMSender implements IMSender {
         int idx = 0;
         for (Map.Entry<String, IMUserInfo> entry : sendMap.entrySet()) {
             //当前用户的server id
-            Integer serverId = (Integer) serverIds.get(idx);
+            Number serverIdNum = (Number) serverIds.get(idx);
+            Integer serverId = serverIdNum != null ? serverIdNum.intValue() : null;
             if (serverId != null) {
                 List<IMUserInfo> list = serverMap.computeIfAbsent(serverId, o -> new LinkedList<>());
                 list.add(entry.getValue());
@@ -79,7 +80,8 @@ public class RedisIMSender implements IMSender {
             for (Integer terminal : message.getRecvTerminals()) {
                 // 获取server id
                 String key = String.join(":", IMRedisKey.IM_USER_SERVER_ID, message.getRecvId().toString(), terminal.toString());
-                Integer serverId = (Integer) redisMQTemplate.opsForValue().get(key);
+                Number serverIdNum = (Number) redisMQTemplate.opsForValue().get(key);
+                Integer serverId = serverIdNum != null ? serverIdNum.intValue() : null;
                 if (serverId != null) {
                     IMRecvInfo recvInfo = new IMRecvInfo();
                     recvInfo.setCmd(IMCmdType.PRIVATE_MESSAGE.code());
@@ -109,7 +111,8 @@ public class RedisIMSender implements IMSender {
                     continue;
                 }
                 String key = String.join(":", IMRedisKey.IM_USER_SERVER_ID, sender.getId().toString(), sender.getTerminal().toString());
-                Integer serverId = (Integer) redisMQTemplate.opsForValue().get(key);
+                Number serverIdNum = (Number) redisMQTemplate.opsForValue().get(key);
+                Integer serverId = serverIdNum != null ? serverIdNum.intValue() : null;
                 if (serverId != null) {
                     IMRecvInfo recvInfo = new IMRecvInfo();
                     // 自己的消息不需要回推消息发送结果
@@ -145,7 +148,8 @@ public class RedisIMSender implements IMSender {
         //按serverId分组
         int idx = 0;
         for (Map.Entry<String, IMUserInfo> entry : sendMap.entrySet()) {
-            Integer serverId = (Integer) serverIds.get(idx++);
+            Number serverIdNum = (Number) serverIds.get(idx++);
+            Integer serverId = serverIdNum != null ? serverIdNum.intValue() : null;
             if (serverId != null) {
                 List<IMUserInfo> list = serverMap.computeIfAbsent(serverId, o -> new LinkedList<>());
                 list.add(entry.getValue());
@@ -174,7 +178,8 @@ public class RedisIMSender implements IMSender {
                 }
                 // 获取终端连接的channelId
                 String key = String.join(":", IMRedisKey.IM_USER_SERVER_ID, message.getSender().getId().toString(), terminal.toString());
-                Integer serverId = (Integer) redisMQTemplate.opsForValue().get(key);
+                Number serverIdNum = (Number) redisMQTemplate.opsForValue().get(key);
+                Integer serverId = serverIdNum != null ? serverIdNum.intValue() : null;
                 // 如果终端在线，将数据存储至redis，等待拉取推送
                 if (serverId != null) {
                     IMRecvInfo recvInfo = new IMRecvInfo();

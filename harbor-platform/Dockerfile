@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # context要设为harbor-im根目录
-FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
+FROM maven:3.9.6-eclipse-temurin-25-alpine AS builder
 
 WORKDIR /build
 
@@ -34,7 +34,7 @@ RUN mvn -s /usr/share/maven/ref/settings-docker.xml \
     -DskipTests
 
 # ========== Stage 2: 运行环境  ==========
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
 COPY --from=builder /build/harbor-platform/target/harbor-platform.jar /app/harbor-platform.jar
 EXPOSE 8100
