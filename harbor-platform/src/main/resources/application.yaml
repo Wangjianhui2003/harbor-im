@@ -19,7 +19,7 @@ spring:
 mybatis-plus:
   global-config:
     db-config:
-      id-type: AUTO # ID自增
+      id-type: ASSIGN_ID # 雪花算法
   configuration:
     map-underscore-to-camel-case: true #开启自动驼峰命名规则
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

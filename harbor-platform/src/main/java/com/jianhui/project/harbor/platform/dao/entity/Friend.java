@@ -1,6 +1,5 @@
 package com.jianhui.project.harbor.platform.dao.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -18,7 +17,7 @@ public class Friend {
     /**
      * id
      */
-    @TableId(type = IdType.AUTO)
+    @TableId
     private Long id;
 
     /**

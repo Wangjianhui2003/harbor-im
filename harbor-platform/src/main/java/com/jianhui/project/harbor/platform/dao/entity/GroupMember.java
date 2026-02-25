@@ -1,7 +1,6 @@
 package com.jianhui.project.harbor.platform.dao.entity;
 
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -19,7 +18,7 @@ public class GroupMember {
     /**
      * id
      */
-    @TableId(type = IdType.AUTO)
+    @TableId
     private Long id;
 
     /**
