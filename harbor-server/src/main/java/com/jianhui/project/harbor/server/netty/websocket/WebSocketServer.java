@@ -76,9 +76,13 @@ public class WebSocketServer implements IMServer {
                 // bootstrap 还可以设置TCP参数，根据需要可以分别设置主线程池和从线程池参数，来优化服务端性能。
                 // 其中主线程池使用option方法来设置，从线程池使用childOption方法设置。
                 // backlog表示主线程池中在套接口排队的最大数量，队列由未连接队列（三次握手未完成的）和已连接队列
-                .option(ChannelOption.SO_BACKLOG, 5)
+                .option(ChannelOption.SO_BACKLOG, 1024)
+                .option(ChannelOption.SO_REUSEADDR, true)
                 // 表示连接保活，相当于心跳机制，默认为7200s
-                .childOption(ChannelOption.SO_KEEPALIVE, true);
+                .childOption(ChannelOption.SO_KEEPALIVE, true)
+                .childOption(ChannelOption.TCP_NODELAY, true)   // 禁用 Nagle，降低延迟
+                .childOption(ChannelOption.SO_RCVBUF, 65536)
+                .childOption(ChannelOption.SO_SNDBUF, 65536);
         try {
             // 绑定端口，启动select线程，轮询监听channel事件，监听到事件之后就会交给从线程池处理
             bootstrap.bind(port).sync().channel();

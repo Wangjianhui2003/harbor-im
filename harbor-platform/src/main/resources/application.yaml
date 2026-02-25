@@ -1,5 +1,6 @@
 server:
   port: 8100
+
 spring:
   profiles:
     active: dev # 环境 dev|test|prod
@@ -12,9 +13,17 @@ spring:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
-  # threads:
-  #   virtual:
-  #     enabled: true
+  datasource:
+    hikari:
+      maximum-pool-size: 20          # 默认10，根据并发量调整
+      minimum-idle: 10
+      connection-timeout: 5000       # 5秒获取不到连接就失败
+      idle-timeout: 300000           # 空闲连接5分钟回收
+      max-lifetime: 1800000          # 连接最大存活30分钟
+      leak-detection-threshold: 30000 # 连接泄漏检测
+#    threads:
+#      virtual:
+#        enabled: true
 
 mybatis-plus:
   global-config:
