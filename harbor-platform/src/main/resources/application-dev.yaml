@@ -11,8 +11,8 @@ spring:
       password: Sm9sVXBOYJjI030b5tz0trjpzvZzRhtZmEbv0uOImcD1wEDOPfeaqNU4PxHob/Wp
 
 minio:
-  endpoint: http://www.jianhui03.cn #服务间访问
-  domain: https://www.jianhui03.cn #应用访问
+  endpoint: http://www.jianhui03.cn:9002 #后端与之建立连接
+  domain: https://www.jianhui03.cn #固化到消息里
   accessKey: minioadmin
   secretKey: minioadmin
   bucketName: harbor-im
