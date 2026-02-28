@@ -11,6 +11,8 @@ import com.jianhui.project.harbor.common.model.*;
 import com.jianhui.project.harbor.common.mq.RedisMQTemplate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -65,7 +67,7 @@ public class RedisIMSender implements IMSender {
             recvInfo.setIsSendBack(message.getIsSendBack());
             recvInfo.setData(message.getData());
             //推送到队列
-            asyncSendToMQ(IMMQConstant.SYSTEM_MSG_TOPIC_PREFIX + entry.getKey(), recvInfo);
+            syncSendToMQ(IMMQConstant.SYSTEM_MSG_TOPIC_PREFIX + entry.getKey(), recvInfo);
         }
         // 对离线用户回复消息状态
         if (message.getIsSendBack() && offLineUsers.isEmpty()) {
@@ -77,10 +79,15 @@ public class RedisIMSender implements IMSender {
     public <T> void sendPrivateMessage(IMPrivateMessage<T> message) {
         List<IMSendResult> results = new LinkedList<>();
         if (message.getRecvId() != null) {
+            Map<String, IMUserInfo> recvMap = new LinkedHashMap<>();
             for (Integer terminal : message.getRecvTerminals()) {
-                // 获取server id
                 String key = String.join(":", IMRedisKey.IM_USER_SERVER_ID, message.getRecvId().toString(), terminal.toString());
-                Number serverIdNum = (Number) redisMQTemplate.opsForValue().get(key);
+                recvMap.put(key, new IMUserInfo(message.getRecvId(), terminal));
+            }
+            List<Object> serverIds = redisMQTemplate.opsForValue().multiGet(recvMap.keySet());
+            int idx = 0;
+            for (IMUserInfo receiver : recvMap.values()) {
+                Number serverIdNum = (Number) serverIds.get(idx++);
                 Integer serverId = serverIdNum != null ? serverIdNum.intValue() : null;
                 if (serverId != null) {
                     IMRecvInfo recvInfo = new IMRecvInfo();
@@ -88,14 +95,14 @@ public class RedisIMSender implements IMSender {
                     recvInfo.setServiceName(appName);
                     recvInfo.setSender(message.getSender());
                     recvInfo.setIsSendBack(message.getIsSendBack());
-                    recvInfo.setReceivers(List.of(new IMUserInfo(message.getRecvId(), terminal)));
+                    recvInfo.setReceivers(List.of(receiver));
                     recvInfo.setData(message.getData());
-                    asyncSendToMQ(IMMQConstant.PRIVATE_MSG_TOPIC_PREFIX + serverId, recvInfo);
+                    syncSendToMQ(IMMQConstant.PRIVATE_MSG_TOPIC_PREFIX + serverId, recvInfo);
                 } else {
                     //离线用户
                     IMSendResult result = new IMSendResult();
                     result.setSender(message.getSender());
-                    result.setReceiver(new IMUserInfo(message.getRecvId(), terminal));
+                    result.setReceiver(receiver);
                     result.setCode(IMSendCode.NOT_ONLINE.code());
                     result.setData(message.getData());
                     results.add(result);
@@ -104,14 +111,20 @@ public class RedisIMSender implements IMSender {
         }
         //推送给自己其他客户端
         if (message.getSendToSelf()) {
+            Map<String, IMUserInfo> selfMap = new LinkedHashMap<>();
             for (Integer terminal : IMTerminalType.codes()) {
                 IMUserInfo sender = message.getSender();
                 //相同terminal不发
                 if (sender.getTerminal().equals(terminal)) {
                     continue;
                 }
-                String key = String.join(":", IMRedisKey.IM_USER_SERVER_ID, sender.getId().toString(), sender.getTerminal().toString());
-                Number serverIdNum = (Number) redisMQTemplate.opsForValue().get(key);
+                String key = String.join(":", IMRedisKey.IM_USER_SERVER_ID, sender.getId().toString(), terminal.toString());
+                selfMap.put(key, new IMUserInfo(sender.getId(), terminal));
+            }
+            List<Object> serverIds = redisMQTemplate.opsForValue().multiGet(selfMap.keySet());
+            int idx = 0;
+            for (IMUserInfo receiver : selfMap.values()) {
+                Number serverIdNum = (Number) serverIds.get(idx++);
                 Integer serverId = serverIdNum != null ? serverIdNum.intValue() : null;
                 if (serverId != null) {
                     IMRecvInfo recvInfo = new IMRecvInfo();
@@ -119,16 +132,17 @@ public class RedisIMSender implements IMSender {
                     recvInfo.setIsSendBack(false);
                     recvInfo.setCmd(IMCmdType.PRIVATE_MESSAGE.code());
                     recvInfo.setSender(message.getSender());
-                    recvInfo.setReceivers(Collections.singletonList(new IMUserInfo(message.getSender().getId(), terminal)));
+                    recvInfo.setReceivers(Collections.singletonList(receiver));
                     recvInfo.setData(message.getData());
                     //发送
-                    asyncSendToMQ(IMMQConstant.PRIVATE_MSG_TOPIC_PREFIX + serverId, recvInfo);
+                    syncSendToMQ(IMMQConstant.PRIVATE_MSG_TOPIC_PREFIX + serverId, recvInfo);
                 }
             }
         }
-        if (message.getIsSendBack() && !results.isEmpty()) {
-            //TODO:multicast
-        }
+//        TODO:multicast
+//        if (message.getIsSendBack() && !results.isEmpty()) {
+//
+//        }
     }
 
     @Override
@@ -168,7 +182,7 @@ public class RedisIMSender implements IMSender {
             recvInfo.setServiceName(appName);
             recvInfo.setData(message.getData());
             // 推送至队列
-            asyncSendToMQ(IMMQConstant.GROUP_MSG_TOPIC_PREFIX + entry.getKey(), recvInfo);
+            syncSendToMQ(IMMQConstant.GROUP_MSG_TOPIC_PREFIX + entry.getKey(), recvInfo);
         }
         // 推送给自己的其他终端
         if (message.getSendToSelf()) {
@@ -189,7 +203,7 @@ public class RedisIMSender implements IMSender {
                     // 自己的消息不需要回推消息结果
                     recvInfo.setIsSendBack(false);
                     recvInfo.setData(message.getData());
-                    asyncSendToMQ(IMMQConstant.GROUP_MSG_TOPIC_PREFIX + serverId, recvInfo);
+                    syncSendToMQ(IMMQConstant.GROUP_MSG_TOPIC_PREFIX + serverId, recvInfo);
                 }
             }
         }
@@ -243,20 +257,26 @@ public class RedisIMSender implements IMSender {
      * @param topic    主题
      * @param recvInfo 消息
      */
-    public void asyncSendToMQ(String topic, IMRecvInfo recvInfo) {
+    public void syncSendToMQ(String topic, IMRecvInfo recvInfo) {
         String jsonString = JSON.toJSONString(recvInfo);
         rocketMQTemplate.syncSend(topic, jsonString);
-//        rocketMQTemplate.asyncSend(topic,jsonString,new SendCallback() {
-//
-//            @Override
-//            public void onSuccess(SendResult sendResult) {
-//                log.info("推送到消息队列成功{}",sendResult);
-//            }
-//
-//            @Override
-//            public void onException(Throwable throwable) {
-//                throw new RuntimeException(throwable);
-//            }
-//        },5000);
     }
+
+    public void asyncSendToMQ(String topic, IMRecvInfo recvInfo) {
+        String jsonString = JSON.toJSONString(recvInfo);
+        rocketMQTemplate.asyncSend(topic,jsonString,new SendCallback() {
+
+            @Override
+            public void onSuccess(SendResult sendResult) {
+                log.info("推送到消息队列成功{}",sendResult);
+            }
+
+            @Override
+            public void onException(Throwable throwable) {
+                throw new RuntimeException(throwable);
+            }
+        },5000);
+    }
+
+
 }
