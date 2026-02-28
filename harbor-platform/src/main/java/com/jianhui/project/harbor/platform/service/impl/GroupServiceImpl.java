@@ -14,6 +14,7 @@ import com.jianhui.project.harbor.platform.constant.Constant;
 import com.jianhui.project.harbor.platform.constant.RedisKey;
 import com.jianhui.project.harbor.platform.dao.entity.*;
 import com.jianhui.project.harbor.platform.dao.mapper.GroupMapper;
+import com.jianhui.project.harbor.platform.annotation.RedisLock;
 import com.jianhui.project.harbor.platform.dao.mapper.GroupMessageMapper;
 import com.jianhui.project.harbor.platform.dto.response.GroupInviteRespDTO;
 import com.jianhui.project.harbor.platform.dto.response.GroupMemberRespDTO;
@@ -86,6 +87,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     }
 
     @Override
+    @RedisLock(prefixKey = "group:invite", key = "#vo.groupId")
     public void invite(GroupInviteRespDTO vo) {
         UserSession session = SessionContext.getSession();
         //拿到group并检查

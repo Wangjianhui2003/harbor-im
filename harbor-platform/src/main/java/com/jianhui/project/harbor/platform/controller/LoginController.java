@@ -1,5 +1,6 @@
 package com.jianhui.project.harbor.platform.controller;
 
+import com.jianhui.project.harbor.platform.annotation.RepeatSubmit;
 import com.jianhui.project.harbor.platform.dto.request.LoginReqDTO;
 import com.jianhui.project.harbor.platform.dto.request.ModifyPwdDTO;
 import com.jianhui.project.harbor.platform.dto.request.RegisterReqDTO;
@@ -61,6 +62,7 @@ public class LoginController {
         return Results.success(vo);
     }
 
+    @RepeatSubmit
     @PostMapping("/register")
     @Operation(summary = "用户注册", description = "用户注册")
     public Result register(@Valid @RequestBody RegisterReqDTO dto) {
@@ -68,6 +70,7 @@ public class LoginController {
         return Results.success();
     }
 
+    @RepeatSubmit
     @PutMapping("/modifyPwd")
     @Operation(summary = "修改密码", description = "修改用户密码")
     public Result modifyPassword(@Valid @RequestBody ModifyPwdDTO dto) {

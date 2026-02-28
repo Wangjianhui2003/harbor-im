@@ -42,7 +42,7 @@ public class PrivateMessageProcessor extends AbstractMsgProcessor<IMRecvInfo> {
             } else {
                 // 消息推送失败确认
                 sendResult(recvInfo, IMSendCode.NOT_FIND_CHANNEL);
-                log.error("未找到channel，发送者:{},接收者:{}，内容:{}", sender.getId(), receiver.getId(), recvInfo.getData());
+                log.warn("未找到channel，发送者:{},接收者:{}，内容:{}", sender.getId(), receiver.getId(), recvInfo.getData());
             }
         } catch (Exception e) {
             // 消息推送失败确认

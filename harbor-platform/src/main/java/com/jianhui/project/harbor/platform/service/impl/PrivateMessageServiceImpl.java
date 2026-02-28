@@ -38,17 +38,19 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
 
     @Override
     public PrivateMessageRespDTO sendMessage(PrivateMessageDTO dto) {
+        //is friend or not
         UserSession session = SessionContext.getSession();
         Boolean isFriend = friendService.isFriend(session.getUserId(), dto.getRecvId());
         if (Boolean.FALSE.equals(isFriend)) {
             throw new GlobalException("您已不是对方好友，无法发送消息");
         }
-        //保存
+        //save to db
         PrivateMessage msg = BeanUtils.copyProperties(dto, PrivateMessage.class);
         msg.setSendId(session.getUserId());
         msg.setStatus(MessageStatus.UNSENT.code());
         msg.setSendTime(new Date());
         save(msg);
+        //msg
         PrivateMessageRespDTO msgVO = BeanUtils.copyProperties(msg, PrivateMessageRespDTO.class);
         IMPrivateMessage<PrivateMessageRespDTO> imMsg = new IMPrivateMessage<>();
         imMsg.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));

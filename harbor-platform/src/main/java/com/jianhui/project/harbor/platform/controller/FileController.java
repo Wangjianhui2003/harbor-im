@@ -1,5 +1,6 @@
 package com.jianhui.project.harbor.platform.controller;
 
+import com.jianhui.project.harbor.platform.annotation.RepeatSubmit;
 import com.jianhui.project.harbor.platform.dto.response.UploadImageRespDTO;
 import com.jianhui.project.harbor.platform.dto.response.UploadVideoRespDTO;
 import com.jianhui.project.harbor.platform.result.Result;
@@ -23,12 +24,14 @@ public class FileController {
 
     private final FileService fileService;
 
+    @RepeatSubmit(interval = 3000, message = "文件上传过于频繁")
     @Operation(summary = "上传图片", description = "上传图片,上传后返回原图和缩略图的url")
     @PostMapping("/image/upload")
     public Result<UploadImageRespDTO> uploadImage(@RequestParam("file") MultipartFile file) {
         return Results.success(fileService.uploadImage(file));
     }
 
+    @RepeatSubmit(interval = 3000, message = "文件上传过于频繁")
     @CrossOrigin
     @Operation(summary = "上传文件", description = "上传文件，上传后返回文件url")
     @PostMapping("/file/upload")
@@ -36,6 +39,7 @@ public class FileController {
         return Results.success(fileService.uploadFile(file));
     }
 
+    @RepeatSubmit(interval = 3000, message = "文件上传过于频繁")
     @CrossOrigin
     @Operation(summary = "上传视频", description = "上传视频，上传后返回视频url和时长")
     @PostMapping("/video/upload")

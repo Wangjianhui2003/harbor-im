@@ -15,6 +15,7 @@ import com.jianhui.project.harbor.platform.dto.request.DealGroupReqDTO;
 import com.jianhui.project.harbor.platform.enums.GroupRole;
 import com.jianhui.project.harbor.platform.enums.JoinType;
 import com.jianhui.project.harbor.platform.enums.RequestStatus;
+import com.jianhui.project.harbor.platform.annotation.RedisLock;
 import com.jianhui.project.harbor.platform.exception.GlobalException;
 import com.jianhui.project.harbor.platform.service.GroupMemberService;
 import com.jianhui.project.harbor.platform.service.GroupService;
@@ -94,6 +95,7 @@ public class RequestGroupServiceImpl extends ServiceImpl<RequestGroupMapper, Req
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @RedisLock(prefixKey = "group_request:deal", key = "#dto.id")
     public void dealGroupRequest(DealGroupReqDTO dto) {
         Long currentUserId = SessionContext.getSession().getUserId();
         Long groupId = dto.getGroupId();

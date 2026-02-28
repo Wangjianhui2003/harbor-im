@@ -1,5 +1,6 @@
 package com.jianhui.project.harbor.platform.controller;
 
+import com.jianhui.project.harbor.platform.annotation.RepeatSubmit;
 import com.jianhui.project.harbor.platform.dao.entity.User;
 import com.jianhui.project.harbor.platform.dto.response.OnlineTerminalRespDTO;
 import com.jianhui.project.harbor.platform.dto.response.UserRespDTO;
@@ -48,6 +49,7 @@ public class UserController {
         return Results.success(userService.findUserById(id));
     }
 
+    @RepeatSubmit
     @PutMapping("/update")
     @Operation(summary = "修改用户信息", description = "修改用户信息，仅允许修改登录用户信息")
     public Result<Void> update(@Valid @RequestBody UserRespDTO userRespDTO) {

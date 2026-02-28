@@ -15,6 +15,7 @@ import com.jianhui.project.harbor.platform.service.FriendService;
 import com.jianhui.project.harbor.platform.service.RequestFriendService;
 import com.jianhui.project.harbor.platform.service.UserService;
 import com.jianhui.project.harbor.platform.session.SessionContext;
+import com.jianhui.project.harbor.platform.annotation.RedisLock;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -94,6 +95,7 @@ public class RequestFriendServiceImpl extends ServiceImpl<RequestFriendMapper, R
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @RedisLock(prefixKey = "friend_request:deal", key = "#dto.id")
     public void dealFriendRequest(DealFriendReqDTO dto) {
         Long currentUserId = SessionContext.getSession().getUserId();
 

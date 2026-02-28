@@ -1,5 +1,6 @@
 package com.jianhui.project.harbor.platform.controller;
 
+import com.jianhui.project.harbor.platform.annotation.RepeatSubmit;
 import com.jianhui.project.harbor.platform.dto.response.FriendRespDTO;
 import com.jianhui.project.harbor.platform.result.Result;
 import com.jianhui.project.harbor.platform.result.Results;
@@ -33,6 +34,7 @@ public class FriendController {
         return Results.success(friendService.findFriendInfo(friendId));
     }
 
+    @RepeatSubmit
     @DeleteMapping("/delete/{friendId}")
     @Operation(summary = "删除好友", description = "解除好友关系")
     public Result<Void> delFriend(@NotNull(message = "好友id不可为空") @PathVariable("friendId") Long friendId) {
@@ -40,6 +42,7 @@ public class FriendController {
         return Results.success();
     }
 
+    @RepeatSubmit
     @PostMapping("/updateFriendNickName")
     @Operation(summary = "改变好友备注名", description = "改变好友备注名")
     public Result<Void> editFriendRemarkName(@RequestBody FriendRespDTO friendRespDTO) {

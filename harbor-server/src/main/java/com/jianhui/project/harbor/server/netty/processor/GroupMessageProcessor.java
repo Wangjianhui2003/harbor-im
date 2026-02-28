@@ -43,7 +43,7 @@ public class GroupMessageProcessor extends AbstractMsgProcessor<IMRecvInfo> {
                     ChannelCtx.writeAndFlush(sendInfo);
                     sendResult(recvInfo, IMSendCode.SUCCESS);
                 } else {
-                    log.error("未找到接收者channel,接收者:{},内容:{}", receiver.getId(), recvInfo.getData());
+                    log.warn("未找到接收者channel,接收者:{},内容:{}", receiver.getId(), recvInfo.getData());
                     sendResult(recvInfo, IMSendCode.NOT_FIND_CHANNEL);
                 }
             } catch (Exception e) {

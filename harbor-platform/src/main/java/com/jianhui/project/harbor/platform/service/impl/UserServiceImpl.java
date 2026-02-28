@@ -20,6 +20,7 @@ import com.jianhui.project.harbor.platform.dto.response.LoginRespDTO;
 import com.jianhui.project.harbor.platform.dto.response.OnlineTerminalRespDTO;
 import com.jianhui.project.harbor.platform.dto.response.UserRespDTO;
 import com.jianhui.project.harbor.platform.enums.ResultCode;
+import com.jianhui.project.harbor.platform.annotation.RedisLock;
 import com.jianhui.project.harbor.platform.exception.GlobalException;
 import com.jianhui.project.harbor.platform.service.UserService;
 import com.jianhui.project.harbor.platform.session.SessionContext;
@@ -53,6 +54,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final GroupMemberMapper groupMemberMapper;
 
     @Override
+    @RedisLock(prefixKey = "user:register", key = "#registerReqDTO.username")
     public void register(RegisterReqDTO registerReqDTO) {
         try {
             //验证码

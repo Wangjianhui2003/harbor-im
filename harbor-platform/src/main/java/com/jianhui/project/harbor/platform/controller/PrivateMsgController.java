@@ -1,5 +1,6 @@
 package com.jianhui.project.harbor.platform.controller;
 
+import com.jianhui.project.harbor.platform.annotation.RepeatSubmit;
 import com.jianhui.project.harbor.platform.dto.request.PrivateMessageDTO;
 import com.jianhui.project.harbor.platform.dto.response.PrivateMessageRespDTO;
 import com.jianhui.project.harbor.platform.result.Result;
@@ -28,6 +29,7 @@ public class PrivateMsgController {
         return Results.success(privateMessageService.sendMessage(dto));
     }
 
+    @RepeatSubmit
     @DeleteMapping("/recall/{id}")
     @Operation(summary = "撤回消息", description = "撤回私聊消息")
     public Result<PrivateMessageRespDTO> recallMessage(@NotNull(message = "消息id不能为空") @PathVariable Long id) {
