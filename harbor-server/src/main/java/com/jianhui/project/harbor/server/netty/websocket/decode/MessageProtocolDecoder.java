@@ -9,10 +9,12 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import java.util.List;
 
 public class MessageProtocolDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     @Override
     protected void decode(ChannelHandlerContext ctx, TextWebSocketFrame frame, List<Object> list) throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        IMSendInfo sendInfo = objectMapper.readValue(frame.text(), IMSendInfo.class);
+        IMSendInfo sendInfo = OBJECT_MAPPER.readValue(frame.text(), IMSendInfo.class);
         list.add(sendInfo);
     }
 }
