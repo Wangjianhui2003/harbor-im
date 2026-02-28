@@ -5,13 +5,16 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jianhui.project.harbor.client.IMClient;
 import com.jianhui.project.harbor.common.constant.IMConstant;
+import com.jianhui.project.harbor.common.constant.IMMQConstant;
 import com.jianhui.project.harbor.common.enums.IMTerminalType;
 import com.jianhui.project.harbor.common.model.IMGroupMessage;
 import com.jianhui.project.harbor.common.model.IMUserInfo;
+import com.jianhui.project.harbor.common.model.GroupMessageCreatedEvent;
 import com.jianhui.project.harbor.common.util.CommaTextUtils;
 import com.jianhui.project.harbor.platform.constant.Constant;
 import com.jianhui.project.harbor.platform.constant.RedisKey;
@@ -33,6 +36,8 @@ import com.jianhui.project.harbor.platform.util.BeanUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,6 +56,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
     private final IMClient imClient;
     private final StringRedisTemplate redisTemplate;
     private final GroupMessageMapper groupMessageMapper;
+    private final RocketMQTemplate rocketMQTemplate;
 
     @Override
     public GroupMessageRespDTO sendMessage(GroupMessageDTO dto) {
@@ -70,23 +76,48 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         }
         // 不用发给自己
         userIds = userIds.stream().filter(id -> !session.getUserId().equals(id)).toList();
-        // 保存消息
-        GroupMessage groupMessage = BeanUtils.copyProperties(dto, GroupMessage.class);
-        groupMessage.setSendId(session.getUserId());
-        groupMessage.setSendTime(new Date());
-        groupMessage.setSendNickname(groupMember.getShowNickname());
-        groupMessage.setAtUserIds(CommaTextUtils.asText(dto.getAtUserIds()));
-        groupMessage.setContent(dto.getContent());
-        save(groupMessage);
-        // 群发
-        GroupMessageRespDTO msgVO = BeanUtils.copyProperties(groupMessage, GroupMessageRespDTO.class);
+
+        Long msgId = IdWorker.getId();
+        Date sendTime = new Date();
+
+        GroupMessageRespDTO msgVO = new GroupMessageRespDTO();
+        msgVO.setId(msgId);
+        msgVO.setGroupId(dto.getGroupId());
+        msgVO.setSendId(session.getUserId());
+        msgVO.setSendNickname(groupMember.getShowNickname());
+        msgVO.setContent(dto.getContent());
+        msgVO.setType(dto.getType());
+        msgVO.setReceipt(dto.getReceipt());
+        msgVO.setReceiptOk(null);
         msgVO.setAtUserIds(dto.getAtUserIds());
-        IMGroupMessage<GroupMessageRespDTO> imMsg = new IMGroupMessage<>();
-        imMsg.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
-        imMsg.setRecvIds(userIds);
-        imMsg.setData(msgVO);
-        imClient.sendGroupMessage(imMsg);
-        log.info("发送群聊消息，发送id:{},群聊id:{},内容:{}", session.getUserId(), dto.getGroupId(), dto.getContent());
+        msgVO.setStatus(MessageStatus.UNSENT.code());
+        msgVO.setSendTime(sendTime);
+
+        GroupMessageCreatedEvent event = new GroupMessageCreatedEvent();
+        event.setId(msgId);
+        event.setGroupId(dto.getGroupId());
+        event.setSendId(session.getUserId());
+        event.setSendNickname(groupMember.getShowNickname());
+        event.setContent(dto.getContent());
+        event.setType(dto.getType());
+        event.setStatus(MessageStatus.UNSENT.code());
+        event.setSendTime(sendTime);
+        event.setReceipt(dto.getReceipt());
+        event.setReceiptOk(null);
+        event.setAtUserIds(dto.getAtUserIds());
+        event.setDeliveryRecvIds(userIds);
+        event.setSenderTerminal(session.getTerminal());
+        event.setSendToSelf(true);
+        event.setSendBack(true);
+
+        try {
+            SendResult sendResult = rocketMQTemplate.syncSend(IMMQConstant.GROUP_PERSIST_TOPIC, event);
+            log.info("群聊消息创建事件发布成功，消息id:{},发送状态:{}", msgId, sendResult.getSendStatus());
+        } catch (Exception e) {
+            log.error("群聊消息创建事件发布失败，消息id:{},发送id:{},群聊id:{}", msgId, session.getUserId(), dto.getGroupId(), e);
+            throw new GlobalException("消息发送失败");
+        }
+        log.info("发送群聊消息请求已受理，消息id:{},发送id:{},群聊id:{}，内容:{}", msgId, session.getUserId(), dto.getGroupId(), dto.getContent());
         return msgVO;
     }
 
@@ -354,7 +385,6 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         imClient.sendGroupMessage(sendMessage);
     }
 }
-
 
 
 

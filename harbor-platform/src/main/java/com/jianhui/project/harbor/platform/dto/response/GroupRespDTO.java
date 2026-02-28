@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
+import java.util.Date;
+
 @Data
 @Schema(description = "群信息VO")
 public class GroupRespDTO {
@@ -61,4 +63,10 @@ public class GroupRespDTO {
      */
     @Schema(description = "加入类型")
     private Integer joinType;
+
+    @Schema(description = "更新时间")
+    private Date updateTime;
+
+    @Schema(description = "创建时间")
+    private Date createdTime;
 }

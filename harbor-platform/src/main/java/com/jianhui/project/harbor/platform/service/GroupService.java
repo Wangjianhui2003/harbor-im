@@ -2,6 +2,7 @@ package com.jianhui.project.harbor.platform.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jianhui.project.harbor.platform.dao.entity.Group;
+import com.jianhui.project.harbor.platform.dto.request.CreateGroupReqDTO;
 import com.jianhui.project.harbor.platform.dto.response.GroupInviteRespDTO;
 import com.jianhui.project.harbor.platform.dto.response.GroupMemberRespDTO;
 import com.jianhui.project.harbor.platform.dto.response.GroupRespDTO;
@@ -13,10 +14,10 @@ public interface GroupService extends IService<Group> {
     /**
      * 创建新群聊
      *
-     * @param vo 群聊信息
+     * @param dto 群聊信息
      * @return 群聊信息
      **/
-    GroupRespDTO createGroup(GroupRespDTO vo);
+    GroupRespDTO createGroup(CreateGroupReqDTO dto);
 
     /**
      * 修改群聊信息

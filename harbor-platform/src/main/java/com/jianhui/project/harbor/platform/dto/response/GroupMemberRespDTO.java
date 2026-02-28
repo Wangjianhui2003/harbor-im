@@ -16,6 +16,9 @@ public class GroupMemberRespDTO {
     @Schema(description = "群内昵称备注")
     private String remarkNickname;
 
+    @Schema(description = "角色 0-群主 1-管理员 2-普通成员")
+    private Integer role;
+
     @Schema(description = "头像")
     private String headImage;
 

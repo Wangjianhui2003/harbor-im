@@ -17,6 +17,16 @@ public class IMMQConstant {
     public static final String PRIVATE_PERSIST_CONSUMER_GROUP = "im_private-message-persist-consumer-group";
 
     /**
+     * 群聊消息创建后异步持久化topic
+     */
+    public static final String GROUP_PERSIST_TOPIC = "im_group-message-persist";
+
+    /**
+     * 群聊消息持久化消费者组
+     */
+    public static final String GROUP_PERSIST_CONSUMER_GROUP = "im_group-message-persist-consumer-group";
+
+    /**
      * 消息topic前缀，后接serverId
      */
     public static final String PRIVATE_MSG_TOPIC_PREFIX = "im_message_private_";

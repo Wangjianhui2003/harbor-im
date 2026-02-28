@@ -1,6 +1,7 @@
 package com.jianhui.project.harbor.platform.controller;
 
 import com.jianhui.project.harbor.platform.annotation.RepeatSubmit;
+import com.jianhui.project.harbor.platform.dto.request.CreateGroupReqDTO;
 import com.jianhui.project.harbor.platform.dto.response.GroupInviteRespDTO;
 import com.jianhui.project.harbor.platform.dto.response.GroupMemberRespDTO;
 import com.jianhui.project.harbor.platform.dto.response.GroupRespDTO;
@@ -27,8 +28,8 @@ public class GroupController {
     @RepeatSubmit
     @Operation(summary = "创建群聊", description = "创建群聊")
     @PostMapping("/create")
-    public Result<GroupRespDTO> createGroup(@Valid @RequestBody GroupRespDTO vo) {
-        return Results.success(groupService.createGroup(vo));
+    public Result<GroupRespDTO> createGroup(@Valid @RequestBody CreateGroupReqDTO dto) {
+        return Results.success(groupService.createGroup(dto));
     }
 
     @RepeatSubmit
@@ -116,4 +117,3 @@ public class GroupController {
         return Results.success();
     }
 }
-

@@ -16,11 +16,13 @@ import com.jianhui.project.harbor.platform.dao.entity.*;
 import com.jianhui.project.harbor.platform.dao.mapper.GroupMapper;
 import com.jianhui.project.harbor.platform.annotation.RedisLock;
 import com.jianhui.project.harbor.platform.dao.mapper.GroupMessageMapper;
+import com.jianhui.project.harbor.platform.dto.request.CreateGroupReqDTO;
 import com.jianhui.project.harbor.platform.dto.response.GroupInviteRespDTO;
 import com.jianhui.project.harbor.platform.dto.response.GroupMemberRespDTO;
 import com.jianhui.project.harbor.platform.dto.response.GroupMessageRespDTO;
 import com.jianhui.project.harbor.platform.dto.response.GroupRespDTO;
 import com.jianhui.project.harbor.platform.enums.GroupRole;
+import com.jianhui.project.harbor.platform.enums.JoinType;
 import com.jianhui.project.harbor.platform.enums.MessageStatus;
 import com.jianhui.project.harbor.platform.enums.MessageType;
 import com.jianhui.project.harbor.platform.exception.GlobalException;
@@ -41,6 +43,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -60,12 +64,18 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     private final StringRedisTemplate redisTemplate;
 
     @Override
-    public GroupRespDTO createGroup(GroupRespDTO vo) {
+    @Transactional(rollbackFor = Exception.class)
+    public GroupRespDTO createGroup(CreateGroupReqDTO dto) {
         // 查用户
         UserSession session = SessionContext.getSession();
         User user = userService.getById(session.getUserId());
         // 保存群组数据
-        Group group = BeanUtils.copyProperties(vo, Group.class);
+        Group group = new Group();
+        group.setName(dto.getName());
+        group.setNotice(dto.getNotice());
+        group.setJoinType(JoinType.fromCode(dto.getJoinType()).code());
+        group.setIsBanned(false);
+        group.setDissolve(false);
         group.setOwnerId(user.getId());
         this.save(group);
         // 把群主加入群
@@ -74,15 +84,30 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         member.setUserId(session.getUserId());
         member.setHeadImage(user.getHeadImageThumb());
         member.setUserNickname(user.getNickname());
-        member.setRemarkNickname(vo.getRemarkNickname());
-        member.setRemarkGroupName(vo.getRemarkGroupName());
         member.setRole(GroupRole.OWNER.code());
+        member.setQuit(false);
+        member.setCreatedTime(new Date());
         groupMemberService.save(member);
+
         GroupRespDTO groupRespDTO = findById(group.getId());
-        // 推送同步消息给自己的其他终端
-        sendAddGroupMessage(groupRespDTO, Lists.newArrayList(), true);
+        // 事务提交后再通知，避免前端拿到未提交的群数据
+        runAfterCommit(() -> sendAddGroupMessage(groupRespDTO, Lists.newArrayList(), true));
         // 返回
         log.info("创建群聊，群聊id:{},群聊名称:{}", group.getId(), group.getName());
+
+        List<Long> inviteFriendIds = Optional.ofNullable(dto.getFriendIds())
+                .orElseGet(Collections::emptyList)
+                .stream()
+                .filter(Objects::nonNull)
+                .filter(friendId -> !friendId.equals(session.getUserId()))
+                .distinct()
+                .toList();
+        if (!inviteFriendIds.isEmpty()) {
+            GroupInviteRespDTO inviteDTO = new GroupInviteRespDTO();
+            inviteDTO.setGroupId(group.getId());
+            inviteDTO.setFriendIds(inviteFriendIds);
+            invite(inviteDTO);
+        }
         return groupRespDTO;
     }
 
@@ -125,19 +150,33 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         }).toList();
         //存库
         if (!newMemberList.isEmpty()) {
-            groupMemberService.saveOrUpdateBatch(newMemberList);
+            groupMemberService.saveOrUpdateBatch(group.getId(), newMemberList);
         }
-        //给每个被邀请的friend发送消息
-        for (GroupMember member : newMemberList) {
-            GroupRespDTO groupRespDTO = convertToVO(group, member);
-            sendAddGroupMessage(groupRespDTO, List.of(member.getUserId()), false);
-        }
-        // 给群成员推送进入群聊消息
         List<Long> userIds = groupMemberService.findUserIdsByGroupId(vo.getGroupId());
         String memberNames = newMemberList.stream().map(GroupMember::getShowNickname).collect(Collectors.joining(","));
         String content = String.format("'%s'邀请'%s'加入了群聊", session.getNickname(), memberNames);
-        sendTipMessage(vo.getGroupId(), userIds, content, true);
+        // 群成员变更已落库后再发通知，避免客户端先收到消息却查不到群
+        runAfterCommit(() -> {
+            for (GroupMember member : newMemberList) {
+                GroupRespDTO groupRespDTO = convertToVO(group, member);
+                sendAddGroupMessage(groupRespDTO, List.of(member.getUserId()), false);
+            }
+            sendTipMessage(vo.getGroupId(), userIds, content, true);
+        });
         log.info("邀请进入群聊，群聊id:{},群聊名称:{},被邀请用户id:{}", group.getId(), group.getName(), vo.getFriendIds());
+    }
+
+    private void runAfterCommit(Runnable task) {
+        if (!TransactionSynchronizationManager.isActualTransactionActive()) {
+            task.run();
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                task.run();
+            }
+        });
     }
 
     /**
@@ -207,6 +246,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         //群成员可以更改群内昵称和群备注
         groupMember.setRemarkNickname(vo.getRemarkNickname());
         groupMember.setRemarkGroupName(vo.getRemarkGroupName());
+        groupMemberService.updateById(groupMember);
         //群主和管理员可以更改群聊基本信息
         if (groupMember.getRole().equals(GroupRole.ADMIN.code())
                 || groupMember.getRole().equals(GroupRole.OWNER.code())) {
@@ -367,9 +407,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
      *
      * @param groupRespDTO
      * @param recvIds
-     * @param sendToSelf
      */
-    private void sendAddGroupMessage(GroupRespDTO groupRespDTO, List<Long> recvIds, Boolean sendToSelf) {
+    private void sendAddGroupMessage(GroupRespDTO groupRespDTO, List<Long> recvIds, Boolean isSendToMyOtherTerminal) {
         UserSession session = SessionContext.getSession();
         GroupMessageRespDTO msgInfo = new GroupMessageRespDTO();
         msgInfo.setSendId(session.getUserId());
@@ -380,7 +419,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         IMGroupMessage<GroupMessageRespDTO> imGroupMsg = new IMGroupMessage<>();
         imGroupMsg.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         imGroupMsg.setRecvIds(recvIds);
-        imGroupMsg.setSendToSelf(sendToSelf);
+        imGroupMsg.setSendToSelf(isSendToMyOtherTerminal);
         imGroupMsg.setData(msgInfo);
         imGroupMsg.setIsSendBack(false);
         imClient.sendGroupMessage(imGroupMsg);
@@ -456,7 +495,3 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         groupMemberService.updateById(member);
     }
 }
-
-
-
-
