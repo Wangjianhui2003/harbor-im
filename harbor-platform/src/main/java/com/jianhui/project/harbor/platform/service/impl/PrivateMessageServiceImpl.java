@@ -1,11 +1,14 @@
 package com.jianhui.project.harbor.platform.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jianhui.project.harbor.client.IMClient;
 import com.jianhui.project.harbor.common.constant.IMConstant;
+import com.jianhui.project.harbor.common.constant.IMMQConstant;
 import com.jianhui.project.harbor.common.enums.IMTerminalType;
 import com.jianhui.project.harbor.common.model.IMPrivateMessage;
 import com.jianhui.project.harbor.common.model.IMUserInfo;
+import com.jianhui.project.harbor.common.model.PrivateMessageCreatedEvent;
 import com.jianhui.project.harbor.platform.dao.entity.PrivateMessage;
 import com.jianhui.project.harbor.platform.dao.mapper.PrivateMessageMapper;
 import com.jianhui.project.harbor.platform.dto.request.PrivateMessageDTO;
@@ -21,6 +24,8 @@ import com.jianhui.project.harbor.platform.util.BeanUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +40,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
     private final FriendService friendService;
     private final IMClient imClient;
     private final PrivateMessageMapper privateMessageMapper;
+    private final RocketMQTemplate rocketMQTemplate;
 
     @Override
     public PrivateMessageRespDTO sendMessage(PrivateMessageDTO dto) {
@@ -44,22 +50,39 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         if (Boolean.FALSE.equals(isFriend)) {
             throw new GlobalException("您已不是对方好友，无法发送消息");
         }
-        //save to db
-        PrivateMessage msg = BeanUtils.copyProperties(dto, PrivateMessage.class);
-        msg.setSendId(session.getUserId());
-        msg.setStatus(MessageStatus.UNSENT.code());
-        msg.setSendTime(new Date());
-        save(msg);
-        //msg
-        PrivateMessageRespDTO msgVO = BeanUtils.copyProperties(msg, PrivateMessageRespDTO.class);
-        IMPrivateMessage<PrivateMessageRespDTO> imMsg = new IMPrivateMessage<>();
-        imMsg.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
-        imMsg.setRecvId(msgVO.getRecvId());
-        imMsg.setSendToSelf(true);
-        imMsg.setData(msgVO);
-        imMsg.setIsSendBack(true);
-        imClient.sendPrivateMessage(imMsg);
-        log.info("发送私聊消息，发送id:{},接收id:{}，内容:{}", session.getUserId(), dto.getRecvId(), dto.getContent());
+
+        Long msgId = IdWorker.getId();
+        Date sendTime = new Date();
+
+        PrivateMessageRespDTO msgVO = new PrivateMessageRespDTO();
+        msgVO.setId(msgId);
+        msgVO.setSendId(session.getUserId());
+        msgVO.setRecvId(dto.getRecvId());
+        msgVO.setContent(dto.getContent());
+        msgVO.setType(dto.getType());
+        msgVO.setStatus(MessageStatus.UNSENT.code());
+        msgVO.setSendTime(sendTime);
+
+        PrivateMessageCreatedEvent event = new PrivateMessageCreatedEvent();
+        event.setId(msgId);
+        event.setSendId(session.getUserId());
+        event.setRecvId(dto.getRecvId());
+        event.setContent(dto.getContent());
+        event.setType(dto.getType());
+        event.setStatus(MessageStatus.UNSENT.code());
+        event.setSendTime(sendTime);
+        event.setSenderTerminal(session.getTerminal());
+        event.setSendToSelf(true);
+        event.setSendBack(true);
+
+        try {
+            SendResult sendResult = rocketMQTemplate.syncSend(IMMQConstant.PRIVATE_PERSIST_TOPIC, event);
+            log.info("私聊消息创建事件发布成功，消息id:{},发送状态:{}", msgId, sendResult.getSendStatus());
+        } catch (Exception e) {
+            log.error("私聊消息创建事件发布失败，消息id:{},发送id:{},接收id:{}", msgId, session.getUserId(), dto.getRecvId(), e);
+            throw new GlobalException("消息发送失败");
+        }
+        log.info("发送私聊消息请求已受理，消息id:{},发送id:{},接收id:{}，内容:{}", msgId, session.getUserId(), dto.getRecvId(), dto.getContent());
         return msgVO;
     }
 
@@ -208,7 +231,6 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         imClient.sendPrivateMessage(sendMessage);
     }
 }
-
 
 
 
