@@ -7,9 +7,6 @@
       "Bash(mvn clean:*)",
       "Bash(head:*)",
       "Bash(npx vite:*)"
-    ],
-    "additionalDirectories": [
-      "C:\\Users\\wangj\\project\\web_project\\harbor-frontend"
     ]
   }
 }
