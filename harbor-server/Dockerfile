@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # context要设为harbor-im根目录
-FROM maven:3.9.6-eclipse-temurin-25-alpine AS builder
+FROM maven:3.9.12-eclipse-temurin-25-alpine AS builder
 
 WORKDIR /build
 
