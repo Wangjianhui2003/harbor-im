@@ -28,6 +28,7 @@ import com.jianhui.project.harbor.platform.session.UserSession;
 import com.jianhui.project.harbor.platform.util.BeanUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,9 @@ import static com.jianhui.project.harbor.platform.constant.RedisKey.CHECK_CODE_P
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
+    @Value("${harbor.perf.auth.skip-captcha:false}")
+    private boolean skipCaptcha;
+
     private final UserMapper userMapper;
     private final StringRedisTemplate redisTemplate;
     private final PasswordEncoder passwordEncoder;
@@ -57,12 +61,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @RedisLock(prefixKey = "user:register", key = "#registerReqDTO.username")
     public void register(RegisterReqDTO registerReqDTO) {
         try {
-            //验证码
-            String captcha = redisTemplate.opsForValue().
-                    get(CHECK_CODE_PREFIX + registerReqDTO.getCaptchaKey());
-            if (!registerReqDTO.getCaptcha().equalsIgnoreCase(captcha)) {
-                throw new GlobalException("注册验证码错误");
-            }
+            validateCaptcha(registerReqDTO.getCaptchaKey(), registerReqDTO.getCaptcha(), "注册验证码错误");
             //username是否已经被注册
             User user = userMapper.getByUsername(registerReqDTO.getUsername());
             if (user != null) {
@@ -81,12 +80,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public LoginRespDTO login(LoginReqDTO loginReqDTO) {
         try {
-            // 校验验证码
-            String captcha = redisTemplate.opsForValue().
-                    get(CHECK_CODE_PREFIX + loginReqDTO.getCaptchaKey());
-            if (!loginReqDTO.getCaptcha().equalsIgnoreCase(captcha)) {
-                throw new GlobalException("注册验证码错误");
-            }
+            validateCaptcha(loginReqDTO.getCaptchaKey(), loginReqDTO.getCaptcha(), "登录验证码错误");
             // 查询用户
             User user = userMapper.getByUsername(loginReqDTO.getUsername());
             if (Objects.isNull(user)) {
@@ -217,8 +211,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public void modifyPassword(ModifyPwdDTO dto) {
 
     }
-}
 
+    private void validateCaptcha(String captchaKey, String captchaInput, String errorMessage) {
+        if (skipCaptcha) {
+            return;
+        }
+        String captcha = redisTemplate.opsForValue().get(CHECK_CODE_PREFIX + captchaKey);
+        if (captchaInput == null || captcha == null || !captchaInput.equalsIgnoreCase(captcha)) {
+            throw new GlobalException(errorMessage);
+        }
+    }
+}
 
 
 

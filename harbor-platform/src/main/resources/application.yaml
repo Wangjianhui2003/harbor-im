@@ -21,9 +21,11 @@ spring:
       idle-timeout: 300000           # 空闲连接5分钟回收
       max-lifetime: 1800000          # 连接最大存活30分钟
       leak-detection-threshold: 30000 # 连接泄漏检测
-#    threads:
-#      virtual:
-#        enabled: true
+  threads:
+    virtual:
+      enabled: true
+  main:
+    keep-alive: true  #保活，避免应用只剩虚拟线程时 JVM 提前退出
 
 mybatis-plus:
   global-config:
@@ -40,3 +42,8 @@ jwt:
   refreshToken:
     expireIn: 604800 #7天
     secret: IKDiqVmn0VFU
+
+harbor:
+  perf:
+    auth:
+      skip-captcha: false
