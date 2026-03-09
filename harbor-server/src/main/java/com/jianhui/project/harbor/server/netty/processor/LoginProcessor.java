@@ -37,6 +37,11 @@ public class LoginProcessor extends AbstractMsgProcessor<IMLoginInfo> {
     private String accessTokenSecret;
 
     @Override
+    public IMCmdType getCmdType() {
+        return IMCmdType.LOGIN;
+    }
+
+    @Override
     public void process(ChannelHandlerContext ctx, IMLoginInfo loginInfo) {
         // 校验jwt
         if (!JwtUtil.checkSign(loginInfo.getAccessToken(), accessTokenSecret)) {

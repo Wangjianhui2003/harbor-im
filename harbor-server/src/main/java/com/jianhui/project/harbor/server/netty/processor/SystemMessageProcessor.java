@@ -22,6 +22,11 @@ public class SystemMessageProcessor extends AbstractMsgProcessor<IMRecvInfo> {
     private final RedisMQTemplate redisMQTemplate;
 
     @Override
+    public IMCmdType getCmdType() {
+        return IMCmdType.SYSTEM_MESSAGE;
+    }
+
+    @Override
     public void process(IMRecvInfo recvInfo) {
         log.info("接收到系统消息,接收用户数量:{}，内容:{}", recvInfo.getReceivers().size(), recvInfo.getData());
         for (IMUserInfo userInfo : recvInfo.getReceivers()) {

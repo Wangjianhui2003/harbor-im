@@ -24,6 +24,7 @@ import com.jianhui.project.harbor.platform.util.BeanUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
+import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.stereotype.Service;
@@ -76,8 +77,22 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         event.setSendBack(true);
 
         try {
-            SendResult sendResult = rocketMQTemplate.syncSend(IMMQConstant.PRIVATE_PERSIST_TOPIC, event);
-            log.info("私聊消息创建事件发布成功，消息id:{},发送状态:{}", msgId, sendResult.getSendStatus());
+//            SendResult sendResult = rocketMQTemplate.syncSend(IMMQConstant.PRIVATE_PERSIST_TOPIC, event);
+            rocketMQTemplate.asyncSend(IMMQConstant.PRIVATE_PERSIST_TOPIC, event, new SendCallback() {
+                @Override
+                public void onSuccess(SendResult sendResult) {
+                    log.debug("私聊消息创建事件发布成功, msgId:{}, status:{}", msgId, sendResult.getSendStatus());
+                }
+
+                @Override
+                public void onException(Throwable e) {
+                    log.error("私聊消息创建事件发布失败, msgId:{}, sendId:{}, recvId:{}",
+                            msgId, session.getUserId(), dto.getRecvId(), e);
+                }
+            });
+            log.info("私聊消息请求已受理, msgId:{}, sendId:{}, recvId:{}, type:{}, contentLength:{}",
+                    msgId, session.getUserId(), dto.getRecvId(), dto.getType(),
+                    dto.getContent() == null ? 0 : dto.getContent().length());
         } catch (Exception e) {
             log.error("私聊消息创建事件发布失败，消息id:{},发送id:{},接收id:{}", msgId, session.getUserId(), dto.getRecvId(), e);
             throw new GlobalException("消息发送失败");

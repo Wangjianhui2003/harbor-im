@@ -25,6 +25,11 @@ public class HeartbeatProcessor extends AbstractMsgProcessor<IMHeartbeatInfo> {
     private final RedisMQTemplate redisMQTemplate;
 
     @Override
+    public IMCmdType getCmdType() {
+        return IMCmdType.HEARTBEAT;
+    }
+
+    @Override
     public void process(ChannelHandlerContext ctx, IMHeartbeatInfo data) {
         //发送心跳
         IMSendInfo<Object> sendInfo = new IMSendInfo<>();

@@ -24,6 +24,11 @@ public class PrivateMessageProcessor extends AbstractMsgProcessor<IMRecvInfo> {
     private final RocketMQTemplate rocketMQTemplate;
 
     @Override
+    public IMCmdType getCmdType() {
+        return IMCmdType.PRIVATE_MESSAGE;
+    }
+
+    @Override
     public void process(IMRecvInfo recvInfo) {
         IMUserInfo sender = recvInfo.getSender();
         IMUserInfo receiver = recvInfo.getReceivers().get(0);

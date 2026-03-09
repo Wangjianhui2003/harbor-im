@@ -29,6 +29,11 @@ public class GroupMessageProcessor extends AbstractMsgProcessor<IMRecvInfo> {
     private final RocketMQTemplate rocketMQTemplate;
 
     @Override
+    public IMCmdType getCmdType() {
+        return IMCmdType.GROUP_MESSAGE;
+    }
+
+    @Override
     public void process(IMRecvInfo recvInfo) {
         IMUserInfo sender = recvInfo.getSender();
         List<IMUserInfo> receivers = recvInfo.getReceivers();
