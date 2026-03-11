@@ -15,3 +15,12 @@ tcpsocket:
 jwt:
   accessToken:
     secret: MIIBIjANBgkq # 跟im-platfrom的secret必须一致
+
+harbor:
+  mq:
+    private-message:
+      consumer:
+        consume-thread-min: 64
+        consume-thread-max: 128
+        consume-message-batch-max-size: 32
+        pull-batch-size: 64
