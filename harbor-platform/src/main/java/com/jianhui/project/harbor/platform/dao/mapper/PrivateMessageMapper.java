@@ -2,6 +2,7 @@ package com.jianhui.project.harbor.platform.dao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.jianhui.project.harbor.platform.dao.entity.PrivateMessage;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
 
 import java.util.Date;
@@ -30,16 +31,28 @@ public interface PrivateMessageMapper extends BaseMapper<PrivateMessage> {
     List<PrivateMessage> getOfflineMsg(Long userId, Long minId, Date minDate, Integer recallStateCode);
 
     /**
+     * 批量插入消息，重复主键自动忽略
+     */
+    int batchInsertIgnore(@Param("messages") List<PrivateMessage> messages);
+
+    /**
      * 将已收到私聊信息设置为已读
      *
-     * @param userId     接收
-     * @param friendId   发送
-     * @param sentCode
-     * @param readedCode
+     * @param userId         接收方
+     * @param friendId       发送方
+     * @param recallCode     撤回状态
+     * @param savedCode      已保存状态
+     * @param readedCode     已读状态
      */
     @Update("update t_private_message set status = #{readedCode} " +
-            "where send_id = ${friendId} and recv_id = #{userId} and status = #{sentCode}")
-    void updateStatusToReaded(Long userId, Long friendId, Integer sentCode, Integer readedCode);
+            "where send_id = #{friendId} and recv_id = #{userId} " +
+            "and status != #{recallCode} and status != #{readedCode} " +
+            "and (status = #{savedCode} or status = 1)")
+    void updateStatusToReaded(@Param("userId") Long userId,
+                              @Param("friendId") Long friendId,
+                              @Param("recallCode") Integer recallCode,
+                              @Param("savedCode") Integer savedCode,
+                              @Param("readedCode") Integer readedCode);
 
     /**
      * 查询会话已读消息最大id
@@ -51,7 +64,3 @@ public interface PrivateMessageMapper extends BaseMapper<PrivateMessage> {
      */
     Long getMaxReadedMsgId(Long userId, Long friendId, Integer readedCode);
 }
-
-
-
-

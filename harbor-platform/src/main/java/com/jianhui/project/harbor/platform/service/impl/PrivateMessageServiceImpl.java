@@ -24,7 +24,6 @@ import com.jianhui.project.harbor.platform.util.BeanUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
-import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.stereotype.Service;
@@ -61,7 +60,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         msgVO.setRecvId(dto.getRecvId());
         msgVO.setContent(dto.getContent());
         msgVO.setType(dto.getType());
-        msgVO.setStatus(MessageStatus.UNSENT.code());
+        msgVO.setStatus(MessageStatus.SAVE.code());
         msgVO.setSendTime(sendTime);
 
         PrivateMessageCreatedEvent event = new PrivateMessageCreatedEvent();
@@ -70,26 +69,26 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         event.setRecvId(dto.getRecvId());
         event.setContent(dto.getContent());
         event.setType(dto.getType());
-        event.setStatus(MessageStatus.UNSENT.code());
+        event.setStatus(MessageStatus.SAVE.code());
         event.setSendTime(sendTime);
         event.setSenderTerminal(session.getTerminal());
         event.setSendToSelf(true);
         event.setSendBack(true);
 
         try {
-//            SendResult sendResult = rocketMQTemplate.syncSend(IMMQConstant.PRIVATE_PERSIST_TOPIC, event);
-            rocketMQTemplate.asyncSend(IMMQConstant.PRIVATE_PERSIST_TOPIC, event, new SendCallback() {
-                @Override
-                public void onSuccess(SendResult sendResult) {
-                    log.debug("私聊消息创建事件发布成功, msgId:{}, status:{}", msgId, sendResult.getSendStatus());
-                }
-
-                @Override
-                public void onException(Throwable e) {
-                    log.error("私聊消息创建事件发布失败, msgId:{}, sendId:{}, recvId:{}",
-                            msgId, session.getUserId(), dto.getRecvId(), e);
-                }
-            });
+            SendResult sendResult = rocketMQTemplate.syncSend(IMMQConstant.PRIVATE_PERSIST_TOPIC, event);
+//            rocketMQTemplate.asyncSend(IMMQConstant.PRIVATE_PERSIST_TOPIC, event, new SendCallback() {
+//                @Override
+//                public void onSuccess(SendResult sendResult) {
+//                    log.debug("私聊消息创建事件发布成功, msgId:{}, status:{}", msgId, sendResult.getSendStatus());
+//                }
+//
+//                @Override
+//                public void onException(Throwable e) {
+//                    log.error("私聊消息创建事件发布失败, msgId:{}, sendId:{}, recvId:{}",
+//                            msgId, session.getUserId(), dto.getRecvId(), e);
+//                }
+//            });
             log.info("私聊消息请求已受理, msgId:{}, sendId:{}, recvId:{}, type:{}, contentLength:{}",
                     msgId, session.getUserId(), dto.getRecvId(), dto.getType(),
                     dto.getContent() == null ? 0 : dto.getContent().length());
@@ -111,7 +110,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         List<PrivateMessage> msgList = privateMessageMapper.pageHistoryMsg(userId, friendId, offset, size, MessageStatus.RECALL.code());
         //转为VO
         List<PrivateMessageRespDTO> msgVOList = msgList.stream()
-                .map(m -> BeanUtils.copyProperties(m, PrivateMessageRespDTO.class)).toList();
+                .map(this::toRespDTO).toList();
         log.info("拉取聊天记录，用户id:{},好友id:{}，数量:{}", userId, friendId, msgVOList.size());
         return msgVOList;
     }
@@ -127,7 +126,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         List<PrivateMessage> msgList = privateMessageMapper.getOfflineMsg(session.getUserId(), minId, minDate, MessageStatus.RECALL.code());
         // 推送
         for (PrivateMessage msg : msgList) {
-            PrivateMessageRespDTO msgVO = BeanUtils.copyProperties(msg, PrivateMessageRespDTO.class);
+            PrivateMessageRespDTO msgVO = toRespDTO(msg);
             IMPrivateMessage<PrivateMessageRespDTO> sendMessage = new IMPrivateMessage<>();
             sendMessage.setSender(new IMUserInfo(msg.getSendId(), IMTerminalType.WEB.code()));
             sendMessage.setRecvId(session.getUserId());
@@ -161,7 +160,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         // 生成一条撤回消息
         PrivateMessage recallMsg = new PrivateMessage();
         recallMsg.setSendId(session.getUserId());
-        recallMsg.setStatus(MessageStatus.UNSENT.code());
+        recallMsg.setStatus(MessageStatus.SAVE.code());
         recallMsg.setSendTime(new Date());
         recallMsg.setRecvId(msg.getRecvId());
         recallMsg.setType(MessageType.RECALL.code());
@@ -209,7 +208,8 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         privateMessageMapper.updateStatusToReaded(
                 session.getUserId(),
                 friendId,
-                MessageStatus.SENT.code(),
+                MessageStatus.RECALL.code(),
+                MessageStatus.SAVE.code(),
                 MessageStatus.READ.code());
         log.info("消息已读，接收方id:{},发送方id:{}", session.getUserId(), friendId);
     }
@@ -233,7 +233,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         UserSession session = SessionContext.getSession();
         PrivateMessageRespDTO msgInfo = new PrivateMessageRespDTO();
         msgInfo.setType(MessageType.LOADING.code());
-        msgInfo.setStatus(MessageStatus.UNSENT.code());
+        msgInfo.setStatus(MessageStatus.SAVE.code());
         //加载标识
         msgInfo.setContent(isLoading.toString());
         IMPrivateMessage<PrivateMessageRespDTO> sendMessage = new IMPrivateMessage<>();
@@ -245,7 +245,13 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         sendMessage.setIsSendBack(false);
         imClient.sendPrivateMessage(sendMessage);
     }
+
+    private PrivateMessageRespDTO toRespDTO(PrivateMessage message) {
+        PrivateMessageRespDTO respDTO = BeanUtils.copyProperties(message, PrivateMessageRespDTO.class);
+        if (Integer.valueOf(1).equals(respDTO.getStatus())) {
+            respDTO.setStatus(MessageStatus.SAVE.code());
+        }
+        return respDTO;
+    }
 }
-
-
 

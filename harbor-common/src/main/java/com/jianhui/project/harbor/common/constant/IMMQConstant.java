@@ -17,6 +17,11 @@ public class IMMQConstant {
     public static final String PRIVATE_PERSIST_CONSUMER_GROUP = "im_private-message-persist-consumer-group";
 
     /**
+     * 私聊消息投递消费者组
+     */
+    public static final String PRIVATE_DISPATCH_CONSUMER_GROUP = "im_private-message-dispatch-consumer-group";
+
+    /**
      * 群聊消息创建后异步持久化topic
      */
     public static final String GROUP_PERSIST_TOPIC = "im_group-message-persist";
@@ -35,22 +40,6 @@ public class IMMQConstant {
 
     public static final String SYSTEM_MSG_TOPIC_PREFIX = "im_message_system_";
 
-
-    /**
-     * 发送结果topic，后接appName
-     */
-    public static final String PRIVATE_RESULT_TOPIC_PREFIX = "im_result_private_";
-
-    public static final String GROUP_RESULT_TOPIC_PREFIX = "im_result_group_";
-
-    public static final String SYSTEM_RESULT_TOPIC_PREFIX = "im_result_system_";
-
-    /**
-     * 消息发送结果消费者组,后接appName
-     */
-    public static final String GROUP_RESULT_MSG_CONSUMER_PREFIX = "im_group-msg-result-consumer-group_";
-
-    public static final String PRIVATE_RESULT_MSG_CONSUMER_PREFIX = "im_private-msg-result-consumer-group_";
 
     public static final String PRIVATE_MSG_CONSUMER_GROUP = "im_private-msg-consumer-group_";
 

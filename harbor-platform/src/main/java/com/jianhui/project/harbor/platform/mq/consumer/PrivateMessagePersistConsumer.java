@@ -2,15 +2,11 @@ package com.jianhui.project.harbor.platform.mq.consumer;
 
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import com.jianhui.project.harbor.client.IMClient;
 import com.jianhui.project.harbor.common.constant.IMMQConstant;
-import com.jianhui.project.harbor.common.model.IMPrivateMessage;
-import com.jianhui.project.harbor.common.model.IMUserInfo;
 import com.jianhui.project.harbor.common.model.PrivateMessageCreatedEvent;
 import com.jianhui.project.harbor.platform.dao.entity.PrivateMessage;
 import com.jianhui.project.harbor.platform.dao.mapper.PrivateMessageMapper;
-import com.jianhui.project.harbor.platform.dto.response.PrivateMessageRespDTO;
-import com.jianhui.project.harbor.platform.util.BeanUtils;
+import com.jianhui.project.harbor.platform.config.props.PrivateMessageMQProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
@@ -21,11 +17,11 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -37,7 +33,7 @@ public class PrivateMessagePersistConsumer implements ApplicationRunner {
     private String nameServerAddr;
 
     private final PrivateMessageMapper privateMessageMapper;
-    private final IMClient imClient;
+    private final PrivateMessageMQProperties mqProperties;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -46,35 +42,26 @@ public class PrivateMessagePersistConsumer implements ApplicationRunner {
 
         consumer.setNamesrvAddr(nameServerAddr);
         consumer.subscribe(IMMQConstant.PRIVATE_PERSIST_TOPIC, "*");
+        configureConsumer(consumer, mqProperties.getPersist());
 
         consumer.registerMessageListener(new MessageListenerConcurrently() {
             @Override
             public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> list, ConsumeConcurrentlyContext consumeConcurrentlyContext) {
+                List<PrivateMessageCreatedEvent> events = new ArrayList<>(list.size());
                 for (MessageExt msg : list) {
-                    try {
-                        byte[] body = msg.getBody();
-                        String string = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(body)).toString();
-                        if (StringUtils.isBlank(string)) {
-                            log.warn("收到空的私聊消息创建事件，msgId:{}", msg.getMsgId());
-                            continue;
-                        }
-                        PrivateMessageCreatedEvent event = JSON.parseObject(string, PrivateMessageCreatedEvent.class);
-                        if (event == null || event.getId() == null) {
-                            log.warn("私聊消息创建事件解析失败，mqMsgId:{}, body:{}", msg.getMsgId(), string);
-                            continue;
-                        }
-                        try {
-                            persistAndDispatch(event);
-                        } catch (DuplicateKeyException e) {
-                            log.warn("私聊消息重复持久化，消息id:{},发送者:{},接收者:{}",
-                                    event.getId(),
-                                    event.getSendId(),
-                                    event.getRecvId());
-                        }
-                    } catch (Exception e) {
-                        log.error("私聊消息异步持久化失败，稍后重试", e);
-                        return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+                    PrivateMessageCreatedEvent event = parseEvent(msg);
+                    if (event != null) {
+                        events.add(event);
                     }
+                }
+                if (events.isEmpty()) {
+                    return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                }
+                try {
+                    persistBatch(events);
+                } catch (Exception e) {
+                    log.error("私聊消息批量持久化失败，稍后重试，size:{}", events.size(), e);
+                    return ConsumeConcurrentlyStatus.RECONSUME_LATER;
                 }
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
@@ -84,24 +71,45 @@ public class PrivateMessagePersistConsumer implements ApplicationRunner {
         log.info("私聊消息持久化消费者启动成功");
     }
 
-    private void persistAndDispatch(PrivateMessageCreatedEvent event) {
-        PrivateMessage message = BeanUtils.copyProperties(event, PrivateMessage.class);
-        privateMessageMapper.insert(message);
+    private void persistBatch(List<PrivateMessageCreatedEvent> events) {
+        List<PrivateMessage> messages = events.stream().map(event -> {
+            PrivateMessage message = new PrivateMessage();
+            message.setId(event.getId());
+            message.setSendId(event.getSendId());
+            message.setRecvId(event.getRecvId());
+            message.setContent(event.getContent());
+            message.setType(event.getType());
+            message.setStatus(event.getStatus());
+            message.setSendTime(event.getSendTime());
+            return message;
+        }).toList();
+        privateMessageMapper.batchInsertIgnore(messages);
+    }
 
-        PrivateMessageRespDTO messageInfo = BeanUtils.copyProperties(message, PrivateMessageRespDTO.class);
-        IMPrivateMessage<PrivateMessageRespDTO> imMessage = new IMPrivateMessage<>();
-        imMessage.setSender(new IMUserInfo(event.getSendId(), event.getSenderTerminal()));
-        imMessage.setRecvId(event.getRecvId());
-        imMessage.setSendToSelf(Boolean.TRUE.equals(event.getSendToSelf()));
-        imMessage.setIsSendBack(Boolean.TRUE.equals(event.getSendBack()));
-        imMessage.setData(messageInfo);
-        imClient.sendPrivateMessage(imMessage);
+    private PrivateMessageCreatedEvent parseEvent(MessageExt msg) {
+        try {
+            byte[] body = msg.getBody();
+            String string = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(body)).toString();
+            if (StringUtils.isBlank(string)) {
+                log.warn("收到空的私聊消息创建事件，msgId:{}", msg.getMsgId());
+                return null;
+            }
+            PrivateMessageCreatedEvent event = JSON.parseObject(string, PrivateMessageCreatedEvent.class);
+            if (event == null || event.getId() == null) {
+                log.warn("私聊消息创建事件解析失败，mqMsgId:{}, body:{}", msg.getMsgId(), string);
+                return null;
+            }
+            return event;
+        } catch (Exception e) {
+            log.error("私聊消息创建事件解析异常，mqMsgId:{}", msg.getMsgId(), e);
+            return null;
+        }
+    }
 
-        long lagMs = event.getSendTime() == null ? -1L : System.currentTimeMillis() - event.getSendTime().getTime();
-        log.info("私聊消息持久化并投递成功，消息id:{},发送者:{},接收者:{},lagMs:{}",
-                event.getId(),
-                event.getSendId(),
-                event.getRecvId(),
-                lagMs);
+    private void configureConsumer(DefaultMQPushConsumer consumer, PrivateMessageMQProperties.Consumer properties) {
+        consumer.setConsumeThreadMin(properties.getConsumeThreadMin());
+        consumer.setConsumeThreadMax(properties.getConsumeThreadMax());
+        consumer.setConsumeMessageBatchMaxSize(properties.getConsumeMessageBatchMaxSize());
+        consumer.setPullBatchSize(properties.getPullBatchSize());
     }
 }

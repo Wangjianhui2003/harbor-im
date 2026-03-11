@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.benmanes.caffeine.cache.Cache;
 import com.jianhui.project.harbor.client.IMClient;
 import com.jianhui.project.harbor.common.enums.IMTerminalType;
 import com.jianhui.project.harbor.common.model.IMPrivateMessage;
@@ -27,9 +28,8 @@ import com.jianhui.project.harbor.platform.util.BeanUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.framework.AopContext;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,13 +42,15 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@CacheConfig(cacheNames = RedisKey.IM_CACHE_FRIEND)
 public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> implements FriendService {
 
     private final FriendMapper friendMapper;
     private final UserMapper userMapper;
     private final IMClient imClient;
     private final PrivateMessageMapper privateMessageMapper;
+    private final CacheManager cacheManager;
+    @Qualifier("friendLocalCache")
+    private final Cache<String, Boolean> friendLocalCache;
 
     public List<Friend> findAllFriends() {
         //无VO
@@ -72,14 +74,28 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         return list(wrapper);
     }
 
-    @Cacheable(key = "#userId1 + ':' + #userId2")
     @Override
     public Boolean isFriend(Long userId1, Long userId2) {
+        String cacheKey = buildFriendCacheKey(userId1, userId2);
+        Boolean localCached = friendLocalCache.getIfPresent(cacheKey);
+        if (localCached != null) {
+            return localCached;
+        }
+        org.springframework.cache.Cache remoteCache = cacheManager.getCache(RedisKey.IM_CACHE_FRIEND);
+        if (remoteCache != null) {
+            Boolean remoteCached = remoteCache.get(cacheKey, Boolean.class);
+            if (remoteCached != null) {
+                friendLocalCache.put(cacheKey, remoteCached);
+                return remoteCached;
+            }
+        }
         LambdaQueryWrapper<Friend> wrapper = Wrappers.lambdaQuery(Friend.class)
                 .eq(Friend::getUserId, userId1)
                 .eq(Friend::getFriendId, userId2)
                 .eq(Friend::getDeleted, false);
-        return exists(wrapper);
+        Boolean result = exists(wrapper);
+        cacheFriend(cacheKey, result);
+        return result;
     }
 
     @Override
@@ -131,7 +147,6 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
     }
 
     @Override
-    @CacheEvict(key = "#userId+':'+#friendId") //为什么要evict
     public void bindFriend(Long userId, Long friendId) {
         Friend friend = friendMapper.getByUserIdAndFriendId(userId, friendId);
         if (friend == null) {
@@ -144,15 +159,32 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         friend.setFriendNickname(friendInfo.getNickname());
         friend.setDeleted(false);
         saveOrUpdate(friend);
+        cacheFriend(userId, friendId, Boolean.TRUE);
         sendAddFriendMessage(userId, friendId, friend);
     }
 
-    @CacheEvict(key = "#userId + ':' + #friendId")
     public void unbindFriend(Long userId, Long friendId) {
         // 逻辑删除
         boolean b = friendMapper.setUnbind(userId, friendId, true);
+        cacheFriend(userId, friendId, Boolean.FALSE);
         // 推送好友变化信息
         sendDelFriendMessage(userId, friendId);
+    }
+
+    private void cacheFriend(Long userId, Long friendId, Boolean isFriend) {
+        cacheFriend(buildFriendCacheKey(userId, friendId), isFriend);
+    }
+
+    private void cacheFriend(String cacheKey, Boolean isFriend) {
+        friendLocalCache.put(cacheKey, isFriend);
+        org.springframework.cache.Cache remoteCache = cacheManager.getCache(RedisKey.IM_CACHE_FRIEND);
+        if (remoteCache != null) {
+            remoteCache.put(cacheKey, isFriend);
+        }
+    }
+
+    private String buildFriendCacheKey(Long userId1, Long userId2) {
+        return userId1 + ":" + userId2;
     }
 
     private void sendAddFriendMessage(Long userId, Long friendId, Friend friend) {
@@ -205,7 +237,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         PrivateMessage msg = new PrivateMessage();
         msg.setSendId(session.getUserId());
         msg.setRecvId(friendId);
-        msg.setStatus(MessageStatus.UNSENT.code());
+        msg.setStatus(MessageStatus.SAVE.code());
         msg.setType(MessageType.TIP_TEXT.code());
         msg.setSendTime(new Date());
         msg.setContent("你们已成为好友，现在可以开始聊天了");
@@ -236,7 +268,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         msg.setRecvId(friendId);
         msg.setSendTime(new Date());
         msg.setType(MessageType.TIP_TEXT.code());
-        msg.setStatus(MessageStatus.UNSENT.code());
+        msg.setStatus(MessageStatus.SAVE.code());
         msg.setContent("你们的好友关系已被解除");
         privateMessageMapper.insert(msg);
         // 推送
@@ -257,7 +289,5 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         }
     }
 }
-
-
 
 

@@ -50,12 +50,12 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         webRTCPrivateSession.setMode(mode);
         //校验
         if (!imClient.isOnline(uid)) {
-            sendActMessage(webRTCPrivateSession, MessageStatus.UNSENT, "未接通(未在线)");
+            sendActMessage(webRTCPrivateSession, MessageStatus.SAVE, "未接通(未在线)");
             log.info("RTC通话对方不在线:uid:{}", uid);
             throw new GlobalException("用户未上线");
         }
         if (userStateUtils.isBusy(uid)) {
-            sendActMessage(webRTCPrivateSession, MessageStatus.UNSENT, "未接通(忙线)");
+            sendActMessage(webRTCPrivateSession, MessageStatus.SAVE, "未接通(忙线)");
             log.info("忙线中:uid:{}", uid);
             throw new GlobalException("用户忙线:" + uid);
         }
@@ -138,7 +138,7 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         sendMessage.setData(messageInfo);
         imClient.sendPrivateMessage(sendMessage);
         //发送通话信息
-        sendActMessage(webrtcSession, MessageStatus.UNSENT, "已拒绝");
+        sendActMessage(webrtcSession, MessageStatus.SAVE, "已拒绝");
     }
 
     @Override
@@ -166,7 +166,7 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         // 通知对方取消会话
         imClient.sendPrivateMessage(imMsg);
         // 生成通话消息
-        sendActMessage(webrtcSession, MessageStatus.UNSENT, "已取消通话");
+        sendActMessage(webrtcSession, MessageStatus.SAVE, "已取消通话");
     }
 
     @Override

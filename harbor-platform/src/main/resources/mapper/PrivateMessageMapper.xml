@@ -39,6 +39,23 @@
           and status != #{recallStateCode}
     </select>
 
+    <insert id="batchInsertIgnore">
+        insert ignore into t_private_message (
+            id, send_id, recv_id, content, type, status, send_time
+        ) values
+        <foreach collection="messages" item="item" separator=",">
+            (
+                #{item.id},
+                #{item.sendId},
+                #{item.recvId},
+                #{item.content},
+                #{item.type},
+                #{item.status},
+                #{item.sendTime}
+            )
+        </foreach>
+    </insert>
+
     <select id="getMaxReadedMsgId" resultType="java.lang.Long">
         select id
         from t_private_message

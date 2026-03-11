@@ -41,7 +41,7 @@ public class PrivateMessage {
     private Integer type;
 
     /**
-     * 状态 1:已发送 2:已读 3:撤回
+     * 状态 0:已保存 2:撤回 3:已读
      */
     private Integer status;
 
