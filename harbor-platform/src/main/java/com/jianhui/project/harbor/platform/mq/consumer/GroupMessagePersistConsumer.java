@@ -2,11 +2,11 @@ package com.jianhui.project.harbor.platform.mq.consumer;
 
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import com.jianhui.project.harbor.client.IMClient;
 import com.jianhui.project.harbor.common.constant.IMMQConstant;
 import com.jianhui.project.harbor.common.model.GroupMessageCreatedEvent;
 import com.jianhui.project.harbor.common.model.IMGroupMessage;
 import com.jianhui.project.harbor.common.model.IMUserInfo;
+import com.jianhui.project.harbor.platform.sender.IMSender;
 import com.jianhui.project.harbor.common.util.CommaTextUtils;
 import com.jianhui.project.harbor.platform.dao.entity.GroupMessage;
 import com.jianhui.project.harbor.platform.dao.mapper.GroupMessageMapper;
@@ -38,7 +38,7 @@ public class GroupMessagePersistConsumer implements ApplicationRunner {
     private String nameServerAddr;
 
     private final GroupMessageMapper groupMessageMapper;
-    private final IMClient imClient;
+    private final IMSender imSender;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -109,7 +109,7 @@ public class GroupMessagePersistConsumer implements ApplicationRunner {
         imMessage.setSendToSelf(Boolean.TRUE.equals(event.getSendToSelf()));
         imMessage.setIsSendBack(Boolean.TRUE.equals(event.getSendBack()));
         imMessage.setData(messageInfo);
-        imClient.sendGroupMessage(imMessage);
+        imSender.sendGroupMessage(imMessage);
 
         long lagMs = event.getSendTime() == null ? -1L : System.currentTimeMillis() - event.getSendTime().getTime();
         log.info("群聊消息持久化并投递成功，消息id:{},发送者:{},群聊id:{},接收人数:{},lagMs:{}",

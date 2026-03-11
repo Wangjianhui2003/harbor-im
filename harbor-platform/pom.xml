@@ -14,7 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>com.jianhui.project</groupId>
-            <artifactId>harbor-client</artifactId>
+            <artifactId>harbor-common</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>

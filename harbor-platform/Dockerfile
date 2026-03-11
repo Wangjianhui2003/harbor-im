@@ -10,7 +10,6 @@ COPY docker-settings.xml /usr/share/maven/ref/settings-docker.xml
 # 2. 拷贝所有 pom.xml 文件
 COPY pom.xml .
 COPY harbor-common/pom.xml ./harbor-common/
-COPY harbor-client/pom.xml ./harbor-client/
 COPY harbor-platform/pom.xml ./harbor-platform/
 COPY harbor-server/pom.xml ./harbor-server/
 
@@ -24,7 +23,6 @@ RUN mvn -s /usr/share/maven/ref/settings-docker.xml \
 
 # 4. 拷贝所有源码
 COPY harbor-common/src ./harbor-common/src
-COPY harbor-client/src ./harbor-client/src
 COPY harbor-platform/src ./harbor-platform/src
 
 # 5. 构建

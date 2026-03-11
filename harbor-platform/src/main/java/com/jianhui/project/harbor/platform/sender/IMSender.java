@@ -1,4 +1,4 @@
-package com.jianhui.project.harbor.client.sender;
+package com.jianhui.project.harbor.platform.sender;
 
 import com.jianhui.project.harbor.common.enums.IMTerminalType;
 import com.jianhui.project.harbor.common.model.IMGroupMessage;

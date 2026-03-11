@@ -6,8 +6,6 @@ Harbor 的后端服务，采用多模块 Maven 结构，拆分为 HTTP 平台服
 
 ```text
 harbor-im/
-├── harbor-common     # 公共常量、枚举、协议模型、工具类
-├── harbor-client     # platform 调用 IM 服务的客户端封装
 ├── harbor-platform   # Spring Boot HTTP API，端口 8100，统一前缀 /api
 ├── harbor-server     # Netty WebSocket 服务，端口 8101，连接路径 /im
 ├── sql               # 数据库脚本目录
@@ -109,6 +107,6 @@ docker run -d --name harbor-server -p 8101:8101 --network harbor harbor-server
 
 ## 说明
 
-- `harbor-client` 是内部依赖模块，不需要单独启动。
+- `IMSender` 已并入 `harbor-platform`，平台服务内部直接负责向 IM 服务投递消息。
 - `sql/` 目录当前为空，首次部署需要你自行准备 `harbor` 库表结构和初始化数据。
 - 如果前端需要联调，HTTP 入口是 `8100`，实时消息入口是 `8101`，两者都需要可用。

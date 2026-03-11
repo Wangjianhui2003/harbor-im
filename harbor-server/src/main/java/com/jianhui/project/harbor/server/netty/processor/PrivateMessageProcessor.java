@@ -34,8 +34,6 @@ public class PrivateMessageProcessor extends AbstractMsgProcessor<IMRecvInfo> {
         IMUserInfo sender = recvInfo.getSender();
         Long messageId = extractMessageId(recvInfo.getData());
         for (IMUserInfo receiver : recvInfo.getReceivers()) {
-            log.info("接收到私聊消息，发送者:{},客户端:{},接收者:{}，客户端:{},内容:{}",
-                    sender.getId(), sender.getTerminal(), receiver.getId(), receiver.getTerminal(), recvInfo.getData());
             try {
                 ChannelHandlerContext channelCtx = UserChannelCxtMap.getChannelCtx(receiver.getId(), receiver.getTerminal());
                 if (channelCtx != null) {
@@ -48,7 +46,6 @@ public class PrivateMessageProcessor extends AbstractMsgProcessor<IMRecvInfo> {
                     sendInfo.setCmd(IMCmdType.PRIVATE_MESSAGE.code());
                     sendInfo.setData(recvInfo.getData());
                     channelCtx.channel().writeAndFlush(sendInfo);
-                    log.info("ws发送成功，发送者:{},接收者:{}，内容:{}", sender.getId(), receiver.getId(), recvInfo.getData());
                 } else {
                     log.warn("未找到channel，发送者:{},接收者:{}，内容:{}", sender.getId(), receiver.getId(), recvInfo.getData());
                 }

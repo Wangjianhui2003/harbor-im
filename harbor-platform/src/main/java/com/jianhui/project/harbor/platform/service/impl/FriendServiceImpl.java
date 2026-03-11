@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
-import com.jianhui.project.harbor.client.IMClient;
 import com.jianhui.project.harbor.common.enums.IMTerminalType;
 import com.jianhui.project.harbor.common.model.IMPrivateMessage;
 import com.jianhui.project.harbor.common.model.IMUserInfo;
@@ -21,6 +20,7 @@ import com.jianhui.project.harbor.platform.dto.response.PrivateMessageRespDTO;
 import com.jianhui.project.harbor.platform.enums.MessageStatus;
 import com.jianhui.project.harbor.platform.enums.MessageType;
 import com.jianhui.project.harbor.platform.exception.GlobalException;
+import com.jianhui.project.harbor.platform.sender.IMSender;
 import com.jianhui.project.harbor.platform.service.FriendService;
 import com.jianhui.project.harbor.platform.session.SessionContext;
 import com.jianhui.project.harbor.platform.session.UserSession;
@@ -46,7 +46,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
 
     private final FriendMapper friendMapper;
     private final UserMapper userMapper;
-    private final IMClient imClient;
+    private final IMSender imSender;
     private final PrivateMessageMapper privateMessageMapper;
     private final CacheManager cacheManager;
     @Qualifier("friendLocalCache")
@@ -202,7 +202,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         sendMessage.setData(msgInfo);
         sendMessage.setSendToSelf(false);
         sendMessage.setIsSendBack(false);
-        imClient.sendPrivateMessage(sendMessage);
+        imSender.sendPrivateMessage(sendMessage);
     }
 
     /**
@@ -224,7 +224,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         sendMessage.setData(msgInfo);
         sendMessage.setSendToSelf(false);
         sendMessage.setIsSendBack(false);
-        imClient.sendPrivateMessage(sendMessage);
+        imSender.sendPrivateMessage(sendMessage);
     }
 
     /**
@@ -249,10 +249,10 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         imMsg.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         imMsg.setRecvId(friendId);
         imMsg.setSendToSelf(false);
-        imClient.sendPrivateMessage(imMsg);
+        imSender.sendPrivateMessage(imMsg);
         // 推给自己,这里不用SendToSelf是因为用户没有主动发这条信息，当前客户端是没有显示的，用imClient再发一次可以确保发到所有客户端
         imMsg.setRecvId(session.getUserId());
-        imClient.sendPrivateMessage(imMsg);
+        imSender.sendPrivateMessage(imMsg);
     }
 
     /**
@@ -277,7 +277,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         sendMessage.setSender(new IMUserInfo(friendId, IMTerminalType.UNKNOW.code()));
         sendMessage.setRecvId(friendId);
         sendMessage.setData(messageInfo);
-        imClient.sendPrivateMessage(sendMessage);
+        imSender.sendPrivateMessage(sendMessage);
     }
 
     @Override
@@ -289,5 +289,4 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         }
     }
 }
-
 

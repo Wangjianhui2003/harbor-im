@@ -4,7 +4,6 @@ import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.jianhui.project.harbor.client.IMClient;
 import com.jianhui.project.harbor.common.enums.IMTerminalType;
 import com.jianhui.project.harbor.common.util.JwtUtil;
 import com.jianhui.project.harbor.platform.config.props.JwtProperties;
@@ -22,6 +21,7 @@ import com.jianhui.project.harbor.platform.dto.response.UserRespDTO;
 import com.jianhui.project.harbor.platform.enums.ResultCode;
 import com.jianhui.project.harbor.platform.annotation.RedisLock;
 import com.jianhui.project.harbor.platform.exception.GlobalException;
+import com.jianhui.project.harbor.platform.sender.IMSender;
 import com.jianhui.project.harbor.platform.service.UserService;
 import com.jianhui.project.harbor.platform.session.SessionContext;
 import com.jianhui.project.harbor.platform.session.UserSession;
@@ -54,7 +54,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final JwtProperties jwtProperties;
     private final FriendMapper friendMapper;
     private final GroupMapper groupMapper;
-    private final IMClient imClient;
+    private final IMSender imSender;
     private final GroupMemberMapper groupMemberMapper;
 
     @Override
@@ -149,7 +149,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public List<OnlineTerminalRespDTO> getOnlineTerminals(String userIds) {
         List<Long> ids = Arrays.stream(userIds.split(",")).map(Long::parseLong).collect(Collectors.toList());
-        Map<Long, List<IMTerminalType>> terminalMap = imClient.getOnlineTerminal(ids);
+        Map<Long, List<IMTerminalType>> terminalMap = imSender.getOnlineTerminal(ids);
         // 组装vo
         List<OnlineTerminalRespDTO> vos = new LinkedList<>();
         terminalMap.forEach((userId, types) -> {
@@ -166,7 +166,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new GlobalException("用户不存在");
         }
         UserRespDTO userRespDTO = BeanUtils.copyProperties(user, UserRespDTO.class);
-        userRespDTO.setOnline(imClient.isOnline(id));
+        userRespDTO.setOnline(imSender.isOnline(id));
         return userRespDTO;
     }
 
@@ -198,7 +198,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         queryWrapper.like(User::getUsername, name).or().like(User::getUsername, name).last("limit 20");
         List<User> users = this.list(queryWrapper);
         List<Long> userIds = users.stream().map(User::getId).collect(Collectors.toList());
-        List<Long> onlineUserIds = imClient.getOnlineUser(userIds);
+        List<Long> onlineUserIds = imSender.getOnlineUser(userIds);
         //TODO:获取在线用户
         return users.stream().map(u -> {
             UserRespDTO userRespDTO = BeanUtils.copyProperties(u, UserRespDTO.class);
@@ -222,6 +222,5 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
     }
 }
-
 
 

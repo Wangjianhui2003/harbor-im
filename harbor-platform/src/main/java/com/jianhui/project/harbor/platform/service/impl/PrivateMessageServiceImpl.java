@@ -2,7 +2,6 @@ package com.jianhui.project.harbor.platform.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.jianhui.project.harbor.client.IMClient;
 import com.jianhui.project.harbor.common.constant.IMConstant;
 import com.jianhui.project.harbor.common.constant.IMMQConstant;
 import com.jianhui.project.harbor.common.enums.IMTerminalType;
@@ -16,6 +15,7 @@ import com.jianhui.project.harbor.platform.dto.response.PrivateMessageRespDTO;
 import com.jianhui.project.harbor.platform.enums.MessageStatus;
 import com.jianhui.project.harbor.platform.enums.MessageType;
 import com.jianhui.project.harbor.platform.exception.GlobalException;
+import com.jianhui.project.harbor.platform.sender.IMSender;
 import com.jianhui.project.harbor.platform.service.FriendService;
 import com.jianhui.project.harbor.platform.service.PrivateMessageService;
 import com.jianhui.project.harbor.platform.session.SessionContext;
@@ -38,7 +38,7 @@ import java.util.List;
 public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper, PrivateMessage> implements PrivateMessageService {
 
     private final FriendService friendService;
-    private final IMClient imClient;
+    private final IMSender imSender;
     private final PrivateMessageMapper privateMessageMapper;
     private final RocketMQTemplate rocketMQTemplate;
 
@@ -134,7 +134,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
             sendMessage.setSendToSelf(false);
             sendMessage.setData(msgVO);
             sendMessage.setIsSendBack(true);
-            imClient.sendPrivateMessage(sendMessage);
+            imSender.sendPrivateMessage(sendMessage);
         }
         sendLoadingMessage(false);
         log.info("拉取私聊消息，用户id:{},数量:{}", session.getUserId(), msgList.size());
@@ -172,7 +172,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         imMsg.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         imMsg.setRecvId(msgInfo.getRecvId());
         imMsg.setData(msgInfo);
-        imClient.sendPrivateMessage(imMsg);
+        imSender.sendPrivateMessage(imMsg);
         log.info("撤回私聊消息，发送id:{},接收id:{}，内容:{}", msg.getSendId(), msg.getRecvId(), msg.getContent());
         return msgInfo;
     }
@@ -191,7 +191,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         sendMessage.setSendToSelf(true);
         sendMessage.setIsSendBack(false);
-        imClient.sendPrivateMessage(sendMessage);
+        imSender.sendPrivateMessage(sendMessage);
         // 推送回执消息给对方，更新已读状态
         msgInfo = new PrivateMessageRespDTO();
         msgInfo.setType(MessageType.RECEIPT.code());
@@ -203,7 +203,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         sendMessage.setSendToSelf(false);
         sendMessage.setIsSendBack(false);
         sendMessage.setData(msgInfo);
-        imClient.sendPrivateMessage(sendMessage);
+        imSender.sendPrivateMessage(sendMessage);
         // 修改消息状态为已读
         privateMessageMapper.updateStatusToReaded(
                 session.getUserId(),
@@ -243,7 +243,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         sendMessage.setData(msgInfo);
         sendMessage.setSendToSelf(false);
         sendMessage.setIsSendBack(false);
-        imClient.sendPrivateMessage(sendMessage);
+        imSender.sendPrivateMessage(sendMessage);
     }
 
     private PrivateMessageRespDTO toRespDTO(PrivateMessage message) {
@@ -254,4 +254,3 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         return respDTO;
     }
 }
-

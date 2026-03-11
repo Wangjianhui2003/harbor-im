@@ -1,4 +1,4 @@
-package com.jianhui.project.harbor.client.sender;
+package com.jianhui.project.harbor.platform.sender;
 
 import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson2.JSON;

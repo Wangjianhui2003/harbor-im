@@ -8,7 +8,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.jianhui.project.harbor.client.IMClient;
 import com.jianhui.project.harbor.common.constant.IMConstant;
 import com.jianhui.project.harbor.common.constant.IMMQConstant;
 import com.jianhui.project.harbor.common.enums.IMTerminalType;
@@ -27,6 +26,7 @@ import com.jianhui.project.harbor.platform.dto.response.GroupMessageRespDTO;
 import com.jianhui.project.harbor.platform.enums.MessageStatus;
 import com.jianhui.project.harbor.platform.enums.MessageType;
 import com.jianhui.project.harbor.platform.exception.GlobalException;
+import com.jianhui.project.harbor.platform.sender.IMSender;
 import com.jianhui.project.harbor.platform.service.GroupMemberService;
 import com.jianhui.project.harbor.platform.service.GroupMessageService;
 import com.jianhui.project.harbor.platform.service.GroupService;
@@ -53,7 +53,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
 
     private final GroupService groupService;
     private final GroupMemberService groupMemberService;
-    private final IMClient imClient;
+    private final IMSender imSender;
     private final StringRedisTemplate redisTemplate;
     private final GroupMessageMapper groupMessageMapper;
     private final RocketMQTemplate rocketMQTemplate;
@@ -160,7 +160,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         sendMessage.setRecvIds(userIds);
         sendMessage.setData(msgInfo);
-        imClient.sendGroupMessage(sendMessage);
+        imSender.sendGroupMessage(sendMessage);
         log.info("撤回群聊消息，发送id:{},群聊id:{},内容:{}", session.getUserId(), msg.getGroupId(), msg.getContent());
         return msgInfo;
     }
@@ -168,7 +168,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
     @Override
     public void pullOfflineMessage(Long minId) {
         UserSession session = SessionContext.getSession();
-        if (!imClient.isOnline(session.getUserId())) {
+        if (!imSender.isOnline(session.getUserId())) {
             throw new GlobalException("网络连接失败，无法拉取离线消息");
         }
         // 查询用户加入的群组
@@ -248,7 +248,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
                 sendMessage.setIsSendBack(false);
                 sendMessage.setSendToSelf(false);
                 sendMessage.setData(vo);
-                imClient.sendGroupMessage(sendMessage);
+                imSender.sendGroupMessage(sendMessage);
                 sendCount.getAndIncrement();
             }
         });
@@ -276,7 +276,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         sendMessage.setSendToSelf(true);
         sendMessage.setData(msgInfo);
         sendMessage.setIsSendBack(true);
-        imClient.sendGroupMessage(sendMessage);
+        imSender.sendGroupMessage(sendMessage);
         // 已读消息key
         String key = StrUtil.join(":", RedisKey.IM_GROUP_READED_POSITION, groupId);
         // 原来的已读消息位置
@@ -306,7 +306,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
                 sendMessage.setData(msgInfo);
                 sendMessage.setSendToSelf(false);
                 sendMessage.setIsSendBack(false);
-                imClient.sendGroupMessage(sendMessage);
+                imSender.sendGroupMessage(sendMessage);
             }
         }
     }
@@ -382,8 +382,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         sendMessage.setData(msgInfo);
         sendMessage.setSendToSelf(false);
         sendMessage.setIsSendBack(false);
-        imClient.sendGroupMessage(sendMessage);
+        imSender.sendGroupMessage(sendMessage);
     }
 }
-
 

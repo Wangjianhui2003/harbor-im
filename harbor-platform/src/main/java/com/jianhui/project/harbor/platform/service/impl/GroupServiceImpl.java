@@ -6,7 +6,6 @@ import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.jianhui.project.harbor.client.IMClient;
 import com.jianhui.project.harbor.common.model.IMGroupMessage;
 import com.jianhui.project.harbor.common.model.IMUserInfo;
 import com.jianhui.project.harbor.common.util.CommaTextUtils;
@@ -26,6 +25,7 @@ import com.jianhui.project.harbor.platform.enums.JoinType;
 import com.jianhui.project.harbor.platform.enums.MessageStatus;
 import com.jianhui.project.harbor.platform.enums.MessageType;
 import com.jianhui.project.harbor.platform.exception.GlobalException;
+import com.jianhui.project.harbor.platform.sender.IMSender;
 import com.jianhui.project.harbor.platform.service.FriendService;
 import com.jianhui.project.harbor.platform.service.GroupMemberService;
 import com.jianhui.project.harbor.platform.service.GroupService;
@@ -58,7 +58,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     private final UserService userService;
     private final GroupMemberService groupMemberService;
-    private final IMClient imClient;
+    private final IMSender imSender;
     private final FriendService friendService;
     private final GroupMessageMapper groupMessageMapper;
     private final StringRedisTemplate redisTemplate;
@@ -215,7 +215,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         imGroupMessage.setData(groupMessageRespDTO);
         imGroupMessage.setIsSendBack(false);
         imGroupMessage.setSendToSelf(false);
-        imClient.sendGroupMessage(imGroupMessage);
+        imSender.sendGroupMessage(imGroupMessage);
     }
 
     /**
@@ -344,7 +344,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         Group group = getAndCheckById(groupId);
         List<GroupMember> members = groupMemberService.findByGroupId(groupId);
         List<Long> userIds = members.stream().map(GroupMember::getUserId).toList();
-        List<Long> onlineUserIds = imClient.getOnlineUser(userIds);
+        List<Long> onlineUserIds = imSender.getOnlineUser(userIds);
         //返回VO，在线的排前面
         return members.stream().map(m -> {
             GroupMemberRespDTO vo = BeanUtils.copyProperties(m, GroupMemberRespDTO.class);
@@ -422,7 +422,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         imGroupMsg.setSendToSelf(isSendToMyOtherTerminal);
         imGroupMsg.setData(msgInfo);
         imGroupMsg.setIsSendBack(false);
-        imClient.sendGroupMessage(imGroupMsg);
+        imSender.sendGroupMessage(imGroupMsg);
     }
 
     /**
@@ -445,7 +445,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         imGroupMsg.setSendToSelf(sendToSelf);
         imGroupMsg.setData(msgInfo);
         imGroupMsg.setIsSendBack(false);
-        imClient.sendGroupMessage(imGroupMsg);
+        imSender.sendGroupMessage(imGroupMsg);
     }
 
     @Override

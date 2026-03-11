@@ -13,6 +13,8 @@ public class PrivateMessageMQProperties {
 
     private Consumer dispatch = new Consumer();
 
+    private Retry retry = new Retry();
+
     @Data
     public static class Consumer {
 
@@ -23,5 +25,15 @@ public class PrivateMessageMQProperties {
         private int consumeMessageBatchMaxSize = 32;
 
         private int pullBatchSize = 64;
+    }
+
+    @Data
+    public static class Retry {
+
+        private int maxAttempts = 3;
+
+        private long retryDelayMs = 1000;
+
+        private int sendTimeoutMs = 5000;
     }
 }

@@ -11,6 +11,7 @@ import com.jianhui.project.harbor.common.model.IMRecvInfo;
 import com.jianhui.project.harbor.common.model.IMUserInfo;
 import com.jianhui.project.harbor.common.mq.RedisMQTemplate;
 import com.jianhui.project.harbor.common.model.PrivateMessageCreatedEvent;
+import com.jianhui.project.harbor.common.util.ThreadPoolExecutorFactory;
 import com.jianhui.project.harbor.platform.config.props.PrivateMessageMQProperties;
 import com.jianhui.project.harbor.platform.dto.response.PrivateMessageRespDTO;
 import com.jianhui.project.harbor.platform.util.BeanUtils;
@@ -20,6 +21,8 @@ import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
+import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +37,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -91,13 +95,57 @@ public class PrivateMessageDispatchConsumer implements ApplicationRunner {
         List<Object> serverIds = redisMQTemplate.opsForValue().multiGet(routeKeys.keySet());
         Map<String, Integer> routeTable = buildRouteTable(routeKeys, serverIds);
         Map<Integer, List<IMRecvInfo>> serverMessages = buildServerMessages(events, routeTable);
-        for (Map.Entry<Integer, List<IMRecvInfo>> entry : serverMessages.entrySet()) {
-            IMBatchRecvInfo batchRecvInfo = new IMBatchRecvInfo();
-            batchRecvInfo.setMessages(entry.getValue());
-            rocketMQTemplate.syncSend(IMMQConstant.PRIVATE_MSG_TOPIC_PREFIX + entry.getKey(),
-                    JSON.toJSONString(batchRecvInfo),
-                    5000);
+        serverMessages.forEach(this::sendBatchAsync);
+    }
+
+    private void sendBatchAsync(Integer serverId, List<IMRecvInfo> messages) {
+        if (messages == null || messages.isEmpty()) {
+            return;
         }
+        IMBatchRecvInfo batchRecvInfo = new IMBatchRecvInfo();
+        batchRecvInfo.setMessages(messages);
+        String payload = JSON.toJSONString(batchRecvInfo);
+        sendBatchAsync(serverId, payload, messages.size(), 1, false);
+    }
+
+    private void sendBatchAsync(Integer serverId, String payload, int messageCount, int attempt, boolean retryContext) {
+        String topic = IMMQConstant.PRIVATE_MSG_TOPIC_PREFIX + serverId;
+        try {
+            rocketMQTemplate.asyncSend(topic, payload, new SendCallback() {
+                @Override
+                public void onSuccess(SendResult sendResult) {
+                    log.debug("私聊消息批量异步投递成功，serverId:{}, size:{}, attempt:{}, msgId:{}",
+                            serverId, messageCount, attempt, sendResult.getMsgId());
+                }
+
+                @Override
+                public void onException(Throwable throwable) {
+                    handleAsyncSendFailure(serverId, payload, messageCount, attempt, throwable);
+                }
+            }, mqProperties.getRetry().getSendTimeoutMs());
+        } catch (Exception e) {
+            if (!retryContext) {
+                throw e;
+            }
+            handleAsyncSendFailure(serverId, payload, messageCount, attempt, e);
+        }
+    }
+
+    private void handleAsyncSendFailure(Integer serverId, String payload, int messageCount, int attempt, Throwable throwable) {
+        int maxAttempts = mqProperties.getRetry().getMaxAttempts();
+        if (attempt >= maxAttempts) {
+            log.error("私聊消息批量异步投递失败，补偿重发次数已耗尽，serverId:{}, size:{}, attempt:{}/{}",
+                    serverId, messageCount, attempt, maxAttempts, throwable);
+            return;
+        }
+        long delayMs = mqProperties.getRetry().getRetryDelayMs() * attempt;
+        log.warn("私聊消息批量异步投递失败，准备补偿重发，serverId:{}, size:{}, nextAttempt:{}/{}, delayMs:{}",
+                serverId, messageCount, attempt + 1, maxAttempts, delayMs, throwable);
+        ThreadPoolExecutorFactory.getThreadPoolExecutor().schedule(
+                () -> sendBatchAsync(serverId, payload, messageCount, attempt + 1, true),
+                delayMs,
+                TimeUnit.MILLISECONDS
+        );
     }
 
     private Map<String, IMUserInfo> collectRouteKeys(List<PrivateMessageCreatedEvent> events) {

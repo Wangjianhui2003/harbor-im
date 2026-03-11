@@ -17,7 +17,6 @@
 
     <modules>
         <module>harbor-common</module>
-        <module>harbor-client</module>
         <module>harbor-platform</module>
         <module>harbor-server</module>
     </modules>

@@ -14,7 +14,7 @@ public class LocalCacheConfig {
     public Cache<String, Boolean> privateMessageDeliveryCache() {
         return Caffeine.newBuilder()
                 .maximumSize(1_000_000)
-                .expireAfterWrite(Duration.ofSeconds(30))
+                .expireAfterWrite(Duration.ofSeconds(60))
                 .build();
     }
 }

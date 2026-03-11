@@ -1,6 +1,5 @@
 package com.jianhui.project.harbor.platform.service.impl;
 
-import com.jianhui.project.harbor.client.IMClient;
 import com.jianhui.project.harbor.common.constant.IMConstant;
 import com.jianhui.project.harbor.common.model.IMPrivateMessage;
 import com.jianhui.project.harbor.common.model.IMUserInfo;
@@ -11,6 +10,7 @@ import com.jianhui.project.harbor.platform.enums.MessageStatus;
 import com.jianhui.project.harbor.platform.enums.MessageType;
 import com.jianhui.project.harbor.platform.enums.WebRTCMode;
 import com.jianhui.project.harbor.platform.exception.GlobalException;
+import com.jianhui.project.harbor.platform.sender.IMSender;
 import com.jianhui.project.harbor.platform.service.PrivateMessageService;
 import com.jianhui.project.harbor.platform.service.WebRTCPrivateService;
 import com.jianhui.project.harbor.platform.session.SessionContext;
@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
 
-    private final IMClient imClient;
+    private final IMSender imSender;
     private final PrivateMessageService privateMessageService;
     private final UserStateUtils userStateUtils;
     private final RedisTemplate<String, Object> redisTemplate;
@@ -49,7 +49,7 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         webRTCPrivateSession.setAcceptorId(uid);
         webRTCPrivateSession.setMode(mode);
         //校验
-        if (!imClient.isOnline(uid)) {
+        if (!imSender.isOnline(uid)) {
             sendActMessage(webRTCPrivateSession, MessageStatus.SAVE, "未接通(未在线)");
             log.info("RTC通话对方不在线:uid:{}", uid);
             throw new GlobalException("用户未上线");
@@ -80,7 +80,7 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         imMsg.setSendToSelf(false);
         imMsg.setIsSendBack(false);
         imMsg.setData(msgVO);
-        imClient.sendPrivateMessage(imMsg);
+        imSender.sendPrivateMessage(imMsg);
     }
 
     @Override
@@ -109,7 +109,7 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         //发给一个终端就行
         imMsg.setRecvTerminals(List.of(webrtcSession.getCallerTerminal()));
         imMsg.setData(msgVO);
-        imClient.sendPrivateMessage(imMsg);
+        imSender.sendPrivateMessage(imMsg);
     }
 
     @Override
@@ -136,7 +136,7 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         sendMessage.setIsSendBack(false);
         sendMessage.setRecvTerminals(Collections.singletonList(webrtcSession.getCallerTerminal()));
         sendMessage.setData(messageInfo);
-        imClient.sendPrivateMessage(sendMessage);
+        imSender.sendPrivateMessage(sendMessage);
         //发送通话信息
         sendActMessage(webrtcSession, MessageStatus.SAVE, "已拒绝");
     }
@@ -164,7 +164,7 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         imMsg.setIsSendBack(false);
         imMsg.setData(msgVO);
         // 通知对方取消会话
-        imClient.sendPrivateMessage(imMsg);
+        imSender.sendPrivateMessage(imMsg);
         // 生成通话消息
         sendActMessage(webrtcSession, MessageStatus.SAVE, "已取消通话");
     }
@@ -194,7 +194,7 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         sendMessage.setIsSendBack(false);
         sendMessage.setRecvTerminals(Collections.singletonList(webrtcSession.getCallerTerminal()));
         sendMessage.setData(messageInfo);
-        imClient.sendPrivateMessage(sendMessage);
+        imSender.sendPrivateMessage(sendMessage);
 
         sendActMessage(webrtcSession, MessageStatus.READ, "未接通(通话失败)");
     }
@@ -223,7 +223,7 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         Integer terminal = getTerminalType(uid, webrtcSession);
         sendMessage.setRecvTerminals(Collections.singletonList(terminal));
         sendMessage.setData(messageInfo);
-        imClient.sendPrivateMessage(sendMessage);
+        imSender.sendPrivateMessage(sendMessage);
 
         sendActMessage(webrtcSession, MessageStatus.READ, "通话时长 " + chatTimeText(webrtcSession));
     }
@@ -248,7 +248,7 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         sendMessage.setSendToSelf(false);
         sendMessage.setIsSendBack(false);
         sendMessage.setData(messageInfo);
-        imClient.sendPrivateMessage(sendMessage);
+        imSender.sendPrivateMessage(sendMessage);
     }
 
     @Override
@@ -288,10 +288,10 @@ public class WebRTCPrivateServiceImpl implements WebRTCPrivateService {
         imMsg.setIsSendBack(true);
         imMsg.setSendToSelf(false);
         imMsg.setData(msgVO);
-        imClient.sendPrivateMessage(imMsg);
+        imSender.sendPrivateMessage(imMsg);
         //推给接听方
         imMsg.setRecvId(rtcSession.getAcceptorId());
-        imClient.sendPrivateMessage(imMsg);
+        imSender.sendPrivateMessage(imMsg);
     }
 
     /**
