@@ -11,7 +11,7 @@ create table t_group_message
     receipt       tinyint       default 0                 null comment '是否回执消息',
     receipt_ok    tinyint       default 0                 null comment '回执消息是否完成',
     type          tinyint(1)                              not null comment '消息类型 0:文字 1:图片 2:文件 3:语音 4:视频 21:提示',
-    status        tinyint(1)    default 0                 null comment '状态 0:未发出  2:撤回 ',
+    status        tinyint(1)    default 0                 null comment '状态 0:已保存 2:撤回',
     send_time     datetime      default CURRENT_TIMESTAMP null comment '发送时间'
 )
     comment '群消息' collate = utf8mb4_0900_ai_ci
@@ -19,4 +19,3 @@ create table t_group_message
 
 create index idx_group_id
     on t_group_message (group_id);
-
