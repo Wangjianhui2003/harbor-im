@@ -70,9 +70,8 @@ public class MQIMSender implements IMSender {
             sendToMQAsync(IMMQConstant.SYSTEM_MSG_TOPIC_PREFIX + entry.getKey(), recvInfo);
         }
         // 对离线用户回复消息状态
-        if (message.getIsSendBack() && offLineUsers.isEmpty()) {
-            //TODO:
-        }
+//        if (message.getIsSendBack() && offLineUsers.isEmpty()) {
+//        }
     }
 
     @Override
@@ -208,9 +207,9 @@ public class MQIMSender implements IMSender {
             }
         }
         // 对离线用户回复消息状态
-        if (message.getIsSendBack() && !offLineUsers.isEmpty()) {
-            //TODO:group offline
-        }
+//        if (message.getIsSendBack() && !offLineUsers.isEmpty()) {
+//            //TODO:group offline
+//        }
     }
 
     @Override
