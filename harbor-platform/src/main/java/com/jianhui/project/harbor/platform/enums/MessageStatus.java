@@ -6,14 +6,9 @@ import lombok.AllArgsConstructor;
 public enum MessageStatus {
 
     /**
-     * 文件
+     * 已保存
      */
-    UNSENT(0, "未送达"),
-
-    /**
-     * 已发送`
-     */
-    SENT(1, "送达"),
+    SAVE(0, "已保存"),
 
     /**
      * 撤回

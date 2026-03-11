@@ -39,7 +39,10 @@ public enum IMTerminalType {
     }
 
     public static List<Integer> codes() {
-        return Arrays.stream(values()).map(IMTerminalType::code).toList();
+        return Arrays.stream(values())
+                .filter(type -> !UNKNOW.equals(type))
+                .map(IMTerminalType::code)
+                .toList();
     }
 
     public Integer code() {
