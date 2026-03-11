@@ -196,7 +196,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         groupMessage.setGroupId(groupId);
         groupMessage.setContent(content);
         groupMessage.setType(MessageType.TIP_TEXT.code());
-        groupMessage.setStatus(MessageStatus.UNSENT.code());
+        groupMessage.setStatus(MessageStatus.SAVE.code());
         groupMessage.setSendTime(new Date());
         groupMessage.setSendNickname(session.getNickname());
         groupMessageMapper.insert(groupMessage);

@@ -66,7 +66,7 @@ public class GroupMessage {
     private Integer type;
 
     /**
-     * 状态 0:未发出  2:撤回
+     * 状态 0:已保存 2:撤回
      */
     private Integer status;
 

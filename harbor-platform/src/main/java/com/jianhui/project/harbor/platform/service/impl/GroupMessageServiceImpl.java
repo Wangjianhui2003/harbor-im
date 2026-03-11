@@ -90,7 +90,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         msgVO.setReceipt(dto.getReceipt());
         msgVO.setReceiptOk(null);
         msgVO.setAtUserIds(dto.getAtUserIds());
-        msgVO.setStatus(MessageStatus.UNSENT.code());
+        msgVO.setStatus(MessageStatus.SAVE.code());
         msgVO.setSendTime(sendTime);
 
         GroupMessageCreatedEvent event = new GroupMessageCreatedEvent();
@@ -100,7 +100,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         event.setSendNickname(groupMember.getShowNickname());
         event.setContent(dto.getContent());
         event.setType(dto.getType());
-        event.setStatus(MessageStatus.UNSENT.code());
+        event.setStatus(MessageStatus.SAVE.code());
         event.setSendTime(sendTime);
         event.setReceipt(dto.getReceipt());
         event.setReceiptOk(null);
@@ -146,7 +146,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         // 生成一条撤回消息
         GroupMessage recallMsg = new GroupMessage();
         recallMsg.setSendId(session.getUserId());
-        recallMsg.setStatus(MessageStatus.UNSENT.code());
+        recallMsg.setStatus(MessageStatus.SAVE.code());
         recallMsg.setType(MessageType.RECALL.code());
         recallMsg.setGroupId(msg.getGroupId());
         recallMsg.setSendTime(new Date());
@@ -231,7 +231,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
                 List<String> atIds = CommaTextUtils.asList(m.getAtUserIds());
                 vo.setAtUserIds(atIds.stream().map(Long::parseLong).collect(Collectors.toList()));
                 // 填充状态,可能在其他客户端读过了
-                vo.setStatus(readedMaxId >= m.getId() ? MessageStatus.READ.code() : MessageStatus.SENT.code());
+                vo.setStatus(readedMaxId >= m.getId() ? MessageStatus.READ.code() : MessageStatus.SAVE.code());
                 // 针对回执消息填充已读人数
                 if (m.getReceipt()) {
                     if (Objects.isNull(maxIdMap)) {
@@ -385,6 +385,5 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         imClient.sendGroupMessage(sendMessage);
     }
 }
-
 
 
