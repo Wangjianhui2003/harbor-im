@@ -22,7 +22,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RedisIMSender implements IMSender {
+public class MQIMSender implements IMSender {
 
     private final RedisMQTemplate redisMQTemplate;
     private final RocketMQTemplate rocketMQTemplate;
