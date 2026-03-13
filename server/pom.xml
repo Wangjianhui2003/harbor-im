@@ -10,12 +10,12 @@
         <version>1.0</version>
     </parent>
 
-    <artifactId>harbor-server</artifactId>
+    <artifactId>server</artifactId>
 
     <dependencies>
         <dependency>
             <groupId>com.jianhui.project</groupId>
-            <artifactId>harbor-common</artifactId>
+            <artifactId>common</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>

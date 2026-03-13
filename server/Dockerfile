@@ -9,37 +9,39 @@ COPY docker-settings.xml /usr/share/maven/ref/settings-docker.xml
 
 # 2. 拷贝所有 pom.xml 文件
 COPY pom.xml .
-COPY harbor-common/pom.xml ./harbor-common/
-COPY harbor-platform/pom.xml ./harbor-platform/
-COPY harbor-server/pom.xml ./harbor-server/
+COPY common/pom.xml ./common/
+COPY platform/pom.xml ./platform/
+COPY server/pom.xml ./server/
 
 # 3. 单独下载依赖
-# 空构建 harbor-platform 模块，触发依赖下载
+# 空构建 harbor-server 模块，触发依赖下载
 RUN mvn -s /usr/share/maven/ref/settings-docker.xml \
     package \
     -DskipTests \
-    -pl harbor-platform -am \
+    -pl server -am \
     || true
 
+
 # 4. 拷贝所有源码
-COPY harbor-common/src ./harbor-common/src
-COPY harbor-platform/src ./harbor-platform/src
+# 即使这里因为代码修改导致缓存失效，上面的依赖层依然是从缓存读取的
+COPY common/src ./common/src
+COPY server/src ./server/src
 
 # 5. 构建
 RUN mvn -s /usr/share/maven/ref/settings-docker.xml \
     clean package \
-    -pl harbor-platform -am \
+    -pl server -am \
     -DskipTests
 
-# ========== Stage 2: 运行环境  ==========
+# ========== Stage 2: 运行环境==========
 FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
-COPY --from=builder /build/harbor-platform/target/harbor-platform.jar /app/harbor-platform.jar
-EXPOSE 8100
+COPY --from=builder /build/server/target/server.jar /app/server.jar
+EXPOSE 8101
 ENTRYPOINT ["java", \
             "-XX:+UseContainerSupport", \
             "-XX:InitialRAMPercentage=50.0", \
             "-XX:MaxRAMPercentage=75.0", \
             "-jar", \
             "-Dspring.profiles.active=prod", \
-            "/app/harbor-platform.jar"]
+            "/app/server.jar"]

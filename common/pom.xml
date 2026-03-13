@@ -9,7 +9,7 @@
         <version>1.0</version>
     </parent>
 
-    <artifactId>harbor-common</artifactId>
+    <artifactId>common</artifactId>
 
     <dependencies>
         <dependency>
