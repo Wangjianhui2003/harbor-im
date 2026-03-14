@@ -24,3 +24,9 @@ harbor:
         consume-thread-max: 128
         consume-message-batch-max-size: 32
         pull-batch-size: 64
+    group-message:
+      consumer:
+        consume-thread-min: 64
+        consume-thread-max: 128
+        consume-message-batch-max-size: 32
+        pull-batch-size: 64

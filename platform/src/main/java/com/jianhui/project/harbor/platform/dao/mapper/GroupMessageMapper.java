@@ -2,6 +2,7 @@ package com.jianhui.project.harbor.platform.dao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.jianhui.project.harbor.platform.dao.entity.GroupMessage;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
@@ -16,8 +17,9 @@ public interface GroupMessageMapper extends BaseMapper<GroupMessage> {
     List<GroupMessage> findUnreadReceiptMsg(Long groupId, Object oldMaxReadedId, Long maxMsgId, Integer recallCode, boolean isReceipt);
 
     List<GroupMessage> findHistoryMsg(Long groupId, Date createdTime, Integer recallCode, long offset, Long size);
-}
 
+    int batchInsertIgnore(@Param("messages") List<GroupMessage> messages);
+}
 
 
 

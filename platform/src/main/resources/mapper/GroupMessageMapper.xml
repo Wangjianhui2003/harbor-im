@@ -52,4 +52,27 @@
           and status != #{recallCode}
         limit #{offset},#{size}
     </select>
+
+    <insert id="batchInsertIgnore">
+        insert ignore into t_group_message (
+            id, group_id, send_id, send_nickname, recv_ids, content,
+            at_user_ids, receipt, receipt_ok, type, status, send_time
+        ) values
+        <foreach collection="messages" item="item" separator=",">
+            (
+                #{item.id},
+                #{item.groupId},
+                #{item.sendId},
+                #{item.sendNickname},
+                #{item.recvIds},
+                #{item.content},
+                #{item.atUserIds},
+                #{item.receipt},
+                #{item.receiptOk},
+                #{item.type},
+                #{item.status},
+                #{item.sendTime}
+            )
+        </foreach>
+    </insert>
 </mapper>

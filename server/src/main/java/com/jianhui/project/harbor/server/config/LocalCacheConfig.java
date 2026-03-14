@@ -17,4 +17,12 @@ public class LocalCacheConfig {
                 .expireAfterWrite(Duration.ofSeconds(60))
                 .build();
     }
+
+    @Bean
+    public Cache<String, Boolean> groupMessageDeliveryCache() {
+        return Caffeine.newBuilder()
+                .maximumSize(1_000_000)
+                .expireAfterWrite(Duration.ofSeconds(60))
+                .build();
+    }
 }
