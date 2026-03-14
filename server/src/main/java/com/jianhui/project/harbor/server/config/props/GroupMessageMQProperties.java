@@ -1,0 +1,25 @@
+package com.jianhui.project.harbor.server.config.props;
+
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+@Data
+@Component
+@ConfigurationProperties(prefix = "harbor.mq.group-message")
+public class GroupMessageMQProperties {
+
+    private Consumer consumer = new Consumer();
+
+    @Data
+    public static class Consumer {
+
+        private int consumeThreadMin = 32;
+
+        private int consumeThreadMax = 64;
+
+        private int consumeMessageBatchMaxSize = 32;
+
+        private int pullBatchSize = 64;
+    }
+}
