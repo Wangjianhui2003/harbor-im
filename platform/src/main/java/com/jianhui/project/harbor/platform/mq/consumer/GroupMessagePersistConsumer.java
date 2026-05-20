@@ -8,6 +8,7 @@ import com.jianhui.project.harbor.common.util.CommaTextUtils;
 import com.jianhui.project.harbor.platform.config.props.GroupMessageMQProperties;
 import com.jianhui.project.harbor.platform.dao.entity.GroupMessage;
 import com.jianhui.project.harbor.platform.dao.mapper.GroupMessageMapper;
+import com.jianhui.project.harbor.platform.service.GroupMessageEventPreparer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
@@ -36,6 +37,7 @@ public class GroupMessagePersistConsumer implements ApplicationRunner {
 
     private final GroupMessageMapper groupMessageMapper;
     private final GroupMessageMQProperties mqProperties;
+    private final GroupMessageEventPreparer groupMessageEventPreparer;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -43,7 +45,7 @@ public class GroupMessagePersistConsumer implements ApplicationRunner {
                 new DefaultMQPushConsumer(IMMQConstant.GROUP_PERSIST_CONSUMER_GROUP);
 
         consumer.setNamesrvAddr(nameServerAddr);
-        consumer.subscribe(IMMQConstant.GROUP_PERSIST_TOPIC, "*");
+        consumer.subscribe(IMMQConstant.GROUP_BUS_TOPIC, "*");
         configureConsumer(consumer, mqProperties.getPersist());
 
         consumer.registerMessageListener(new MessageListenerConcurrently() {
@@ -52,6 +54,9 @@ public class GroupMessagePersistConsumer implements ApplicationRunner {
                 List<GroupMessageCreatedEvent> events = new ArrayList<>(list.size());
                 for (MessageExt msg : list) {
                     GroupMessageCreatedEvent event = parseEvent(msg);
+                    if (event != null) {
+                        event = groupMessageEventPreparer.prepare(event);
+                    }
                     if (event != null) {
                         events.add(event);
                     }

@@ -4,15 +4,10 @@ import lombok.Data;
 
 import java.util.Date;
 
-/**
- * 私聊消息创建事件
- */
 @Data
-public class PrivateMessageCreatedEvent {
+public class IMPrivateMessageInfo {
 
     private Long id;
-
-    private String clientMsgId;
 
     private Long sendId;
 
@@ -25,10 +20,4 @@ public class PrivateMessageCreatedEvent {
     private Integer status;
 
     private Date sendTime;
-
-    private Integer senderTerminal;
-
-    private Boolean sendToSelf;
-
-    private Boolean sendBack;
 }

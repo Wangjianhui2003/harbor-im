@@ -19,14 +19,28 @@ jwt:
 harbor:
   mq:
     private-message:
+      producer:
+        send-timeout-ms: 5000
       consumer:
         consume-thread-min: 64
         consume-thread-max: 128
         consume-message-batch-max-size: 32
         pull-batch-size: 64
+      delivery:
+        ack-timeout-ms: 5000
+      dedup:
+        send-expire-seconds: 30
+        delivery-expire-seconds: 300
     group-message:
+      producer:
+        send-timeout-ms: 5000
       consumer:
         consume-thread-min: 64
         consume-thread-max: 128
         consume-message-batch-max-size: 32
         pull-batch-size: 64
+      delivery:
+        ack-timeout-ms: 5000
+      dedup:
+        send-expire-seconds: 30
+        delivery-expire-seconds: 300

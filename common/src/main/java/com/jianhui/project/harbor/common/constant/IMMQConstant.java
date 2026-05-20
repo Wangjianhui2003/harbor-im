@@ -7,6 +7,11 @@ package com.jianhui.project.harbor.common.constant;
 public class IMMQConstant {
 
     /**
+     * 私聊消息总线topic
+     */
+    public static final String PRIVATE_BUS_TOPIC = "im_private-message-bus";
+
+    /**
      * 私聊消息创建后异步持久化topic
      */
     public static final String PRIVATE_PERSIST_TOPIC = "im_private-message-persist";
@@ -25,6 +30,11 @@ public class IMMQConstant {
      * 群聊消息创建后异步持久化topic
      */
     public static final String GROUP_PERSIST_TOPIC = "im_group-message-persist";
+
+    /**
+     * 群聊消息总线topic
+     */
+    public static final String GROUP_BUS_TOPIC = "im_group-message-bus";
 
     /**
      * 群聊消息持久化消费者组

@@ -3,7 +3,7 @@ package com.jianhui.project.harbor.server.netty.processor;
 import com.jianhui.project.harbor.common.enums.IMCmdType;
 import io.netty.channel.ChannelHandlerContext;
 
-public abstract class AbstractMsgProcessor<T> {
+    public abstract class AbstractMsgProcessor<T> {
 
     /**
      * 当前处理器支持的消息类型

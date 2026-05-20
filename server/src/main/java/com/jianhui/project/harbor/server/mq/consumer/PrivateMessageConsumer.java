@@ -45,21 +45,26 @@ public class PrivateMessageConsumer implements ApplicationListener<IMServerReady
             configureConsumer(consumer, mqProperties.getConsumer());
 
             consumer.registerMessageListener((MessageListenerConcurrently) (list, consumeConcurrentlyContext) -> {
-                for (MessageExt msg : list) {
-                    byte[] body = msg.getBody();
-                    String string = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(body)).toString();
-                    JSONObject jsonObject = JSON.parseObject(string);
-                    if (jsonObject.containsKey("messages")) {
-                        IMBatchRecvInfo batchRecvInfo = jsonObject.toJavaObject(IMBatchRecvInfo.class);
-                        for (IMRecvInfo recvInfo : batchRecvInfo.getMessages()) {
+                try {
+                    for (MessageExt msg : list) {
+                        byte[] body = msg.getBody();
+                        String string = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(body)).toString();
+                        JSONObject jsonObject = JSON.parseObject(string);
+                        if (jsonObject.containsKey("messages")) {
+                            IMBatchRecvInfo batchRecvInfo = jsonObject.toJavaObject(IMBatchRecvInfo.class);
+                            for (IMRecvInfo recvInfo : batchRecvInfo.getMessages()) {
+                                ProcessorFactory.getProcessor(IMCmdType.PRIVATE_MESSAGE).process(recvInfo);
+                            }
+                        } else {
+                            IMRecvInfo recvInfo = jsonObject.toJavaObject(IMRecvInfo.class);
                             ProcessorFactory.getProcessor(IMCmdType.PRIVATE_MESSAGE).process(recvInfo);
                         }
-                    } else {
-                        IMRecvInfo recvInfo = jsonObject.toJavaObject(IMRecvInfo.class);
-                        ProcessorFactory.getProcessor(IMCmdType.PRIVATE_MESSAGE).process(recvInfo);
                     }
+                    return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                } catch (Exception e) {
+                    log.error("私聊消息消费失败，等待前端ack超时或投递异常，size:{}", list.size(), e);
+                    return ConsumeConcurrentlyStatus.RECONSUME_LATER;
                 }
-                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             });
             consumer.start();
             log.info("Server:{} 私聊信息消费者启动成功", IMServerGroup.serverId);

@@ -34,7 +34,37 @@ public enum IMCmdType {
     /**
      * 系统消息
      */
-    SYSTEM_MESSAGE(5, "系统消息");
+    SYSTEM_MESSAGE(5, "系统消息"),
+
+    /**
+     * 私聊消息发送请求
+     */
+    PRIVATE_MESSAGE_SEND(6, "私聊消息发送请求"),
+
+    /**
+     * 私聊消息发送确认
+     */
+    PRIVATE_MESSAGE_SEND_ACK(7, "私聊消息发送确认"),
+
+    /**
+     * 私聊消息投递确认
+     */
+    PRIVATE_MESSAGE_DELIVERY_ACK(8, "私聊消息投递确认"),
+
+    /**
+     * 群聊消息发送请求
+     */
+    GROUP_MESSAGE_SEND(9, "群聊消息发送请求"),
+
+    /**
+     * 群聊消息发送确认
+     */
+    GROUP_MESSAGE_SEND_ACK(10, "群聊消息发送确认"),
+
+    /**
+     * 群聊消息投递确认
+     */
+    GROUP_MESSAGE_DELIVERY_ACK(11, "群聊消息投递确认");
 
 
     private final Integer code;
@@ -57,4 +87,3 @@ public enum IMCmdType {
 
 
 }
-

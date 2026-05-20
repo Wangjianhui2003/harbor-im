@@ -18,4 +18,13 @@ public final class ChannelAttrKey {
      */
     public static final String HEARTBEAT_TIMES = "HEARTBEAT_TIMES";
 
+    /**
+     * websocket 消息协议
+     */
+    public static final String MESSAGE_PROTOCOL = "MESSAGE_PROTOCOL";
+
+    public static final String PROTOCOL_JSON = "json";
+
+    public static final String PROTOCOL_PROTOBUF = "protobuf";
+
 }

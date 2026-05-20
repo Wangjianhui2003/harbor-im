@@ -1,5 +1,6 @@
 package com.jianhui.project.harbor.platform.service.impl;
 
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jianhui.project.harbor.common.constant.IMConstant;
@@ -65,6 +66,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
 
         PrivateMessageCreatedEvent event = new PrivateMessageCreatedEvent();
         event.setId(msgId);
+        event.setClientMsgId(msgId.toString());
         event.setSendId(session.getUserId());
         event.setRecvId(dto.getRecvId());
         event.setContent(dto.getContent());
@@ -76,7 +78,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         event.setSendBack(true);
 
         try {
-            SendResult sendResult = rocketMQTemplate.syncSend(IMMQConstant.PRIVATE_PERSIST_TOPIC, event);
+            SendResult sendResult = rocketMQTemplate.syncSend(IMMQConstant.PRIVATE_BUS_TOPIC, JSON.toJSONString(event));
 //            rocketMQTemplate.asyncSend(IMMQConstant.PRIVATE_PERSIST_TOPIC, event, new SendCallback() {
 //                @Override
 //                public void onSuccess(SendResult sendResult) {

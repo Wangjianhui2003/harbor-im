@@ -14,6 +14,7 @@ import com.jianhui.project.harbor.common.mq.RedisMQTemplate;
 import com.jianhui.project.harbor.common.util.ThreadPoolExecutorFactory;
 import com.jianhui.project.harbor.platform.config.props.GroupMessageMQProperties;
 import com.jianhui.project.harbor.platform.dto.response.GroupMessageRespDTO;
+import com.jianhui.project.harbor.platform.service.GroupMessageEventPreparer;
 import com.jianhui.project.harbor.platform.util.BeanUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +54,7 @@ public class GroupMessageDispatchConsumer implements ApplicationRunner {
     private final RedisMQTemplate redisMQTemplate;
     private final RocketMQTemplate rocketMQTemplate;
     private final GroupMessageMQProperties mqProperties;
+    private final GroupMessageEventPreparer groupMessageEventPreparer;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -60,7 +62,7 @@ public class GroupMessageDispatchConsumer implements ApplicationRunner {
                 new DefaultMQPushConsumer(IMMQConstant.GROUP_DISPATCH_CONSUMER_GROUP);
 
         consumer.setNamesrvAddr(nameServerAddr);
-        consumer.subscribe(IMMQConstant.GROUP_PERSIST_TOPIC, "*");
+        consumer.subscribe(IMMQConstant.GROUP_BUS_TOPIC, "*");
         configureConsumer(consumer, mqProperties.getDispatch());
 
         consumer.registerMessageListener(new MessageListenerConcurrently() {
@@ -69,6 +71,9 @@ public class GroupMessageDispatchConsumer implements ApplicationRunner {
                 List<GroupMessageCreatedEvent> events = new ArrayList<>(list.size());
                 for (MessageExt msg : list) {
                     GroupMessageCreatedEvent event = parseEvent(msg);
+                    if (event != null) {
+                        event = groupMessageEventPreparer.prepare(event);
+                    }
                     if (event != null) {
                         events.add(event);
                     }

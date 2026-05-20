@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package harbor.im.protocol;
+
+option java_package = "com.jianhui.project.harbor.common.proto";
+option java_outer_classname = "IMWebSocketProto";
+
+message Envelope {
+  int32 cmd = 1;
+  bytes payload = 2;
+}
+
+message Empty {
+}
+
+message Login {
+  string access_token = 1;
+}
+
+message ForceLogout {
+  string reason = 1;
+}
+
+message PrivateMessageSendRequest {
+  string client_msg_id = 1;
+  int64 recv_id = 2;
+  string content = 3;
+  int32 type = 4;
+  optional bool send_to_self = 5;
+}
+
+message PrivateMessageSendAck {
+  string client_msg_id = 1;
+  int64 message_id = 2;
+  int64 send_time = 3;
+}
+
+message PrivateMessage {
+  optional int64 id = 1;
+  optional int64 send_id = 2;
+  optional int64 recv_id = 3;
+  string content = 4;
+  optional int32 type = 5;
+  optional int32 status = 6;
+  optional int64 send_time = 7;
+}
+
+message PrivateMessageDeliveryAck {
+  int64 message_id = 1;
+}
+
+message GroupMessageSendRequest {
+  string client_msg_id = 1;
+  int64 group_id = 2;
+  string content = 3;
+  int32 type = 4;
+  optional bool receipt = 5;
+  repeated int64 at_user_ids = 6;
+  optional bool send_to_self = 7;
+}
+
+message GroupMessageSendAck {
+  string client_msg_id = 1;
+  int64 message_id = 2;
+  int64 send_time = 3;
+}
+
+message GroupMessage {
+  optional int64 id = 1;
+  optional int64 group_id = 2;
+  optional int64 send_id = 3;
+  string send_nickname = 4;
+  string content = 5;
+  optional int32 type = 6;
+  optional bool receipt = 7;
+  optional bool receipt_ok = 8;
+  optional int32 read_count = 9;
+  repeated int64 at_user_ids = 10;
+  optional int32 status = 11;
+  optional int64 send_time = 12;
+}
+
+message GroupMessageDeliveryAck {
+  int64 message_id = 1;
+}

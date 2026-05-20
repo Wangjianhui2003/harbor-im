@@ -3,7 +3,7 @@ server:
 
 spring:
   profiles:
-    active: perf # 环境 dev|test|prod
+    active: dev # 环境 dev|test|prod
   application:
     name: harbor-platform
   mvc:

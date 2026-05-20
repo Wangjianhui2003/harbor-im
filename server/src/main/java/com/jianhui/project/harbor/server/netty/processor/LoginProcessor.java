@@ -92,6 +92,9 @@ public class LoginProcessor extends AbstractMsgProcessor<IMLoginInfo> {
 
     @Override
     public IMLoginInfo transForm(Object o) {
+        if (o instanceof IMLoginInfo loginInfo) {
+            return loginInfo;
+        }
         HashMap map = (HashMap) o;
         return BeanUtil.fillBeanWithMap(map, new IMLoginInfo(), false);
     }

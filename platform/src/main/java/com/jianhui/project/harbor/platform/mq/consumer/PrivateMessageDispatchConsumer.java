@@ -7,13 +7,14 @@ import com.jianhui.project.harbor.common.constant.IMRedisKey;
 import com.jianhui.project.harbor.common.enums.IMCmdType;
 import com.jianhui.project.harbor.common.enums.IMTerminalType;
 import com.jianhui.project.harbor.common.model.IMBatchRecvInfo;
+import com.jianhui.project.harbor.common.model.IMPrivateMessageInfo;
 import com.jianhui.project.harbor.common.model.IMRecvInfo;
 import com.jianhui.project.harbor.common.model.IMUserInfo;
 import com.jianhui.project.harbor.common.mq.RedisMQTemplate;
 import com.jianhui.project.harbor.common.model.PrivateMessageCreatedEvent;
 import com.jianhui.project.harbor.common.util.ThreadPoolExecutorFactory;
 import com.jianhui.project.harbor.platform.config.props.PrivateMessageMQProperties;
-import com.jianhui.project.harbor.platform.dto.response.PrivateMessageRespDTO;
+import com.jianhui.project.harbor.platform.service.FriendService;
 import com.jianhui.project.harbor.platform.util.BeanUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +54,7 @@ public class PrivateMessageDispatchConsumer implements ApplicationRunner {
     private final RedisMQTemplate redisMQTemplate;
     private final RocketMQTemplate rocketMQTemplate;
     private final PrivateMessageMQProperties mqProperties;
+    private final FriendService friendService;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -60,7 +62,7 @@ public class PrivateMessageDispatchConsumer implements ApplicationRunner {
                 new DefaultMQPushConsumer(IMMQConstant.PRIVATE_DISPATCH_CONSUMER_GROUP);
 
         consumer.setNamesrvAddr(nameServerAddr);
-        consumer.subscribe(IMMQConstant.PRIVATE_PERSIST_TOPIC, "*");
+        consumer.subscribe(IMMQConstant.PRIVATE_BUS_TOPIC, "*");
         configureConsumer(consumer, mqProperties.getDispatch());
 
         consumer.registerMessageListener(new MessageListenerConcurrently() {
@@ -88,13 +90,14 @@ public class PrivateMessageDispatchConsumer implements ApplicationRunner {
     }
 
     private void dispatchBatch(List<PrivateMessageCreatedEvent> events) {
-        if (events.isEmpty()) {
+        List<PrivateMessageCreatedEvent> validEvents = filterValidEvents(events);
+        if (validEvents.isEmpty()) {
             return;
         }
-        Map<String, IMUserInfo> routeKeys = collectRouteKeys(events);
+        Map<String, IMUserInfo> routeKeys = collectRouteKeys(validEvents);
         List<Object> serverIds = redisMQTemplate.opsForValue().multiGet(routeKeys.keySet());
         Map<String, Integer> routeTable = buildRouteTable(routeKeys, serverIds);
-        Map<Integer, List<IMRecvInfo>> serverMessages = buildServerMessages(events, routeTable);
+        Map<Integer, List<IMRecvInfo>> serverMessages = buildServerMessages(validEvents, routeTable);
         serverMessages.forEach(this::sendBatchAsync);
     }
 
@@ -183,7 +186,7 @@ public class PrivateMessageDispatchConsumer implements ApplicationRunner {
     private Map<Integer, List<IMRecvInfo>> buildServerMessages(List<PrivateMessageCreatedEvent> events, Map<String, Integer> routeTable) {
         Map<Integer, List<IMRecvInfo>> serverMessages = new HashMap<>();
         for (PrivateMessageCreatedEvent event : events) {
-            PrivateMessageRespDTO messageInfo = BeanUtils.copyProperties(event, PrivateMessageRespDTO.class);
+            IMPrivateMessageInfo messageInfo = BeanUtils.copyProperties(event, IMPrivateMessageInfo.class);
             IMUserInfo sender = new IMUserInfo(event.getSendId(), event.getSenderTerminal());
 
             Map<Integer, List<IMUserInfo>> receiverMap = new HashMap<>();
@@ -217,7 +220,7 @@ public class PrivateMessageDispatchConsumer implements ApplicationRunner {
     private void addServerMessages(Map<Integer, List<IMRecvInfo>> serverMessages,
                                    Map<Integer, List<IMUserInfo>> receiverMap,
                                    IMUserInfo sender,
-                                   PrivateMessageRespDTO messageInfo,
+                                   IMPrivateMessageInfo messageInfo,
                                    boolean sendBack) {
         for (Map.Entry<Integer, List<IMUserInfo>> entry : receiverMap.entrySet()) {
             IMRecvInfo recvInfo = new IMRecvInfo();
@@ -229,6 +232,17 @@ public class PrivateMessageDispatchConsumer implements ApplicationRunner {
             recvInfo.setData(messageInfo);
             serverMessages.computeIfAbsent(entry.getKey(), key -> new ArrayList<>()).add(recvInfo);
         }
+    }
+
+    private List<PrivateMessageCreatedEvent> filterValidEvents(List<PrivateMessageCreatedEvent> events) {
+        return events.stream().filter(event -> {
+            boolean isFriend = Boolean.TRUE.equals(friendService.isFriend(event.getSendId(), event.getRecvId()));
+            if (!isFriend) {
+                log.warn("私聊路由校验失败，消息将被丢弃，msgId:{}, sendId:{}, recvId:{}",
+                        event.getId(), event.getSendId(), event.getRecvId());
+            }
+            return isFriend;
+        }).toList();
     }
 
     private String buildRouteKey(Long userId, Integer terminal) {

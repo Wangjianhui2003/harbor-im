@@ -50,4 +50,27 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>skip-server-run</id>
+            <activation>
+                <property>
+                    <name>skip.server.run</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>

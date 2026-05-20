@@ -1,5 +1,6 @@
 package com.jianhui.project.harbor.platform.service.impl;
 
+import com.alibaba.fastjson2.JSON;
 import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
@@ -95,6 +96,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
 
         GroupMessageCreatedEvent event = new GroupMessageCreatedEvent();
         event.setId(msgId);
+        event.setClientMsgId(msgId.toString());
         event.setGroupId(dto.getGroupId());
         event.setSendId(session.getUserId());
         event.setSendNickname(groupMember.getShowNickname());
@@ -111,7 +113,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         event.setSendBack(true);
 
         try {
-            SendResult sendResult = rocketMQTemplate.syncSend(IMMQConstant.GROUP_PERSIST_TOPIC, event);
+            SendResult sendResult = rocketMQTemplate.syncSend(IMMQConstant.GROUP_BUS_TOPIC, JSON.toJSONString(event));
             log.info("群聊消息创建事件发布成功，消息id:{},发送状态:{}", msgId, sendResult.getSendStatus());
         } catch (Exception e) {
             log.error("群聊消息创建事件发布失败，消息id:{},发送id:{},群聊id:{}", msgId, session.getUserId(), dto.getGroupId(), e);
@@ -385,4 +387,3 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         imSender.sendGroupMessage(sendMessage);
     }
 }
-

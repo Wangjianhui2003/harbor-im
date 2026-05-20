@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="afc2f009-f11d-4d84-a000-52c3ab490161" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/jianhui/project/harbor/common/model/IMPrivateMessageDeliveryAck.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/jianhui/project/harbor/common/model/IMPrivateMessageInfo.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/jianhui/project/harbor/common/model/IMPrivateMessageSendAck.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/jianhui/project/harbor/common/model/IMPrivateMessageSendRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/jianhui/project/harbor/common/protocol/IMProtoMessageCodec.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/src/main/proto/im_ws.proto" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/model/PrivateMessageSendDedupRecord.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/netty/processor/PrivateMessageDeliveryAckProcessor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/netty/processor/PrivateMessageSendProcessor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/service/PrivateMessageDeliveryService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AGENTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/AGENTS.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/common/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/src/main/java/com/jianhui/project/harbor/common/constant/IMMQConstant.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/com/jianhui/project/harbor/common/constant/IMMQConstant.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/src/main/java/com/jianhui/project/harbor/common/enums/IMCmdType.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/com/jianhui/project/harbor/common/enums/IMCmdType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/src/main/java/com/jianhui/project/harbor/common/model/GroupMessageCreatedEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/com/jianhui/project/harbor/common/model/GroupMessageCreatedEvent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/src/main/java/com/jianhui/project/harbor/common/model/PrivateMessageCreatedEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/com/jianhui/project/harbor/common/model/PrivateMessageCreatedEvent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/platform/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/platform/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/platform/src/main/java/com/jianhui/project/harbor/platform/mq/consumer/GroupMessageDispatchConsumer.java" beforeDir="false" afterPath="$PROJECT_DIR$/platform/src/main/java/com/jianhui/project/harbor/platform/mq/consumer/GroupMessageDispatchConsumer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/platform/src/main/java/com/jianhui/project/harbor/platform/mq/consumer/GroupMessagePersistConsumer.java" beforeDir="false" afterPath="$PROJECT_DIR$/platform/src/main/java/com/jianhui/project/harbor/platform/mq/consumer/GroupMessagePersistConsumer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/platform/src/main/java/com/jianhui/project/harbor/platform/mq/consumer/PrivateMessageDispatchConsumer.java" beforeDir="false" afterPath="$PROJECT_DIR$/platform/src/main/java/com/jianhui/project/harbor/platform/mq/consumer/PrivateMessageDispatchConsumer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/platform/src/main/java/com/jianhui/project/harbor/platform/mq/consumer/PrivateMessagePersistConsumer.java" beforeDir="false" afterPath="$PROJECT_DIR$/platform/src/main/java/com/jianhui/project/harbor/platform/mq/consumer/PrivateMessagePersistConsumer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/platform/src/main/java/com/jianhui/project/harbor/platform/service/impl/GroupMessageServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/platform/src/main/java/com/jianhui/project/harbor/platform/service/impl/GroupMessageServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/platform/src/main/java/com/jianhui/project/harbor/platform/service/impl/PrivateMessageServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/platform/src/main/java/com/jianhui/project/harbor/platform/service/impl/PrivateMessageServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/platform/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/platform/src/main/resources/application.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/server/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/HarborServerApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/HarborServerApp.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/config/LocalCacheConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/config/LocalCacheConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/config/props/GroupMessageMQProperties.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/config/props/GroupMessageMQProperties.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/config/props/PrivateMessageMQProperties.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/config/props/PrivateMessageMQProperties.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/constant/ChannelAttrKey.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/constant/ChannelAttrKey.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/mq/consumer/GroupMessageConsumer.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/mq/consumer/GroupMessageConsumer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/mq/consumer/PrivateMessageConsumer.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/mq/consumer/PrivateMessageConsumer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/netty/processor/AbstractMsgProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/netty/processor/AbstractMsgProcessor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/netty/processor/GroupMessageProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/netty/processor/GroupMessageProcessor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/netty/processor/HeartbeatProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/netty/processor/HeartbeatProcessor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/netty/processor/LoginProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/netty/processor/LoginProcessor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/netty/processor/PrivateMessageProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/netty/processor/PrivateMessageProcessor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/netty/websocket/decode/MessageProtocolDecoder.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/netty/websocket/decode/MessageProtocolDecoder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/netty/websocket/encode/MessageProtocolEncoder.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/netty/websocket/encode/MessageProtocolEncoder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/resources/application.yml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Wangjianhui2003&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Wangjianhui2003/harbor-im.git&quot;,
+    &quot;accountId&quot;: &quot;26209b32-321b-42da-b1e0-c22e3ae3bdb2&quot;
+  }
+}</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/boot/spring-boot/4.0.2/spring-boot-4.0.2-sources.jar!/org/springframework/boot/SpringApplication.java" root0="SKIP_INSPECTION" />
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="3BHV1hTdnSXYKzRRpJvl5GnOvvE" />
+  <component name="ProjectViewState">
+    <option name="autoscrollToSource" value="true" />
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="openDirectoriesWithSingleClick" value="true" />
+    <option name="showLibraryContents" value="true" />
+    <option name="sortByType" value="true" />
+    <option name="sortKey" value="BY_TYPE" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Java Scratch.Scratch.executor&quot;: &quot;Debug&quot;,
+    &quot;Maven.harbor-im [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.platform [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.platform [org.springframework.boot:spring-boot-maven-plugin:4.0.2:run].executor&quot;: &quot;Run&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;Spring Boot.HarborServerApp.executor&quot;: &quot;Debug&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feat/newarch&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/jianhui/project/harbor/harbor-frontend&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.tabs&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RunManager" selected="Spring Boot.HarborServerApp">
+    <configuration name="Scratch" type="Java Scratch" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="Scratch" />
+      <option name="SCRATCH_FILE_URL" value="file://$APPLICATION_CONFIG_DIR$/scratches/scratch.java" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="HarborPlatformApp" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="platform" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.jianhui.project.harbor.platform.HarborPlatformApp" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="HarborServerApp" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="server" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.jianhui.project.harbor.server.HarborServerApp" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Java Scratch.Scratch" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.31033.145" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.31033.145" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="afc2f009-f11d-4d84-a000-52c3ab490161" name="Changes" comment="" />
+      <created>1774145768399</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1774145768399</updated>
+      <workItem from="1774145769840" duration="687000" />
+      <workItem from="1774146810065" duration="15653000" />
+      <workItem from="1774713435992" duration="3140000" />
+      <workItem from="1774717718308" duration="1474000" />
+      <workItem from="1774721578531" duration="1980000" />
+      <workItem from="1774851554573" duration="3398000" />
+      <workItem from="1775641982031" duration="152000" />
+      <workItem from="1775643310848" duration="571000" />
+      <workItem from="1775643935713" duration="3246000" />
+      <workItem from="1775651556289" duration="649000" />
+      <workItem from="1775738630709" duration="5000" />
+      <workItem from="1776049026612" duration="867000" />
+      <workItem from="1776051698844" duration="2596000" />
+      <workItem from="1776157160512" duration="408000" />
+      <workItem from="1776256417414" duration="18000" />
+      <workItem from="1778639696737" duration="835000" />
+      <workItem from="1778642629160" duration="1119000" />
+      <workItem from="1779034940438" duration="166000" />
+      <workItem from="1779035257749" duration="8000" />
+      <workItem from="1779250181230" duration="11000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>jar://$MAVEN_REPOSITORY$/org/springframework/boot/spring-boot/4.0.2/spring-boot-4.0.2-sources.jar!/org/springframework/boot/SpringApplication.java</url>
+          <line>1353</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$APPLICATION_CONFIG_DIR$/scratches/scratch.java</url>
+          <line>11</line>
+          <option name="timeStamp" value="9" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>jar://$MAVEN_REPOSITORY$/org/springframework/boot/spring-boot/4.0.2/spring-boot-4.0.2-sources.jar!/org/springframework/boot/SpringApplication.java</url>
+          <line>304</line>
+          <option name="timeStamp" value="12" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/server/src/main/java/com/jianhui/project/harbor/server/HarborServerApp.java</url>
+          <line>10</line>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-field">
+          <url>file://$APPLICATION_CONFIG_DIR$/scratches/scratch.java</url>
+          <line>7</line>
+          <properties field="name" class="Scratch" />
+          <option name="timeStamp" value="11" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

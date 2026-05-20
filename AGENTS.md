@@ -1,30 +1,27 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-`harbor-im` is a multi-module Maven backend. The root [`pom.xml`](/home/jianhui/project/harbor/harbor-im/pom.xml) aggregates:
-
-- `harbor-common`: shared IM models, constants, MQ helpers, and utilities under `src/main/java`; protobuf sources live in `src/main/proto`.
-- `harbor-platform`: Spring Boot HTTP API on port `8100`, with Java code in `src/main/java`, MyBatis XML in `src/main/resources/mapper`, and tests in `src/test/java`.
-- `harbor-server`: Netty/WebSocket service on port `8101`, with runtime config in `src/main/resources`.
-- `sql/harbor`: schema and seed SQL scripts.
+This repository is a multi-module Maven backend. The root `pom.xml` aggregates `common`, `platform`, and `server`. Put shared constants, protocol models, MQ helpers, and Protobuf definitions in `common` (`src/main/java`, `src/main/proto`). Keep HTTP APIs, services, MyBatis mappers, and mapper XML in `platform`; XML files live in `platform/src/main/resources/mapper`. Keep Netty/WebSocket runtime code in `server`. Database schema and seed data belong in `sql/harbor`.
 
 ## Build, Test, and Development Commands
-- `mvn clean package`: build all modules and produce runnable jars in each module’s `target/`.
-- `mvn test`: run the current test suite.
-- `java -jar harbor-server/target/harbor-server.jar --spring.profiles.active=dev`: start the IM server locally.
-- `java -jar harbor-platform/target/harbor-platform.jar --spring.profiles.active=dev`: start the HTTP API locally.
-- `docker build -f harbor-platform/Dockerfile -t harbor-platform .`: build the platform image from the repo root. Use the same pattern for `harbor-server`.
+Use JDK `25` and Maven `3.9+`.
 
-Use JDK `25` and Maven `3.9+`. Local startup also requires MySQL, Redis, RocketMQ, and MinIO.
+- `mvn clean package`: build all modules and create `platform/target/platform.jar` and `server/target/server.jar`.
+- `mvn test`: run the current test suite for all modules.
+- `mvn -q -DskipTests compile`: fast compile check from the repo root.
+- `java -jar platform/target/platform.jar --spring.profiles.active=dev`: start the HTTP API on `8100` with `/api`.
+- `java -jar server/target/server.jar --spring.profiles.active=dev`: start the IM server on `8101`.
+
+Local development also requires MySQL, Redis, RocketMQ, and MinIO.
 
 ## Coding Style & Naming Conventions
-Follow the existing Java style: 4-space indentation, one public class per file, and organized imports. Use `PascalCase` for classes, `camelCase` for methods and fields, and keep existing suffixes such as `*ReqDTO`, `*RespDTO`, `*Mapper`, and `*ServiceImpl`. Put Spring MVC controllers in `controller`, persistence entities in `dao/entity`, and MyBatis interfaces in `dao/mapper` with matching XML names.
+Follow the existing Java style: 4-space indentation, one public class per file, and grouped imports. Use `PascalCase` for classes and `camelCase` for methods and fields. Match established suffixes such as `*ReqDTO`, `*RespDTO`, `*Mapper`, `*Service`, `*ServiceImpl`, and `*DO`. Prefer constructor injection with Lombok annotations already used in the codebase, such as `@RequiredArgsConstructor`.
 
 ## Testing Guidelines
-There is no enforced coverage gate today, and test coverage is light. Add focused JUnit-style tests under the matching module and package path, using `*Test` names. Prefer service, mapper, and serialization tests for behavior changes; pair SQL changes with a reproducible test or verification note.
+Tests are currently light, so add focused coverage with every behavior change. Place tests under the matching module path, for example `platform/src/test/java/...`, and use `*Test` class names. Favor service, mapper, and protocol serialization tests. If you change `common/src/main/proto/im_ws.proto`, run a full Maven build so generated classes stay in sync.
 
 ## Commit & Pull Request Guidelines
-Recent history uses short conventional prefixes such as `feat:local cache` and `fix:private message`. Keep commit subjects lowercase, imperative, and scoped. PRs should describe behavior changes, affected modules, required config or SQL updates, and manual verification steps. For API changes, include example requests or response shape changes.
+Recent commits follow short conventional prefixes such as `feat:refactor` and `fix:group message`. Keep subjects lowercase, imperative, and concise. PRs should name affected modules, list config or SQL changes, and include verification steps. For API or protocol changes, add example payloads or describe the contract delta clearly.
 
 ## Security & Configuration Tips
-Configuration is profile-based (`application.yaml`, `application-dev*.yml`). Do not introduce new hardcoded secrets; prefer environment-specific overrides. Treat `sql/harbor` and profile configs as deployable artifacts and review them as carefully as Java code.
+Runtime config is profile-based in `application.yaml` plus `application-dev.yaml` or `application-prod.yaml`. Put machine-specific overrides in ignored `application-local*.yml` files, and never commit new secrets, passwords, or environment-specific endpoints.

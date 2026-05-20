@@ -7,7 +7,9 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 @ComponentScan(basePackages = "com.jianhui.project.harbor")
 public class HarborServerApp {
-    public static void main(String[] args) {
+    static void main(String[] args) {
         SpringApplication.run(HarborServerApp.class, args);
+
+        System.out.println("hello");
     }
 }

@@ -7,6 +7,7 @@ import com.jianhui.project.harbor.common.model.PrivateMessageCreatedEvent;
 import com.jianhui.project.harbor.platform.dao.entity.PrivateMessage;
 import com.jianhui.project.harbor.platform.dao.mapper.PrivateMessageMapper;
 import com.jianhui.project.harbor.platform.config.props.PrivateMessageMQProperties;
+import com.jianhui.project.harbor.platform.service.FriendService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
@@ -34,6 +35,7 @@ public class PrivateMessagePersistConsumer implements ApplicationRunner {
 
     private final PrivateMessageMapper privateMessageMapper;
     private final PrivateMessageMQProperties mqProperties;
+    private final FriendService friendService;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -41,7 +43,7 @@ public class PrivateMessagePersistConsumer implements ApplicationRunner {
                 new DefaultMQPushConsumer(IMMQConstant.PRIVATE_PERSIST_CONSUMER_GROUP);
 
         consumer.setNamesrvAddr(nameServerAddr);
-        consumer.subscribe(IMMQConstant.PRIVATE_PERSIST_TOPIC, "*");
+        consumer.subscribe(IMMQConstant.PRIVATE_BUS_TOPIC, "*");
         configureConsumer(consumer, mqProperties.getPersist());
 
         consumer.registerMessageListener(new MessageListenerConcurrently() {
@@ -50,7 +52,7 @@ public class PrivateMessagePersistConsumer implements ApplicationRunner {
                 List<PrivateMessageCreatedEvent> events = new ArrayList<>(list.size());
                 for (MessageExt msg : list) {
                     PrivateMessageCreatedEvent event = parseEvent(msg);
-                    if (event != null) {
+                    if (event != null && isValidEvent(event)) {
                         events.add(event);
                     }
                 }
@@ -104,6 +106,15 @@ public class PrivateMessagePersistConsumer implements ApplicationRunner {
             log.error("私聊消息创建事件解析异常，mqMsgId:{}", msg.getMsgId(), e);
             return null;
         }
+    }
+
+    private boolean isValidEvent(PrivateMessageCreatedEvent event) {
+        boolean isFriend = Boolean.TRUE.equals(friendService.isFriend(event.getSendId(), event.getRecvId()));
+        if (!isFriend) {
+            log.warn("私聊持久化校验失败，消息将被忽略，msgId:{}, sendId:{}, recvId:{}",
+                    event.getId(), event.getSendId(), event.getRecvId());
+        }
+        return isFriend;
     }
 
     private void configureConsumer(DefaultMQPushConsumer consumer, PrivateMessageMQProperties.Consumer properties) {
